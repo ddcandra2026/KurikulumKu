@@ -1862,11 +1862,16 @@ function renderGrid() {
         if (isMGMP) cellClass += ' mgmp-cell';
         if (isBentrok) cellClass += ' bentrok-cell';
         const shortName = cell.guru.split(' ').slice(-2).join(' ');
+        const isFirst = !cell.jamRange || cell.jamRange[0] === jam;
+        const rangeLabel = cell.jamRange && cell.jamRange.length > 1
+          ? `<div style="font-size:8px;color:var(--yellow);margin-top:1px;">JP${cell.jamRange[0]}–JP${cell.jamRange[cell.jamRange.length-1]}</div>`
+          : '';
         html += `<td><div class="${cellClass}" onclick="editJadwalCell(${hari},'${kelas}',${jam})">
           <span class="jc-del" onclick="event.stopPropagation();hapusJadwalCell(${hari},'${kelas}',${jam})">✕</span>
           ${isBentrok ? '<span class="jc-bentrok" title="Guru bentrok!">⚠️</span>' : ''}
           <div class="jc-guru">${isMGMP ? '🏫 MGMP' : shortName}</div>
           <div class="jc-mapel">${cell.mapel || ''}</div>
+          ${rangeLabel}
           <div class="jc-ruang">${cell.ruang || ''}</div>
         </div></td>`;
       } else {
@@ -1880,40 +1885,52 @@ function renderGrid() {
   renderConflictAlert();
 }
 
-// Patch openJadwalFormCell to warn if guru already has class this jam
-const _origOpenCell = openJadwalFormCell;
-openJadwalFormCell = function(hari, kelas, jam) {
-  _origOpenCell(hari, kelas, jam);
-  // Add conflict warning inside form
-  setTimeout(() => {
-    const sel = document.getElementById('mf-guru');
-    if (sel) sel.addEventListener('change', function() {
-      checkGuruConflictLive(hari, kelas, jam, this.value);
-    });
-  }, 80);
-};
-
-function checkGuruConflictLive(hari, kelas, jam, guruNama) {
+// Real-time conflict check — dipanggil saat guru dipilih atau jam berubah
+function checkGuruConflictLive() {
+  const guru = document.getElementById('mf-guru')?.value;
+  if (!guru || !_jadwalFormCtx) return;
+  const { hari, kelas } = _jadwalFormCtx;
+  const jamDipilih = getSelectedJams();
   const hariData = JADWAL_DATA2[hari] || {};
-  const bentrokKelas = [];
-  Object.entries(hariData).forEach(([k, jamObj]) => {
-    if (k !== kelas && jamObj[jam]?.guru === guruNama) bentrokKelas.push(k);
+  const bentrokList = [];
+
+  jamDipilih.forEach(jam => {
+    Object.entries(hariData).forEach(([k, jamObj]) => {
+      if (k !== kelas && jamObj[jam]?.guru === guru) {
+        bentrokList.push(`JP${jam} di kelas ${k}`);
+      }
+    });
+    // Juga cek kelas yang sama jam yang sama (kecuali data yang sedang diedit)
+    const kelasCell = (hariData[kelas] || {})[jam];
+    if (kelasCell && kelasCell.guru !== guru) {
+      bentrokList.push(`JP${jam} kelas ${kelas} sudah diisi ${kelasCell.guru}`);
+    }
   });
+
   let warn = document.getElementById('mf-conflict-warn');
   if (!warn) {
     warn = document.createElement('div');
     warn.id = 'mf-conflict-warn';
-    warn.style.cssText = 'font-size:10px;padding:6px 10px;border-radius:8px;margin-top:6px;display:none;';
-    document.getElementById('mf-guru')?.parentElement?.appendChild(warn);
+    warn.style.cssText = 'border-radius:10px;margin-top:8px;padding:0;';
+    const body = document.getElementById('modal-form-body');
+    if (body) body.appendChild(warn);
   }
-  if (bentrokKelas.length) {
-    warn.style.display = 'block';
-    warn.style.background = 'rgba(255,59,92,0.15)';
-    warn.style.color = 'var(--red)';
-    warn.style.border = '1px solid var(--red)';
-    warn.textContent = `⚠️ BENTROK: ${guruNama} sudah mengajar di ${bentrokKelas.join(', ')} pada JP${jam} hari yang sama!`;
+
+  if (bentrokList.length) {
+    warn.innerHTML = `<div style="background:rgba(255,59,92,0.15);border:1px solid var(--red);border-radius:10px;padding:10px;font-size:10px;color:var(--red);">
+      <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1px;margin-bottom:5px;">⚠️ TERDETEKSI BENTROK JAM!</div>
+      ${bentrokList.map(b => `<div style="padding:2px 0;">• ${b}</div>`).join('')}
+    </div>`;
+    // Tambah ke notif bell
+    bentrokList.forEach(b => {
+      const key = 'bentrok_' + b;
+      if (!readNotifIds.has(key)) {
+        readNotifIds.delete(key); // ensure fresh
+      }
+    });
+    updateNotifDot();
   } else {
-    warn.style.display = 'none';
+    warn.innerHTML = '';
   }
 }
 
@@ -1928,56 +1945,130 @@ function getMGMPForDay(hari) {
   });
 }
 
-// ===== JADWAL FORM =====
+// ===== JADWAL FORM — MULTI JAM =====
 let _jadwalFormCtx = null;
+
+function getSelectedJams() {
+  const selected = [];
+  document.querySelectorAll('#jam-picker .jam-badge.selected').forEach(el => {
+    selected.push(parseInt(el.dataset.jam));
+  });
+  return selected.sort((a,b) => a-b);
+}
+
 function openJadwalForm() {
   const hari = parseInt(document.getElementById('grid-hari-sel')?.value || 1);
   openJadwalFormCell(hari, KELAS_LIST[0], 1);
 }
+
 function openJadwalFormCell(hari, kelas, jam) {
-  _jadwalFormCtx = { hari, kelas, jam };
+  _jadwalFormCtx = { hari, kelas };
+  // Find all existing jams for this kelas+hari by same guru (for edit)
   const existing = (JADWAL_DATA2[hari]?.[kelas]?.[jam]) || {};
-  const guruOptions = GURU_DATA.map(g => `<option value="${g.nama}" ${existing.guru===g.nama?'selected':''}>${g.nama} (${g.mapel})</option>`).join('');
-  document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[hari]} JP${jam} [${kelas}]`;
+  // Pre-select jams: if editing, find all consecutive jams of same guru in this kelas
+  let preSelected = [jam];
+  if (existing.guru) {
+    const kelasData = JADWAL_DATA2[hari]?.[kelas] || {};
+    preSelected = Object.entries(kelasData)
+      .filter(([j, c]) => c.guru === existing.guru)
+      .map(([j]) => parseInt(j));
+    if (!preSelected.includes(jam)) preSelected = [jam];
+  }
+
+  const guruOptions = GURU_DATA.map(g =>
+    `<option value="${g.nama}" ${existing.guru===g.nama?'selected':''}>${g.nama} (${g.mapel})</option>`
+  ).join('');
+
+  document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[hari]} [${kelas}]`;
   document.getElementById('modal-form-body').innerHTML = `
-    <div class="form-group"><label class="form-label">GURU</label>
-      <select class="form-select" id="mf-guru">${guruOptions}</select></div>
-    <div class="form-group"><label class="form-label">MATA PELAJARAN</label>
-      <input type="text" class="form-input" id="mf-mapel" value="${existing.mapel||''}" placeholder="Mapel"></div>
-    <div class="form-group"><label class="form-label">RUANG / LAB</label>
-      <input type="text" class="form-input" id="mf-ruang" value="${existing.ruang||''}" placeholder="Contoh: R.01 / Lab IPA"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;width:100%;margin-bottom:4px;">HARI</div>
-      ${[1,2,3,4,5].map(h=>`<span class="jam-badge ${h===hari?'selected':''}" onclick="setFormHari(${h},this)">${HARI[h]}</span>`).join('')}
+    <div class="form-group">
+      <label class="form-label">GURU</label>
+      <select class="form-select" id="mf-guru" onchange="onGuruChange()">${guruOptions}</select>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;width:100%;margin-bottom:4px;">KELAS</div>
-      ${KELAS_LIST.map(k=>`<span class="jam-badge ${k===kelas?'selected':''}" onclick="setFormKelas('${k}',this)">${k}</span>`).join('')}
+    <div class="form-group">
+      <label class="form-label">MATA PELAJARAN</label>
+      <input type="text" class="form-input" id="mf-mapel" value="${existing.mapel||''}" placeholder="Mapel">
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:4px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;width:100%;margin-bottom:4px;">JAM KE</div>
-      ${[1,2,3,4,5,6,7,8,9].map(j=>`<span class="jam-badge ${j===jam?'selected':''}" onclick="setFormJam(${j},this)">JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span></span>`).join('')}
+    <div class="form-group">
+      <label class="form-label">RUANG / LAB</label>
+      <input type="text" class="form-input" id="mf-ruang" value="${existing.ruang||''}" placeholder="Contoh: R.01 / Lab IPA">
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:6px;">HARI</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${[1,2,3,4,5].map(h=>`<span class="jam-badge hari-badge ${h===hari?'selected':''}" data-hari="${h}" onclick="setFormHari(${h},this)">${HARI[h]}</span>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:10px;">
+      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:6px;">KELAS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${KELAS_LIST.map(k=>`<span class="jam-badge kelas-badge ${k===kelas?'selected':''}" data-kelas="${k}" onclick="setFormKelas('${k}',this)">${k}</span>`).join('')}
+      </div>
+    </div>
+
+    <div style="margin-bottom:6px;">
+      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:4px;">JAM KE — <span style="color:var(--cyan);">Pilih lebih dari satu untuk blok jam</span></div>
+      <div id="jam-picker" style="display:flex;flex-wrap:wrap;gap:5px;">
+        ${[1,2,3,4,5,6,7,8,9].map(j=>`
+          <span class="jam-badge ${preSelected.includes(j)?'selected':''}"
+                data-jam="${j}"
+                onclick="toggleFormJam(${j},this)"
+                style="text-align:center;min-width:42px;">
+            JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span>
+          </span>`).join('')}
+      </div>
+      <div id="jam-range-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Orbitron',monospace;"></div>
     </div>`;
+
   currentModalType = 'jadwal-cell';
   document.getElementById('modal-form').classList.add('open');
+  updateJamRangeLabel();
+  // Run conflict check on open
+  setTimeout(checkGuruConflictLive, 100);
 }
+
+function onGuruChange() {
+  // Auto-fill mapel from GURU_DATA
+  const nama = document.getElementById('mf-guru')?.value;
+  const g = GURU_DATA.find(x => x.nama === nama);
+  if (g && document.getElementById('mf-mapel')?.value === '') {
+    document.getElementById('mf-mapel').value = g.mapel;
+  }
+  checkGuruConflictLive();
+}
+
+function toggleFormJam(j, el) {
+  el.classList.toggle('selected');
+  updateJamRangeLabel();
+  checkGuruConflictLive();
+}
+
+function updateJamRangeLabel() {
+  const jams = getSelectedJams();
+  const lbl = document.getElementById('jam-range-label');
+  if (!lbl) return;
+  if (!jams.length) { lbl.textContent = ''; return; }
+  if (jams.length === 1) {
+    lbl.textContent = `JP${jams[0]} (${JAM_LABELS[jams[0]]})`;
+  } else {
+    lbl.textContent = `JP${jams[0]}–JP${jams[jams.length-1]} (${JAM_LABELS[jams[0]]} s/d ${JAM_LABELS[jams[jams.length-1]]}) · ${jams.length} jam`;
+  }
+}
+
 function setFormHari(h, el) {
-  document.querySelectorAll('#modal-form-body .jam-badge').forEach(b => {
-    if ([1,2,3,4,5].map(x=>HARI[x]).includes(b.textContent.trim())) b.classList.remove('selected');
-  });
+  document.querySelectorAll('.hari-badge').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   _jadwalFormCtx.hari = h;
-  document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[h]} JP${_jadwalFormCtx.jam} [${_jadwalFormCtx.kelas}]`;
+  document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[h]} [${_jadwalFormCtx.kelas}]`;
+  checkGuruConflictLive();
 }
 function setFormKelas(k, el) {
-  el.parentElement.querySelectorAll('.jam-badge').forEach(b => b.classList.remove('selected'));
+  document.querySelectorAll('.kelas-badge').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   _jadwalFormCtx.kelas = k;
-}
-function setFormJam(j, el) {
-  el.parentElement.querySelectorAll('.jam-badge').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
-  _jadwalFormCtx.jam = j;
+  checkGuruConflictLive();
 }
 function editJadwalCell(hari, kelas, jam) { openJadwalFormCell(hari, kelas, jam); }
 function hapusJadwalCell(hari, kelas, jam) {
@@ -2365,6 +2456,10 @@ try {
 
 function buildNotifs() {
   const notifs = [];
+  // Notif bentrok jadwal (real-time dari input)
+  (window._bentrokNotifs || []).forEach((msg, i) => {
+    notifs.push({ id: 'bentrok_' + i, ico: '🔴', msg, time: 'Baru saja', type: 'warning' });
+  });
   // Notif dari riwayat keterlambatan (5 terbaru)
   lateRecords.slice(0, 5).forEach((r, i) => {
     notifs.push({
@@ -2589,12 +2684,40 @@ function saveModalForm() {
     const guru = document.getElementById('mf-guru')?.value;
     const mapel = document.getElementById('mf-mapel')?.value.trim();
     const ruang = document.getElementById('mf-ruang')?.value.trim();
+    const jams = getSelectedJams();
     if (!guru) { showToast('⚠️ Pilih guru!', true); return; }
+    if (!jams.length) { showToast('⚠️ Pilih minimal 1 jam!', true); return; }
+
+    // Detect conflict before saving
+    const hariData = JADWAL_DATA2[ctx.hari] || {};
+    const conflicts = [];
+    jams.forEach(jam => {
+      Object.entries(hariData).forEach(([k, jamObj]) => {
+        if (k !== ctx.kelas && jamObj[jam]?.guru === guru) {
+          conflicts.push(`JP${jam} di ${k}`);
+        }
+      });
+    });
+
+    if (conflicts.length) {
+      // Still allow save but push to notif
+      const notifMsg = `⚠️ BENTROK: ${guru} — ${conflicts.join(', ')} pada hari yang sama`;
+      if (!window._bentrokNotifs) window._bentrokNotifs = [];
+      window._bentrokNotifs = window._bentrokNotifs.filter(n => n !== notifMsg);
+      window._bentrokNotifs.unshift(notifMsg);
+      updateNotifDot();
+      showToast(`⚠️ Tersimpan tapi ada bentrok jam!`, true);
+    } else {
+      showToast(`✅ JP${jams[0]}${jams.length>1?'–JP'+jams[jams.length-1]:''} [${ctx.kelas}] disimpan!`);
+    }
+
+    // Save all selected jams
     if (!JADWAL_DATA2[ctx.hari]) JADWAL_DATA2[ctx.hari] = {};
     if (!JADWAL_DATA2[ctx.hari][ctx.kelas]) JADWAL_DATA2[ctx.hari][ctx.kelas] = {};
-    JADWAL_DATA2[ctx.hari][ctx.kelas][ctx.jam] = { guru, mapel, ruang };
+    jams.forEach(jam => {
+      JADWAL_DATA2[ctx.hari][ctx.kelas][jam] = { guru, mapel, ruang, jamRange: jams };
+    });
     renderGrid(); saveAll();
-    showToast('✅ Jadwal disimpan!');
   } else if (type === '__tugas-edit__') {
     const idx = currentModalData?.idx;
     if (idx === undefined) return;
@@ -2638,17 +2761,53 @@ function hapusTlItem(btn) {
 }
 
 // ===== GURU LIST with edit/delete =====
+// ===== JJM CALCULATOR =====
+function hitungJJMTugas(g) {
+  // Mapel PAI = guru agama
+  const isPAI = g.mapel && g.mapel.toUpperCase().includes('PAI');
+  const tugasArr = (g.tugas || []).map(t => t.toLowerCase());
+  let jjmTugas = 0;
+  let detail = [];
+
+  // Wakasek (Kurikulum, Humas, Sarpras, Kesiswaan) = 12 JJM
+  const isWakasek = tugasArr.some(t =>
+    t.includes('waka kur') || t.includes('waka humas') ||
+    t.includes('waka sarpras') || t.includes('waka kesiswaan') ||
+    t.includes('wakasek')
+  );
+  if (isWakasek) { jjmTugas += 12; detail.push('Wakasek (+12)'); }
+
+  // Ka. Lab IPA = 12 JJM
+  const isKaLab = tugasArr.some(t => t.includes('ka. lab') || t.includes('kepala lab'));
+  if (isKaLab) { jjmTugas += 12; detail.push('Ka. Lab (+12)'); }
+
+  // Ka. Perpus = 12 JJM
+  const isKaPerpus = tugasArr.some(t => t.includes('ka. perpus') || t.includes('kepala perpus'));
+  if (isKaPerpus) { jjmTugas += 12; detail.push('Ka. Perpus (+12)'); }
+
+  // Wali Kelas — PAI = +4, non-PAI = +2
+  const isWali = tugasArr.some(t => t.includes('wali kelas') || t.includes('guru wali'));
+  if (isWali) {
+    const waliJJM = isPAI ? 4 : 2;
+    jjmTugas += waliJJM;
+    detail.push(`Wali Kelas (+${waliJJM} ${isPAI ? '/ guru PAI' : ''})`);
+  }
+
+  return { jjmTugas, detail, isPAI };
+}
+
 function renderGuruList(filter = '') {
   const list = document.getElementById('guru-list');
   const data = filter ? GURU_DATA.filter(g => g.nama.toLowerCase().includes(filter.toLowerCase()) || g.mapel.toLowerCase().includes(filter.toLowerCase())) : GURU_DATA;
   list.innerHTML = data.map((g, i) => {
     const realIdx = GURU_DATA.indexOf(g);
-    const pct = Math.min((g.jp / g.max) * 100, 100);
-    const status = g.jp < 24 ? 'over' : g.jp > 40 ? 'over' : g.jp >= 24 && g.jp <= 32 ? 'ok' : 'warn';
-    const statusLabel = g.jp < 24 ? `⚠️ KURANG (${g.jp}/24)` : g.jp > 40 ? `🔴 LEBIH (${g.jp}/40)` : `✅ SESUAI`;
-    const extras = [];
-    if (g.wali) extras.push('Wali Kelas (+2 JP)');
-    if (g.kepala) extras.push('Kepala Lab (+4 JP)');
+    const { jjmTugas, detail: tugasDetail } = hitungJJMTugas(g);
+    const jpMurni = Math.max(0, g.jp - jjmTugas);
+    const jpTotal = g.jp;
+    const pct = Math.min((jpTotal / g.max) * 100, 100);
+    const status = jpTotal < 24 ? 'over' : jpTotal > 40 ? 'over' : jpTotal >= 24 && jpTotal <= 32 ? 'ok' : 'warn';
+    const statusLabel = jpTotal < 24 ? `⚠️ KURANG (${jpTotal}/24)` : jpTotal > 40 ? `🔴 LEBIH (${jpTotal}/40)` : `✅ SESUAI`;
+    const allTugas = g.tugas || [];
     return `
     <div class="teacher-card">
       <div class="tc-top" onclick="toggleDetail('tc-${realIdx}')">
@@ -2657,7 +2816,7 @@ function renderGuruList(filter = '') {
           <div class="tc-mapel">${g.mapel}</div>
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
-          <div class="tc-hours ${status}">${g.jp}<span>JP/minggu</span></div>
+          <div class="tc-hours ${status}">${jpTotal}<span>JJM/minggu</span></div>
           <div class="crud-actions">
             <button class="btn-edit" onclick="event.stopPropagation();editGuru(${realIdx})">✏️</button>
             <button class="btn-del" onclick="event.stopPropagation();hapusGuru(${realIdx})">🗑️</button>
@@ -2671,10 +2830,11 @@ function renderGuruList(filter = '') {
       </div>
       <div class="tc-detail" id="tc-${realIdx}">
         <div style="height:8px;"></div>
-        <div class="tc-row"><span class="tc-row-label">Status JP</span><span class="tc-row-val">${statusLabel}</span></div>
-        <div class="tc-row"><span class="tc-row-label">Tugas Tambahan</span><span class="tc-row-val">${extras.length ? extras.join(', ') : '—'}</span></div>
-        <div class="tc-row"><span class="tc-row-label">JP Mengajar Murni</span><span class="tc-row-val">${g.jp - (g.wali ? 2 : 0) - (g.kepala ? 4 : 0)} JP</span></div>
-        <div class="tc-row"><span class="tc-row-label">Ketentuan Sertifikasi</span><span class="tc-row-val">${g.jp >= 24 ? '✅ Terpenuhi' : '❌ Belum Terpenuhi'}</span></div>
+        <div class="tc-row"><span class="tc-row-label">Total JJM</span><span class="tc-row-val">${jpTotal} JJM</span></div>
+        <div class="tc-row"><span class="tc-row-label">Tatap Muka Murni</span><span class="tc-row-val">${jpMurni} JJM</span></div>
+        <div class="tc-row"><span class="tc-row-label">JJM Tugas Tambahan</span><span class="tc-row-val">${jjmTugas > 0 ? jjmTugas + ' JJM' : '—'}</span></div>
+        <div class="tc-row"><span class="tc-row-label">Rincian Tugas</span><span class="tc-row-val" style="font-size:9px;">${tugasDetail.length ? tugasDetail.join(' · ') : '—'}</span></div>
+        <div class="tc-row"><span class="tc-row-label">Sertifikasi (≥24)</span><span class="tc-row-val">${jpTotal >= 24 ? '✅ Terpenuhi' : '❌ Belum'}</span></div>
       </div>
     </div>`;
   }).join('');

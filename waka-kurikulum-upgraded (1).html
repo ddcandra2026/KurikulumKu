@@ -1,0 +1,3266 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KURIKU — Dashboard Waka Kurikulum</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #0A0E1A;
+    --navy2: #0F1525;
+    --slate: #1A2035;
+    --slate2: #232B45;
+    --cyan: #00D4FF;
+    --cyan2: #00A8CC;
+    --green: #00FF88;
+    --green2: #00CC6A;
+    --purple: #7B5CEA;
+    --orange: #FF6B35;
+    --red: #FF3B5C;
+    --yellow: #FFD700;
+    --white: #E8EEFF;
+    --muted: #8892B0;
+    --border: rgba(0,212,255,0.15);
+    --card-bg: rgba(26,32,53,0.9);
+    --glow-cyan: 0 0 20px rgba(0,212,255,0.4);
+    --glow-green: 0 0 20px rgba(0,255,136,0.4);
+    --glow-purple: 0 0 20px rgba(123,92,234,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  
+  html, body {
+    height: 100%;
+    background: var(--navy);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+
+  /* ===== CANVAS BG ===== */
+  #particles-canvas {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    pointer-events: none; z-index: 0; opacity: 0.4;
+  }
+
+  /* ===== LAYOUT ===== */
+  #app {
+    position: relative; z-index: 1;
+    max-width: 480px; margin: 0 auto;
+    min-height: 100vh;
+    padding-bottom: 80px;
+  }
+
+  /* ===== HEADER ===== */
+  .app-header {
+    background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(123,92,234,0.08));
+    border-bottom: 1px solid var(--border);
+    padding: 16px 20px 14px;
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .header-top {
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .app-logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900; font-size: 22px;
+    background: linear-gradient(90deg, var(--cyan), var(--green));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+  }
+  .app-logo span { font-size: 10px; display: block; color: var(--muted); font-family: 'Inter', sans-serif; letter-spacing: 1px; margin-top: -3px; -webkit-text-fill-color: var(--muted); }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .hdr-notif {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: var(--slate2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; cursor: pointer; position: relative;
+  }
+  .hdr-notulen {
+    width: 36px; height: 36px; border-radius: 10px;
+    background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; cursor: pointer; position: relative;
+    transition: all 0.2s;
+  }
+  .hdr-notulen:active { transform: scale(0.92); background: rgba(0,212,255,0.2); }
+  .notif-dot {
+    width: 8px; height: 8px; background: var(--red);
+    border-radius: 50%; position: absolute; top: 6px; right: 6px;
+    animation: pulse 1.5s infinite;
+  }
+  .header-date {
+    font-size: 10px; color: var(--muted); margin-top: 6px;
+    font-family: 'Orbitron', monospace; letter-spacing: 1px;
+  }
+  .header-date span { color: var(--cyan); }
+
+  /* ===== SCREENS ===== */
+  .screen { display: none; padding: 16px 16px 8px; animation: fadeSlide 0.3s ease; }
+  .screen.active { display: block; }
+  @keyframes fadeSlide { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ===== SECTION TITLE ===== */
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 11px; font-weight: 700;
+    color: var(--cyan); letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title::after {
+    content: ''; flex: 1; height: 1px;
+    background: linear-gradient(90deg, var(--border), transparent);
+  }
+
+  /* ===== CARDS ===== */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px;
+    margin-bottom: 12px;
+    backdrop-filter: blur(10px);
+    position: relative; overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .card::before {
+    content: ''; position: absolute;
+    top: 0; left: 0; right: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity: 0.5;
+  }
+  .card:active { transform: scale(0.98); }
+  .card.glow-cyan { box-shadow: var(--glow-cyan); border-color: rgba(0,212,255,0.3); }
+  .card.glow-green { box-shadow: var(--glow-green); border-color: rgba(0,255,136,0.3); }
+  .card.glow-purple { box-shadow: var(--glow-purple); border-color: rgba(123,92,234,0.3); }
+
+  /* ===== DASHBOARD HOME ===== */
+  .welcome-block {
+    background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(123,92,234,0.15));
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 18px; padding: 18px; margin-bottom: 16px;
+    position: relative; overflow: hidden;
+  }
+  .welcome-block::after {
+    content: 'KURIKULUM'; position: absolute;
+    right: -20px; top: 50%; transform: translateY(-50%);
+    font-family: 'Orbitron', monospace; font-size: 40px; font-weight: 900;
+    color: rgba(0,212,255,0.05); white-space: nowrap;
+  }
+  .welcome-name { font-size: 18px; font-weight: 700; color: var(--white); }
+  .welcome-role { font-size: 12px; color: var(--cyan); margin-top: 2px; letter-spacing: 1px; }
+  .welcome-school { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  /* Stats Grid */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px;
+    text-align: center; position: relative; overflow: hidden;
+  }
+  .stat-icon { font-size: 22px; margin-bottom: 4px; }
+  .stat-value {
+    font-family: 'Orbitron', monospace;
+    font-size: 22px; font-weight: 700;
+  }
+  .stat-label { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 0.5px; }
+  .stat-card.cyan { border-color: rgba(0,212,255,0.3); }
+  .stat-card.cyan .stat-value { color: var(--cyan); }
+  .stat-card.green { border-color: rgba(0,255,136,0.3); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.purple { border-color: rgba(123,92,234,0.3); }
+  .stat-card.purple .stat-value { color: var(--purple); }
+  .stat-card.orange { border-color: rgba(255,107,53,0.3); }
+  .stat-card.orange .stat-value { color: var(--orange); }
+
+  /* Menu Grid */
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .menu-item {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px 12px;
+    cursor: pointer; text-align: center;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .menu-item:active { transform: scale(0.95); }
+  .menu-item.active-menu, .menu-item:hover {
+    border-color: var(--cyan);
+    background: rgba(0,212,255,0.08);
+    box-shadow: var(--glow-cyan);
+  }
+  .menu-icon { font-size: 28px; margin-bottom: 6px; display: block; }
+  .menu-label { font-size: 11px; font-weight: 600; color: var(--white); letter-spacing: 0.3px; }
+  .menu-sub { font-size: 9px; color: var(--muted); margin-top: 2px; }
+
+  /* ===== PLANNING ===== */
+  .plan-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .plan-tab {
+    flex: 1; padding: 8px 4px; text-align: center;
+    background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; color: var(--muted);
+    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+  }
+  .plan-tab.active {
+    background: rgba(0,212,255,0.15); border-color: var(--cyan);
+    color: var(--cyan); box-shadow: var(--glow-cyan);
+  }
+  .plan-content { display: none; }
+  .plan-content.active { display: block; }
+  
+  .timeline-item {
+    display: flex; gap: 12px; padding: 12px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .tl-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 4px;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .tl-dot.cyan { background: var(--cyan); color: var(--cyan); }
+  .tl-dot.green { background: var(--green); color: var(--green); }
+  .tl-dot.purple { background: var(--purple); color: var(--purple); }
+  .tl-time { font-size: 9px; color: var(--cyan); font-family: 'Orbitron', monospace; margin-bottom: 2px; }
+  .tl-title { font-size: 12px; font-weight: 600; color: var(--white); }
+  .tl-desc { font-size: 10px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
+  .tl-badge {
+    display: inline-block; padding: 2px 6px; border-radius: 4px;
+    font-size: 9px; font-weight: 600; margin-top: 4px; letter-spacing: 0.5px;
+  }
+  .badge-todo { background: rgba(255,107,53,0.2); color: var(--orange); }
+  .badge-progress { background: rgba(0,212,255,0.2); color: var(--cyan); }
+  .badge-done { background: rgba(0,255,136,0.2); color: var(--green); }
+
+  /* ===== JAM MENGAJAR ===== */
+  .teacher-search {
+    background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
+  }
+  .teacher-search input {
+    background: none; border: none; outline: none;
+    color: var(--white); font-size: 13px; flex: 1;
+    font-family: 'Inter', sans-serif;
+  }
+  .teacher-search input::placeholder { color: var(--muted); }
+  
+  .teacher-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; margin-bottom: 10px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .teacher-card:active { transform: scale(0.98); }
+  .tc-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .tc-name { font-size: 13px; font-weight: 700; color: var(--white); }
+  .tc-mapel { font-size: 10px; color: var(--cyan); margin-top: 2px; }
+  .tc-hours {
+    font-family: 'Orbitron', monospace;
+    font-size: 18px; font-weight: 700;
+  }
+  .tc-hours.ok { color: var(--green); }
+  .tc-hours.warn { color: var(--yellow); }
+  .tc-hours.over { color: var(--red); }
+  .tc-hours span { font-size: 9px; color: var(--muted); display: block; text-align: right; }
+  .tc-bar-wrap { margin-top: 10px; }
+  .tc-bar-bg { height: 4px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+  .tc-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
+  .tc-bar-fill.ok { background: linear-gradient(90deg, var(--green2), var(--green)); }
+  .tc-bar-fill.warn { background: linear-gradient(90deg, #CC9900, var(--yellow)); }
+  .tc-bar-fill.over { background: linear-gradient(90deg, #CC0033, var(--red)); }
+  .tc-detail { margin-top: 8px; display: none; }
+  .tc-detail.open { display: block; }
+  .tc-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 10px; }
+  .tc-row:last-child { border: none; }
+  .tc-row-label { color: var(--muted); }
+  .tc-row-val { color: var(--white); font-weight: 600; }
+
+  /* ===== MONITORING KETERLAMBATAN ===== */
+  .monitor-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .monitor-tab {
+    flex: 1; padding: 8px; text-align: center;
+    background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; color: var(--muted);
+  }
+  .monitor-tab.active {
+    background: rgba(255,59,92,0.15); border-color: var(--red);
+    color: var(--red);
+  }
+  .monitor-content { display: none; }
+  .monitor-content.active { display: block; }
+  
+  .late-form {
+    background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  }
+  .form-group { margin-bottom: 10px; }
+  .form-label { font-size: 10px; color: var(--muted); margin-bottom: 5px; display: block; letter-spacing: 0.5px; font-family: 'Orbitron', monospace; }
+  .form-input {
+    width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 9px 12px; color: var(--white);
+    font-size: 12px; outline: none; font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s;
+  }
+  .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,212,255,0.2); }
+  .form-select {
+    width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    border-radius: 10px; padding: 9px 12px; color: var(--white);
+    font-size: 12px; outline: none; font-family: 'Inter', sans-serif;
+    -webkit-appearance: none;
+  }
+  .btn-primary {
+    width: 100%; padding: 12px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    color: white; font-size: 13px; font-weight: 700;
+    font-family: 'Orbitron', monospace; letter-spacing: 1px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
+  .btn-danger {
+    padding: 7px 12px; border: 1px solid var(--red); border-radius: 8px;
+    background: rgba(255,59,92,0.1); color: var(--red);
+    font-size: 10px; font-weight: 600; cursor: pointer;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  /* Photo upload */
+  .photo-upload {
+    border: 2px dashed var(--border); border-radius: 12px;
+    padding: 20px; text-align: center; cursor: pointer;
+    transition: all 0.2s; position: relative; overflow: hidden;
+  }
+  .photo-upload:hover { border-color: var(--cyan); background: rgba(0,212,255,0.03); }
+  .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .photo-upload-icon { font-size: 28px; margin-bottom: 6px; }
+  .photo-upload-text { font-size: 11px; color: var(--muted); }
+  .photo-upload-text span { color: var(--cyan); display: block; font-weight: 600; }
+  .photo-previews { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .photo-preview { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; border: 1px solid var(--border); }
+
+  .late-list-item {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px; margin-bottom: 8px;
+  }
+  .lli-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .lli-name { font-size: 12px; font-weight: 700; }
+  .lli-date { font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace; }
+  .lli-meta { font-size: 10px; color: var(--muted); margin-top: 4px; }
+  .lli-late { font-size: 11px; color: var(--red); font-weight: 700; margin-top: 2px; }
+  .lli-photos { display: flex; gap: 5px; margin-top: 8px; }
+  .lli-photos img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,59,92,0.3); }
+  .lli-actions { display: flex; gap: 6px; margin-top: 8px; }
+
+  /* ===== REGULASI / BERITA ===== */
+  .news-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; overflow: hidden; margin-bottom: 10px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .news-card:active { transform: scale(0.99); }
+  .news-badge-strip {
+    height: 3px;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
+  }
+  .news-body { padding: 12px; }
+  .news-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .news-tag {
+    font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
+    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+  }
+  .tag-regulasi { background: rgba(123,92,234,0.2); color: var(--purple); }
+  .tag-info { background: rgba(0,212,255,0.2); color: var(--cyan); }
+  .tag-kebijakan { background: rgba(255,107,53,0.2); color: var(--orange); }
+  .news-date { font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace; }
+  .news-title { font-size: 13px; font-weight: 700; color: var(--white); line-height: 1.4; margin-bottom: 5px; }
+  .news-excerpt { font-size: 10px; color: var(--muted); line-height: 1.5; }
+  .news-source { font-size: 9px; color: var(--cyan); margin-top: 6px; }
+  
+  .loading-news {
+    text-align: center; padding: 30px;
+    font-size: 11px; color: var(--muted); font-family: 'Orbitron', monospace; letter-spacing: 1px;
+  }
+  .loading-spinner {
+    width: 30px; height: 30px; border: 2px solid var(--border);
+    border-top-color: var(--cyan); border-radius: 50%;
+    animation: spin 0.8s linear infinite; margin: 0 auto 10px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ===== JADWAL ===== */
+  .day-selector { display: flex; gap: 6px; margin-bottom: 14px; overflow-x: auto; padding-bottom: 4px; }
+  .day-selector::-webkit-scrollbar { display: none; }
+  .day-btn {
+    flex-shrink: 0; padding: 8px 12px; border-radius: 10px;
+    background: var(--slate2); border: 1px solid var(--border);
+    color: var(--muted); font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; text-align: center; min-width: 52px;
+  }
+  .day-btn.active {
+    background: rgba(0,212,255,0.15); border-color: var(--cyan);
+    color: var(--cyan); box-shadow: var(--glow-cyan);
+  }
+  .day-num { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; }
+  
+  .schedule-item {
+    display: flex; gap: 12px; padding: 10px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    align-items: flex-start;
+  }
+  .sch-time {
+    width: 48px; flex-shrink: 0; text-align: center;
+    font-family: 'Orbitron', monospace; font-size: 9px; color: var(--muted);
+    padding-top: 3px;
+  }
+  .sch-line {
+    width: 2px; flex-shrink: 0; border-radius: 2px; align-self: stretch; min-height: 40px;
+  }
+  .sch-body { flex: 1; }
+  .sch-name { font-size: 12px; font-weight: 700; color: var(--white); }
+  .sch-class { font-size: 10px; color: var(--cyan); margin-top: 1px; }
+  .sch-room { font-size: 9px; color: var(--muted); margin-top: 2px; }
+  .sch-status {
+    padding: 3px 8px; border-radius: 5px; font-size: 9px; font-weight: 700;
+    white-space: nowrap; align-self: center; font-family: 'Orbitron', monospace;
+  }
+  .status-hadir { background: rgba(0,255,136,0.15); color: var(--green); }
+  .status-belum { background: rgba(255,215,0,0.15); color: var(--yellow); }
+  .status-telat { background: rgba(255,59,92,0.15); color: var(--red); }
+  .status-ijin { background: rgba(123,92,234,0.15); color: var(--purple); }
+
+  /* ===== BOTTOM NAV ===== */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+    width: 100%; max-width: 480px; z-index: 200;
+    background: rgba(10,14,26,0.95); border-top: 1px solid var(--border);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+    display: flex;
+  }
+  .nav-btn {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    gap: 3px; padding: 6px 4px; cursor: pointer;
+    transition: all 0.2s; color: var(--muted); background: none; border: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .nav-btn.active { color: var(--cyan); }
+  .nav-icon { font-size: 20px; position: relative; }
+  .nav-label { font-size: 9px; font-weight: 600; letter-spacing: 0.3px; }
+  .nav-indicator {
+    position: absolute; bottom: -6px; left: 50%; transform: translateX(-50%);
+    width: 20px; height: 2px; border-radius: 2px; background: var(--cyan);
+    display: none;
+  }
+  .nav-btn.active .nav-indicator { display: block; }
+
+  /* ===== MODAL ===== */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 300;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
+    display: none; align-items: flex-end;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal-sheet {
+    width: 100%; max-width: 480px; margin: 0 auto;
+    background: var(--navy2); border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border); padding: 20px;
+    max-height: 80vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 36px; height: 3px; background: rgba(255,255,255,0.2); border-radius: 3px; margin: 0 auto 16px; }
+  .modal-title { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 14px; letter-spacing: 1px; }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,255,136,0.15); border: 1px solid var(--green);
+    color: var(--green); padding: 10px 20px; border-radius: 30px;
+    font-size: 11px; font-weight: 700; z-index: 400;
+    font-family: 'Orbitron', monospace; letter-spacing: 1px;
+    opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ===== WATERMARK ===== */
+  .watermark {
+    text-align: center; padding: 16px 0 4px;
+    font-size: 9px; color: rgba(136,146,176,0.4);
+    font-family: 'Orbitron', monospace; letter-spacing: 1px;
+  }
+
+  /* ===== ANIMATIONS ===== */
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(1.3); }
+  }
+  @keyframes glow-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(0,212,255,0.3); }
+    50% { box-shadow: 0 0 20px rgba(0,212,255,0.7); }
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 3px; }
+
+  /* ===== CRUD ACTION BUTTONS ===== */
+  .crud-actions {
+    display: flex; gap: 5px; align-items: center; flex-shrink: 0;
+  }
+  .btn-add {
+    padding: 6px 10px; border: 1px solid var(--green); border-radius: 8px;
+    background: rgba(0,255,136,0.1); color: var(--green);
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 4px; transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-add:active { transform: scale(0.93); }
+  .btn-edit {
+    padding: 5px 8px; border: 1px solid var(--cyan); border-radius: 7px;
+    background: rgba(0,212,255,0.1); color: var(--cyan);
+    font-size: 12px; cursor: pointer; transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-edit:active { transform: scale(0.93); }
+  .btn-del {
+    padding: 5px 8px; border: 1px solid var(--red); border-radius: 7px;
+    background: rgba(255,59,92,0.1); color: var(--red);
+    font-size: 12px; cursor: pointer; transition: all 0.2s;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-del:active { transform: scale(0.93); }
+  .section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .section-header .section-title { margin-bottom: 0; flex: 1; }
+
+  /* ===== MODAL FORM (CRUD) ===== */
+  .modal-form-overlay {
+    position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .modal-form-overlay.open { display: flex; }
+  .modal-form-sheet {
+    width: 100%; max-width: 480px;
+    background: var(--navy2); border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border); padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    max-height: 90vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  .modal-form-title {
+    font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700;
+    color: var(--cyan); margin-bottom: 14px; letter-spacing: 1px;
+  }
+  .modal-form-actions {
+    display: flex; gap: 8px; margin-top: 14px;
+  }
+  .btn-cancel {
+    flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--slate2); color: var(--muted);
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    font-family: 'Orbitron', monospace;
+  }
+  .btn-save {
+    flex: 2; padding: 11px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, var(--cyan), var(--purple));
+    color: white; font-size: 12px; font-weight: 700;
+    font-family: 'Orbitron', monospace; letter-spacing: 1px; cursor: pointer;
+  }
+
+  /* ===== REGULASI DETAIL ===== */
+  .regulasi-detail-body { font-size: 11px; color: var(--muted); line-height: 1.7; margin-top: 8px; }
+  .regulasi-link { color: var(--cyan); font-size: 10px; margin-top: 8px; display: block; word-break: break-all; }
+
+  /* ===== NOTULEN RAPAT ===== */
+  .notulen-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; margin-bottom: 10px;
+  }
+  .notulen-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
+  .notulen-title { font-size: 13px; font-weight: 700; color: var(--white); }
+  .notulen-meta { font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace; margin-top: 2px; }
+  .notulen-preview { font-size: 10px; color: var(--muted); line-height: 1.5; margin-top: 6px; }
+  .notulen-footer { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+
+  /* Voice Recorder */
+  .voice-recorder {
+    background: var(--slate); border: 1px solid var(--border);
+    border-radius: 14px; padding: 16px; margin-bottom: 12px; text-align: center;
+  }
+  .voice-recorder-label {
+    font-size: 10px; color: var(--muted); font-family: 'Orbitron', monospace;
+    letter-spacing: 1px; margin-bottom: 12px;
+  }
+  .voice-btn-row { display: flex; gap: 10px; justify-content: center; align-items: center; margin-bottom: 12px; }
+  .btn-record {
+    width: 62px; height: 62px; border-radius: 50%; border: none;
+    background: linear-gradient(135deg, var(--red), #FF6B35);
+    font-size: 24px; cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 0 20px rgba(255,59,92,0.4);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-record.recording {
+    animation: glow-pulse-red 1s infinite;
+    background: linear-gradient(135deg, #CC002A, var(--red));
+  }
+  @keyframes glow-pulse-red {
+    0%,100% { box-shadow: 0 0 12px rgba(255,59,92,0.5); }
+    50% { box-shadow: 0 0 30px rgba(255,59,92,0.9); }
+  }
+  .btn-stop-record {
+    width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--muted);
+    background: transparent; font-size: 16px; cursor: pointer; color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .voice-timer {
+    font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700;
+    color: var(--red); letter-spacing: 2px; margin-bottom: 8px;
+  }
+  .voice-wave {
+    display: flex; gap: 3px; justify-content: center; align-items: flex-end; height: 30px; margin-bottom: 10px;
+  }
+  .voice-wave-bar {
+    width: 4px; background: var(--red); border-radius: 2px; min-height: 4px;
+    transition: height 0.1s;
+  }
+  .audio-playback {
+    background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px;
+    margin-top: 6px; display: none;
+  }
+  .audio-playback.show { display: block; }
+  .audio-playback audio { width: 100%; height: 32px; }
+  .btn-convert {
+    width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 10px;
+    background: linear-gradient(135deg, var(--green2), var(--cyan2));
+    color: white; font-size: 11px; font-weight: 700;
+    font-family: 'Orbitron', monospace; letter-spacing: 1px; cursor: pointer;
+  }
+  .converted-text {
+    background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px; margin-top: 10px; display: none;
+  }
+  .converted-text.show { display: block; }
+  .converted-text-label { font-size: 9px; color: var(--green); font-family: 'Orbitron', monospace; letter-spacing: 1px; margin-bottom: 6px; }
+  .converted-text-body { font-size: 11px; color: var(--white); line-height: 1.6; }
+
+  /* Notulen tabs */
+  .notulen-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .notulen-tab {
+    flex: 1; padding: 8px 4px; text-align: center;
+    background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; color: var(--muted);
+    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+  }
+  .notulen-tab.active {
+    background: rgba(0,212,255,0.15); border-color: var(--cyan);
+    color: var(--cyan);
+  }
+  .notulen-content { display: none; }
+  .notulen-content.active { display: block; }
+
+  /* Recording status bar */
+  .rec-status {
+    font-size: 10px; font-weight: 600; padding: 5px 12px;
+    border-radius: 20px; display: inline-block; margin: 0 auto 8px;
+    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+  }
+  .rec-status.idle { background: rgba(136,146,176,0.1); color: var(--muted); }
+  .rec-status.recording { background: rgba(255,59,92,0.15); color: var(--red); }
+  .rec-status.done { background: rgba(0,255,136,0.15); color: var(--green); }
+
+  /* ===== JADWAL GRID & SCHEDULER ===== */
+  .jadwal-tab-content { display: none; }
+  .jadwal-tab-content.active { display: block; }
+
+  .jadwal-grid { width: 100%; border-collapse: collapse; font-size: 10px; min-width: 420px; }
+  .jadwal-grid th {
+    background: var(--slate2); color: var(--cyan);
+    font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 0.5px;
+    padding: 7px 4px; text-align: center; border: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 2;
+  }
+  .jadwal-grid td {
+    padding: 4px; border: 1px solid rgba(255,255,255,0.05);
+    vertical-align: top; min-width: 70px; min-height: 40px;
+  }
+  .jadwal-grid .td-jam {
+    background: var(--slate); color: var(--cyan);
+    font-family: 'Orbitron', monospace; font-size: 9px;
+    text-align: center; font-weight: 700; min-width: 36px;
+    letter-spacing: 0.5px;
+  }
+  .jadwal-cell {
+    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 6px; padding: 4px 5px; cursor: pointer;
+    transition: all 0.15s; position: relative;
+  }
+  .jadwal-cell:active { transform: scale(0.96); }
+  .jadwal-cell .jc-guru { font-size: 10px; font-weight: 700; color: var(--white); line-height: 1.3; }
+  .jadwal-cell .jc-mapel { font-size: 9px; color: var(--cyan); }
+  .jadwal-cell .jc-ruang { font-size: 8px; color: var(--muted); }
+  .jadwal-cell.bentrok-cell {
+    background: rgba(255,59,92,0.12); border-color: rgba(255,59,92,0.5);
+    animation: blink-border 1.5s infinite;
+  }
+  @keyframes blink-border {
+    0%,100% { border-color: rgba(255,59,92,0.5); }
+    50% { border-color: rgba(255,59,92,1); }
+  }
+  .jc-bentrok {
+    position: absolute; top: 1px; left: 3px; font-size: 9px;
+  }
+  .jadwal-cell.mgmp-cell {
+    background: rgba(255,140,0,0.12); border-color: rgba(255,140,0,0.4);
+  }
+  .jadwal-cell.mgmp-cell .jc-guru { color: var(--orange); }
+  .jadwal-cell .jc-del {
+    position: absolute; top: 2px; right: 3px;
+    font-size: 9px; color: var(--red); cursor: pointer; opacity: 0.7;
+  }
+  .jadwal-cell .jc-del:active { opacity: 1; }
+  .td-empty {
+    background: rgba(255,255,255,0.01);
+    min-height: 38px; cursor: pointer; border-radius: 4px;
+  }
+  .td-empty:active { background: rgba(0,212,255,0.05); }
+
+  /* Jam label */
+  .jam-label {
+    font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace;
+    margin-bottom: 1px; display: block;
+  }
+
+  /* MGMP card */
+  .mgmp-card {
+    background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.3);
+    border-radius: 12px; padding: 12px; margin-bottom: 8px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .mgmp-icon { font-size: 20px; flex-shrink: 0; }
+  .mgmp-info { flex: 1; }
+  .mgmp-nama { font-size: 12px; font-weight: 700; color: var(--white); }
+  .mgmp-detail { font-size: 9px; color: var(--orange); font-family: 'Orbitron', monospace; margin-top: 2px; }
+  .mgmp-catatan { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* Jadwal form modal extra fields */
+  .jam-badge {
+    display: inline-block; padding: 4px 10px; border-radius: 20px;
+    background: rgba(0,212,255,0.1); border: 1px solid var(--cyan);
+    color: var(--cyan); font-size: 10px; font-family: 'Orbitron', monospace;
+    cursor: pointer; margin: 3px; transition: all 0.15s;
+  }
+  .jam-badge.selected { background: var(--cyan); color: var(--navy); font-weight: 700; }
+
+  /* Tugas Tambahan section in Jam screen */
+  .tugas-card {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px; margin-bottom: 8px;
+  }
+  .tugas-nama { font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+  .tugas-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .tugas-badge {
+    font-size: 9px; padding: 3px 8px; border-radius: 10px;
+    background: rgba(180,0,255,0.15); border: 1px solid rgba(180,0,255,0.3);
+    color: var(--purple); font-family: 'Orbitron', monospace;
+  }
+  .setting-overlay {
+    position: fixed; inset: 0; z-index: 600;
+    background: rgba(0,0,0,0.85); backdrop-filter: blur(8px);
+    display: none; align-items: flex-end; justify-content: center;
+  }
+  .setting-overlay.open { display: flex; }
+  .setting-sheet {
+    width: 100%; max-width: 480px;
+    background: var(--navy2); border-radius: 20px 20px 0 0;
+    border-top: 1px solid var(--border);
+    padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
+    max-height: 88vh; overflow-y: auto;
+    animation: slideUp 0.3s ease;
+  }
+  .setting-title {
+    font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
+    color: var(--cyan); letter-spacing: 1.5px; margin-bottom: 18px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .setting-section {
+    background: var(--slate); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px; margin-bottom: 12px;
+  }
+  .setting-section-label {
+    font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace;
+    letter-spacing: 1px; margin-bottom: 10px;
+  }
+  .logo-preview-wrap {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
+  }
+  .logo-preview {
+    width: 56px; height: 56px; border-radius: 12px;
+    border: 2px dashed var(--border); object-fit: cover;
+    background: var(--slate2); display: flex; align-items: center;
+    justify-content: center; font-size: 24px; overflow: hidden;
+    flex-shrink: 0;
+  }
+  .logo-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
+  .btn-upload-logo {
+    flex: 1; padding: 10px; border: 1px dashed var(--cyan); border-radius: 10px;
+    background: rgba(0,212,255,0.05); color: var(--cyan);
+    font-size: 11px; font-weight: 600; cursor: pointer; text-align: center;
+    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+  }
+  .setting-actions { display: flex; gap: 8px; margin-top: 14px; }
+  .btn-setting-cancel {
+    flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--slate2); color: var(--muted);
+    font-size: 11px; font-weight: 600; cursor: pointer;
+    font-family: 'Orbitron', monospace;
+  }
+  .btn-setting-save {
+    flex: 2; padding: 11px; border: none; border-radius: 12px;
+    background: linear-gradient(135deg, #FFB800, #FF6B35);
+    color: white; font-size: 11px; font-weight: 700;
+    font-family: 'Orbitron', monospace; letter-spacing: 1px; cursor: pointer;
+  }
+  .app-logo-img {
+    width: 32px; height: 32px; border-radius: 8px; object-fit: cover;
+    display: none; margin-right: 4px; vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particles-canvas"></canvas>
+
+<div id="app">
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="header-top">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <img id="header-logo-img" class="app-logo-img" src="" alt="Logo">
+        <div>
+          <div class="app-logo" id="header-app-name">KURIKU<span id="header-app-sub">WAKA KURIKULUM DASHBOARD</span></div>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="hdr-notulen" onclick="switchScreen('notulen')" title="Notulen Rapat">🎙️</div>
+        <div class="hdr-notulen" onclick="openSetting()" title="Pengaturan" style="background:rgba(255,200,0,0.1);border-color:rgba(255,200,0,0.3);">⚙️</div>
+        <div class="hdr-notif" onclick="showNotifModal()">🔔<div class="notif-dot" id="notif-dot"></div></div>
+      </div>
+    </div>
+    <div class="header-date" id="live-clock">⏱ Loading...</div>
+  </div>
+
+  <!-- ===== SCREEN: HOME ===== -->
+  <div class="screen active" id="screen-home">
+    <div class="welcome-block">
+      <div class="welcome-name">Selamat Datang 👋</div>
+      <div class="welcome-role">WAKIL KEPALA SEKOLAH — KURIKULUM</div>
+      <div class="welcome-school">SMP / MTs — Kurikulum Merdeka</div>
+    </div>
+
+    <p class="section-title">STATUS HARI INI</p>
+    <div class="stats-grid">
+      <div class="stat-card cyan">
+        <div class="stat-icon">👩‍🏫</div>
+        <div class="stat-value">24</div>
+        <div class="stat-label">Total Guru</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-value" id="hadir-count">22</div>
+        <div class="stat-label">Hadir Tepat Waktu</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-value" id="telat-count">2</div>
+        <div class="stat-label">Terlambat</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-icon">📋</div>
+        <div class="stat-value">8</div>
+        <div class="stat-label">Kelas Aktif</div>
+      </div>
+    </div>
+
+    <p class="section-title">MENU UTAMA</p>
+    <div class="menu-grid">
+      <div class="menu-item" onclick="switchScreen('planning')">
+        <span class="menu-icon">🗺️</span>
+        <div class="menu-label">Planning</div>
+        <div class="menu-sub">Jangka Pendek–Panjang</div>
+      </div>
+      <div class="menu-item" onclick="switchScreen('jam')">
+        <span class="menu-icon">⏰</span>
+        <div class="menu-label">Jam Mengajar</div>
+        <div class="menu-sub">Pembagian Beban Guru</div>
+      </div>
+      <div class="menu-item" onclick="switchScreen('monitoring')">
+        <span class="menu-icon">📷</span>
+        <div class="menu-label">Monitoring</div>
+        <div class="menu-sub">Dokumen & Foto Telat</div>
+      </div>
+      <div class="menu-item" onclick="switchScreen('regulasi')">
+        <span class="menu-icon">📰</span>
+        <div class="menu-label">Info Regulasi</div>
+        <div class="menu-sub">Update Otomatis</div>
+      </div>
+      <div class="menu-item" onclick="switchScreen('notulen')">
+        <span class="menu-icon">🎙️</span>
+        <div class="menu-label">Notulen Rapat</div>
+        <div class="menu-sub">Rekam & Konversi</div>
+      </div>
+    </div>
+
+    <p class="section-title">JADWAL HARI INI</p>
+    <div class="card" id="mini-schedule">
+      <div style="font-size:11px;color:var(--muted);">Loading jadwal...</div>
+    </div>
+
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
+  <!-- ===== SCREEN: PLANNING ===== -->
+  <div class="screen" id="screen-planning">
+    <div class="section-header">
+      <p class="section-title">📋 PLANNING WAKA KURIKULUM</p>
+      <button class="btn-add" onclick="openModalForm('planning-add')">＋ Tambah</button>
+    </div>
+    <div class="plan-tabs">
+      <div class="plan-tab active" onclick="switchPlan('pendek', this)">PENDEK</div>
+      <div class="plan-tab" onclick="switchPlan('menengah', this)">MENENGAH</div>
+      <div class="plan-tab" onclick="switchPlan('panjang', this)">PANJANG</div>
+    </div>
+
+    <!-- JANGKA PENDEK -->
+    <div class="plan-content active" id="plan-pendek">
+      <div class="card glow-cyan" style="margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">JANGKA PENDEK — 1–3 BULAN</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Fokus operasional harian & administrasi kurikulum</div>
+      </div>
+      <div class="card">
+        <div class="timeline-item">
+          <div class="tl-dot cyan"></div>
+          <div style="flex:1">
+            <div class="tl-time">BULAN 1 — MINGGU 1-2</div>
+            <div class="tl-title">Penyusunan & Verifikasi Jadwal Mengajar</div>
+            <div class="tl-desc">Susun jadwal pelajaran sesuai beban jam mengajar Kurikulum Merdeka. Verifikasi kesesuaian total JP per guru dengan ketentuan 24–40 JP/minggu.</div>
+            <span class="tl-badge badge-progress">DALAM PROSES</span>
+            <div class="crud-actions" style="margin-top:8px;">
+              <button class="btn-edit" onclick="openModalForm('planning-edit',{judul:'Penyusunan & Verifikasi Jadwal Mengajar',waktu:'Bulan 1 — Minggu 1-2',status:'badge-progress'})">✏️ Edit</button>
+              <button class="btn-del" onclick="hapusTlItem(this)">🗑️</button>
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot cyan"></div>
+          <div style="flex:1">
+            <div class="tl-time">BULAN 1 — MINGGU 3-4</div>
+            <div class="tl-title">Sosialisasi CP & ATP kepada Guru</div>
+            <div class="tl-desc">Pastikan semua guru memahami Capaian Pembelajaran dan Alur Tujuan Pembelajaran mata pelajarannya masing-masing.</div>
+            <span class="tl-badge badge-todo">BELUM DIMULAI</span>
+            <div class="crud-actions" style="margin-top:8px;">
+              <button class="btn-edit" onclick="openModalForm('planning-edit',{judul:'Sosialisasi CP & ATP kepada Guru',waktu:'Bulan 1 — Minggu 3-4',status:'badge-todo'})">✏️ Edit</button>
+              <button class="btn-del" onclick="hapusTlItem(this)">🗑️</button>
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot green"></div>
+          <div style="flex:1">
+            <div class="tl-time">BULAN 2</div>
+            <div class="tl-title">Monitoring Pengumpulan Modul Ajar</div>
+            <div class="tl-desc">Kumpulkan dan validasi Modul Ajar (MA) dari setiap guru. Pastikan sudah mencakup komponen: tujuan, asesmen, dan diferensiasi.</div>
+            <span class="tl-badge badge-todo">BELUM DIMULAI</span>
+            <div class="crud-actions" style="margin-top:8px;">
+              <button class="btn-edit" onclick="openModalForm('planning-edit',{judul:'Monitoring Pengumpulan Modul Ajar',waktu:'Bulan 2',status:'badge-todo'})">✏️ Edit</button>
+              <button class="btn-del" onclick="hapusTlItem(this)">🗑️</button>
+            </div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot purple"></div>
+          <div style="flex:1">
+            <div class="tl-time">BULAN 3</div>
+            <div class="tl-title">Evaluasi Pelaksanaan P5</div>
+            <div class="tl-desc">Review Projek Penguatan Profil Pelajar Pancasila — koordinasi tema, fasilitator, dan jadwal penilaian akhir projek.</div>
+            <span class="tl-badge badge-todo">BELUM DIMULAI</span>
+            <div class="crud-actions" style="margin-top:8px;">
+              <button class="btn-edit" onclick="openModalForm('planning-edit',{judul:'Evaluasi Pelaksanaan P5',waktu:'Bulan 3',status:'badge-todo'})">✏️ Edit</button>
+              <button class="btn-del" onclick="hapusTlItem(this)">🗑️</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JANGKA MENENGAH -->
+    <div class="plan-content" id="plan-menengah">
+      <div class="card glow-cyan" style="margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--green);font-family:'Orbitron',monospace;letter-spacing:1px;">JANGKA MENENGAH — 3–12 BULAN</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Pengembangan kapasitas guru & sistem kurikulum</div>
+      </div>
+      <div class="card">
+        <div class="timeline-item">
+          <div class="tl-dot cyan"></div>
+          <div>
+            <div class="tl-time">SEMESTER 1 — TRIWULAN 1</div>
+            <div class="tl-title">Pelatihan Asesmen Formatif & Sumatif</div>
+            <div class="tl-desc">Selenggarakan IHT (In-House Training) tentang penyusunan asesmen berbasis Kurikulum Merdeka: asesmen diagnostik, formatif, dan sumatif.</div>
+            <span class="tl-badge badge-progress">DIRENCANAKAN</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot green"></div>
+          <div>
+            <div class="tl-time">SEMESTER 1 — TRIWULAN 2</div>
+            <div class="tl-title">Supervisi Akademik Guru</div>
+            <div class="tl-desc">Lakukan supervisi kelas (observasi, tindak lanjut) kepada minimal 50% guru. Fokus pada implementasi pembelajaran berdiferensiasi.</div>
+            <span class="tl-badge badge-todo">BELUM DIMULAI</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot purple"></div>
+          <div>
+            <div class="tl-time">SEMESTER 2 — TRIWULAN 3</div>
+            <div class="tl-title">Revisi KOSP Tahun Ajaran Baru</div>
+            <div class="tl-desc">Susun revisi Kurikulum Operasional Satuan Pendidikan (KOSP) berdasarkan hasil evaluasi semester 1, termasuk penyesuaian alokasi waktu P5.</div>
+            <span class="tl-badge badge-todo">BELUM DIMULAI</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot cyan"></div>
+          <div>
+            <div class="tl-time">SEMESTER 2 — TRIWULAN 4</div>
+            <div class="tl-title">Penilaian Akhir & Rapor P5</div>
+            <div class="tl-desc">Koordinasi pengisian rapor berbasis Kurikulum Merdeka: nilai capaian kompetensi + deskripsi + laporan P5 per tema.</div>
+            <span class="tl-badge badge-todo">BELUM DIMULAI</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JANGKA PANJANG -->
+    <div class="plan-content" id="plan-panjang">
+      <div class="card glow-purple" style="margin-bottom:10px;">
+        <div style="font-size:10px;color:var(--purple);font-family:'Orbitron',monospace;letter-spacing:1px;">JANGKA PANJANG — 1–3 TAHUN</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Transformasi sistemik & budaya belajar sekolah</div>
+      </div>
+      <div class="card">
+        <div class="timeline-item">
+          <div class="tl-dot cyan"></div>
+          <div>
+            <div class="tl-time">TAHUN 1</div>
+            <div class="tl-title">Implementasi Penuh Kurikulum Merdeka</div>
+            <div class="tl-desc">Semua kelas (VII–IX) menggunakan Kurikulum Merdeka secara penuh. Semua guru menyelesaikan pelatihan Mandiri Belajar di Platform Merdeka Mengajar.</div>
+            <span class="tl-badge badge-progress">BERJALAN</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot green"></div>
+          <div>
+            <div class="tl-time">TAHUN 2</div>
+            <div class="tl-title">Pengembangan Bank Soal & Aset Digital</div>
+            <div class="tl-desc">Bangun bank soal digital sekolah yang terstandarisasi. Kembangkan perpustakaan Modul Ajar yang dapat digunakan ulang lintas tahun ajaran.</div>
+            <span class="tl-badge badge-todo">DIRENCANAKAN</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot purple"></div>
+          <div>
+            <div class="tl-time">TAHUN 2–3</div>
+            <div class="tl-title">Pengakuan Sekolah Penggerak / BerAKHLAK</div>
+            <div class="tl-desc">Targetkan sekolah masuk Program Sekolah Penggerak atau mendapat pengakuan mutu dari BAN-S/M dengan capaian kurikulum yang optimal.</div>
+            <span class="tl-badge badge-todo">DIRENCANAKAN</span>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="tl-dot cyan"></div>
+          <div>
+            <div class="tl-time">TAHUN 3</div>
+            <div class="tl-title">Sekolah Menjadi Pusat Berbagi Praktik Baik</div>
+            <div class="tl-desc">Sekolah aktif berbagi di Komunitas Belajar (Kombel) tingkat kab/kota. Kepala sekolah dan guru menjadi narasumber di MGMP / KKG.</div>
+            <span class="tl-badge badge-todo">DIRENCANAKAN</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
+  <!-- ===== SCREEN: JAM MENGAJAR ===== -->
+  <div class="screen" id="screen-jam">
+    <div class="section-header">
+      <p class="section-title">⏰ JAM MENGAJAR & TUGAS</p>
+      <button class="btn-add" onclick="openModalForm('guru-add')">＋ Guru</button>
+    </div>
+    <!-- Sub-tabs -->
+    <div class="notulen-tabs" style="margin-bottom:12px;">
+      <div class="notulen-tab active" id="jamtab-jp" onclick="switchJamTab('jp',this)">📊 JAM MENGAJAR</div>
+      <div class="notulen-tab" id="jamtab-tugas" onclick="switchJamTab('tugas',this)">🏷️ TUGAS TAMBAHAN</div>
+    </div>
+    <!-- TAB JAM -->
+    <div id="jamcontent-jp" class="jadwal-tab-content active">
+    <div class="card glow-cyan" style="margin-bottom:12px;">
+      <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;margin-bottom:8px;">📌 KETENTUAN KURIKULUM MERDEKA</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div style="flex:1;min-width:120px;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family:'Orbitron';font-size:18px;font-weight:700;color:var(--green);">24 JP</div>
+          <div style="font-size:9px;color:var(--muted);">Minimal / Minggu</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family:'Orbitron';font-size:18px;font-weight:700;color:var(--yellow);">40 JP</div>
+          <div style="font-size:9px;color:var(--muted);">Maksimal / Minggu</div>
+        </div>
+        <div style="flex:1;min-width:120px;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family:'Orbitron';font-size:18px;font-weight:700;color:var(--cyan);">6 JP</div>
+          <div style="font-size:9px;color:var(--muted);">Tambahan Tugas</div>
+        </div>
+      </div>
+      <div style="font-size:9px;color:var(--muted);margin-top:8px;line-height:1.6;">
+        📎 Dasar: Permendikbudristek No. 56/2022 · Sertifikasi guru wajib minimal 24 JP/minggu · Termasuk tugas tambahan (walikelas, dll.)
+      </div>
+    </div>
+
+    <div class="teacher-search">
+      <span>🔍</span>
+      <input type="text" id="search-guru" placeholder="Cari nama guru..." oninput="filterGuru(this.value)">
+    </div>
+
+    <div id="guru-list">
+      <!-- Generated by JS -->
+    </div>
+    </div><!-- end jamcontent-jp -->
+
+    <!-- TAB TUGAS TAMBAHAN -->
+    <div id="jamcontent-tugas" class="jadwal-tab-content">
+      <div style="font-size:10px;color:var(--purple);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">🏷️ TUGAS TAMBAHAN GURU</div>
+      <div id="tugas-list"><!-- Generated by JS --></div>
+    </div>
+
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
+  <!-- ===== SCREEN: MONITORING ===== -->
+  <div class="screen" id="screen-monitoring">
+    <div class="section-header">
+      <p class="section-title">📷 MONITORING KETERLAMBATAN</p>
+    </div>
+    <div class="monitor-tabs">
+      <div class="monitor-tab active" onclick="switchMonitor('rekam', this)">📝 REKAM</div>
+      <div class="monitor-tab" onclick="switchMonitor('riwayat', this)">📋 RIWAYAT</div>
+      <div class="monitor-tab" onclick="switchMonitor('statistik', this)">📊 STATISTIK</div>
+    </div>
+
+    <!-- FORM REKAM -->
+    <div class="monitor-content active" id="monitor-rekam">
+      <div class="late-form">
+        <div style="font-size:11px;color:var(--red);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:12px;">⚠️ CATAT KETERLAMBATAN GURU</div>
+        <div class="form-group">
+          <label class="form-label">NAMA GURU</label>
+          <select class="form-select" id="rekam-guru">
+            <option value="">— Pilih Guru —</option>
+            <option>Budi Santoso, S.Pd (Matematika)</option>
+            <option>Sari Dewi, S.Pd (B. Indonesia)</option>
+            <option>Ahmad Fauzi, S.Pd (IPA)</option>
+            <option>Rina Kurniawati, S.Pd (B. Inggris)</option>
+            <option>Hendra Wijaya, S.Pd (IPS)</option>
+            <option>Dewi Lestari, S.Pd (PKn)</option>
+            <option>Agus Priyono, S.Pd (PJOK)</option>
+            <option>Fitri Handayani, S.Pd (Seni Budaya)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">TANGGAL & WAKTU TERLAMBAT</label>
+          <input type="datetime-local" class="form-input" id="rekam-waktu">
+        </div>
+        <div class="form-group">
+          <label class="form-label">JAM KE- / KELAS</label>
+          <input type="text" class="form-input" id="rekam-kelas" placeholder="Contoh: Jam ke-1, Kelas 7A">
+        </div>
+        <div class="form-group">
+          <label class="form-label">DURASI KETERLAMBATAN</label>
+          <select class="form-select" id="rekam-durasi">
+            <option>5–10 menit</option>
+            <option>10–20 menit</option>
+            <option>20–30 menit</option>
+            <option>> 30 menit</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">KETERANGAN / ALASAN</label>
+          <input type="text" class="form-input" id="rekam-ket" placeholder="Alasan keterlambatan...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">UPLOAD FOTO BUKTI</label>
+          <div class="photo-upload" id="photo-drop">
+            <input type="file" multiple accept="image/*" onchange="handlePhotos(event)" capture="environment">
+            <div class="photo-upload-icon">📸</div>
+            <div class="photo-upload-text">
+              <span>Tap untuk ambil / pilih foto</span>
+              Bukti dokumen & foto kejadian
+            </div>
+          </div>
+          <div class="photo-previews" id="photo-previews"></div>
+        </div>
+        <button class="btn-primary" onclick="simpanKeterlambatan()">💾 SIMPAN DOKUMEN</button>
+      </div>
+    </div>
+
+    <!-- RIWAYAT -->
+    <div class="monitor-content" id="monitor-riwayat">
+      <div id="riwayat-list">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- STATISTIK -->
+    <div class="monitor-content" id="monitor-statistik">
+      <div class="card">
+        <div class="section-title" style="margin-bottom:10px;">REKAP BULAN INI</div>
+        <div id="stat-chart">
+          <!-- Simple bar chart generated by JS -->
+        </div>
+      </div>
+    </div>
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
+  <!-- ===== SCREEN: REGULASI ===== -->
+  <div class="screen" id="screen-regulasi">
+    <p class="section-title">📰 INFO & REGULASI PENDIDIKAN</p>
+    <div class="card glow-purple" style="margin-bottom:12px;">
+      <div style="font-size:10px;color:var(--purple);font-family:'Orbitron',monospace;letter-spacing:1px;">🤖 DIPERBARUI OTOMATIS DENGAN AI</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5;">Info regulasi Kurikulum Merdeka & kebijakan pendidikan terkini</div>
+    </div>
+    <div id="regulasi-container">
+      <div class="loading-news">
+        <div class="loading-spinner"></div>
+        MEMUAT INFORMASI REGULASI...
+      </div>
+    </div>
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
+  <!-- ===== SCREEN: JADWAL ===== -->
+  <div class="screen" id="screen-jadwal">
+    <div class="section-header">
+      <p class="section-title">📅 JADWAL MENGAJAR</p>
+    </div>
+
+    <!-- Jadwal Tabs -->
+    <div class="notulen-tabs" style="margin-bottom:12px;">
+      <div class="notulen-tab active" id="jtab-grid" onclick="switchJadwalTab('grid',this)">🗂️ GRID</div>
+      <div class="notulen-tab" id="jtab-list" onclick="switchJadwalTab('list',this)">📋 LIST</div>
+      <div class="notulen-tab" id="jtab-mgmp" onclick="switchJadwalTab('mgmp',this)">🏫 MGMP</div>
+    </div>
+
+    <!-- TAB GRID -->
+    <div id="jadwal-tab-grid" class="jadwal-tab-content active">
+      <div id="conflict-alert-box"></div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
+        <select class="form-select" id="grid-hari-sel" onchange="renderGrid()" style="flex:1;min-width:100px;">
+          <option value="1">Senin</option><option value="2">Selasa</option>
+          <option value="3">Rabu</option><option value="4">Kamis</option><option value="5">Jumat</option>
+        </select>
+        <select class="form-select" id="grid-kelas-filter" onchange="renderGrid()" style="flex:1;min-width:80px;">
+          <option value="">Semua Kelas</option>
+          <option>7A</option><option>7B</option><option>7C</option>
+          <option>8A</option><option>8B</option><option>8C</option>
+          <option>9A</option><option>9B</option><option>9C</option>
+        </select>
+        <button class="btn-add" onclick="openJadwalForm()" style="padding:8px 12px;">＋ Tambah</button>
+      </div>
+      <div style="overflow-x:auto;">
+        <div id="jadwal-grid-container"></div>
+      </div>
+      <div style="margin-top:10px;">
+        <button class="btn-primary" onclick="exportJadwalPDF()" style="background:linear-gradient(135deg,var(--green2),var(--cyan2));font-size:11px;padding:10px;">📄 EXPORT PDF</button>
+      </div>
+    </div>
+
+    <!-- TAB LIST per Guru -->
+    <div id="jadwal-tab-list" class="jadwal-tab-content">
+      <div style="margin-bottom:10px;">
+        <select class="form-select" id="list-guru-sel" onchange="renderListGuru()">
+          <option value="">-- Pilih Guru --</option>
+        </select>
+      </div>
+      <div id="jadwal-list-guru"></div>
+    </div>
+
+    <!-- TAB MGMP -->
+    <div id="jadwal-tab-mgmp" class="jadwal-tab-content">
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">🏫 TANDAI GURU MGMP</div>
+        <div class="form-group">
+          <label class="form-label">GURU</label>
+          <select class="form-select" id="mgmp-guru-sel"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">JENIS MGMP</label>
+          <select class="form-select" id="mgmp-jenis">
+            <option value="tanggal">Tanggal Spesifik</option>
+            <option value="rutin">Rutin Bulanan (Hari ke-N per Bulan)</option>
+          </select>
+        </div>
+        <div id="mgmp-field-tanggal" class="form-group">
+          <label class="form-label">TANGGAL</label>
+          <input type="date" class="form-input" id="mgmp-tanggal">
+        </div>
+        <div id="mgmp-field-rutin" style="display:none;">
+          <div class="form-group">
+            <label class="form-label">HARI</label>
+            <select class="form-select" id="mgmp-hari">
+              <option value="1">Senin</option><option value="2">Selasa</option>
+              <option value="3">Rabu</option><option value="4">Kamis</option><option value="5">Jumat</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">MINGGU KE (tiap bulan)</label>
+            <select class="form-select" id="mgmp-minggu">
+              <option value="1">Minggu ke-1</option><option value="2">Minggu ke-2</option>
+              <option value="3">Minggu ke-3</option><option value="4">Minggu ke-4</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">MATA PELAJARAN MGMP</label>
+          <input type="text" class="form-input" id="mgmp-mapel" placeholder="Contoh: MGMP Matematika">
+        </div>
+        <div class="form-group">
+          <label class="form-label">CATATAN (opsional)</label>
+          <input type="text" class="form-input" id="mgmp-catatan" placeholder="Lokasi, jam, dll.">
+        </div>
+        <button class="btn-primary" onclick="tambahMGMP()" style="font-size:11px;padding:10px;">💾 SIMPAN MGMP</button>
+      </div>
+      <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:8px;">📋 DAFTAR MGMP TERSIMPAN</div>
+      <div id="mgmp-list"></div>
+    </div>
+
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
+  <!-- ===== SCREEN: NOTULEN RAPAT ===== -->
+  <div class="screen" id="screen-notulen">
+    <div class="section-header">
+      <p class="section-title">🎙️ NOTULEN RAPAT</p>
+      <button class="btn-add" onclick="openModalForm('notulen-add')">＋ Notulen</button>
+    </div>
+
+    <div class="notulen-tabs">
+      <div class="notulen-tab active" onclick="switchNotulen('rekam-rapat', this)">🎙️ REKAM</div>
+      <div class="notulen-tab" onclick="switchNotulen('arsip-rapat', this)">📁 ARSIP</div>
+    </div>
+
+    <!-- TAB REKAM -->
+    <div class="notulen-content active" id="notulen-rekam-rapat">
+      <!-- Form Info Rapat -->
+      <div class="card glow-cyan" style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">📋 INFO RAPAT</div>
+        <div class="form-group">
+          <label class="form-label">JUDUL / AGENDA RAPAT</label>
+          <input type="text" class="form-input" id="rapat-judul" placeholder="Contoh: Rapat Evaluasi Kurikulum Sem. 1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">TEMPAT & TANGGAL</label>
+          <input type="text" class="form-input" id="rapat-tempat" placeholder="Contoh: Ruang Rapat, 24 Juni 2026">
+        </div>
+        <div class="form-group">
+          <label class="form-label">PESERTA RAPAT</label>
+          <input type="text" class="form-input" id="rapat-peserta" placeholder="Contoh: Waka Kurikulum, Guru Mapel, ...">
+        </div>
+        <div class="form-group">
+          <label class="form-label">CATATAN MANUAL (opsional)</label>
+          <textarea class="form-input" id="rapat-catatan" rows="3" placeholder="Tambahkan catatan tambahan..."></textarea>
+        </div>
+      </div>
+
+      <!-- Voice Recorder -->
+      <div class="voice-recorder">
+        <div class="voice-recorder-label">🎤 REKAM SUARA RAPAT</div>
+        <div style="display:flex;justify-content:center;margin-bottom:8px;">
+          <span class="rec-status idle" id="rec-status-label">● SIAP MEREKAM</span>
+        </div>
+        <div class="voice-timer" id="rec-timer">00:00</div>
+        <div class="voice-wave" id="voice-wave">
+          <div class="voice-wave-bar" style="height:6px"></div>
+          <div class="voice-wave-bar" style="height:10px"></div>
+          <div class="voice-wave-bar" style="height:6px"></div>
+          <div class="voice-wave-bar" style="height:14px"></div>
+          <div class="voice-wave-bar" style="height:8px"></div>
+          <div class="voice-wave-bar" style="height:18px"></div>
+          <div class="voice-wave-bar" style="height:10px"></div>
+          <div class="voice-wave-bar" style="height:6px"></div>
+        </div>
+        <div class="voice-btn-row">
+          <button class="btn-stop-record" id="btn-stop" onclick="stopRecording()" title="Stop" style="display:none">⏹</button>
+          <button class="btn-record" id="btn-record" onclick="toggleRecord()">🎙️</button>
+          <button class="btn-stop-record" id="btn-pause" onclick="pauseRecording()" title="Pause" style="display:none">⏸</button>
+        </div>
+        <div style="font-size:9px;color:var(--muted);">Tap tombol merah untuk mulai merekam</div>
+
+        <!-- Playback -->
+        <div class="audio-playback" id="audio-playback">
+          <div style="font-size:9px;color:var(--green);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px;">✅ REKAMAN SELESAI</div>
+          <audio id="audio-player" controls></audio>
+        </div>
+
+        <!-- Convert to Text -->
+        <button class="btn-convert" id="btn-convert" onclick="convertToText()" style="display:none">
+          🤖 KONVERSI KE TEKS (AI)
+        </button>
+        <div class="converted-text" id="converted-text-box">
+          <div class="converted-text-label">📝 HASIL TRANSKRIPSI AI</div>
+          <div id="convert-loading" style="display:none;text-align:center;padding:10px;">
+            <div class="loading-spinner" style="margin:0 auto 6px;width:22px;height:22px;"></div>
+            <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;">MEMPROSES...</div>
+          </div>
+          <div class="converted-text-body" id="converted-text-content"></div>
+        </div>
+      </div>
+
+      <button class="btn-primary" onclick="simpanNotulen()" id="btn-simpan-notulen">💾 SIMPAN & DOWNLOAD PDF</button>
+    </div>
+
+    <!-- TAB ARSIP -->
+    <div class="notulen-content" id="notulen-arsip-rapat">
+      <div id="notulen-list">
+        <div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:'Orbitron',monospace;">
+          Belum ada notulen tersimpan
+        </div>
+      </div>
+    </div>
+
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
+</div><!-- end #app -->
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-btn active" id="nav-home" onclick="switchScreen('home')">
+    <div class="nav-icon">🏠<div class="nav-indicator"></div></div>
+    <div class="nav-label">Beranda</div>
+  </button>
+  <button class="nav-btn" id="nav-planning" onclick="switchScreen('planning')">
+    <div class="nav-icon">🗺️<div class="nav-indicator"></div></div>
+    <div class="nav-label">Planning</div>
+  </button>
+  <button class="nav-btn" id="nav-monitoring" onclick="switchScreen('monitoring')">
+    <div class="nav-icon">📷<div class="nav-indicator"></div></div>
+    <div class="nav-label">Monitor</div>
+  </button>
+  <button class="nav-btn" id="nav-regulasi" onclick="switchScreen('regulasi')">
+    <div class="nav-icon">📰<div class="nav-indicator"></div></div>
+    <div class="nav-label">Regulasi</div>
+  </button>
+  <button class="nav-btn" id="nav-jadwal" onclick="switchScreen('jadwal')">
+    <div class="nav-icon">📅<div class="nav-indicator"></div></div>
+    <div class="nav-label">Jadwal</div>
+  </button>
+</nav>
+
+<!-- MODAL SETTING -->
+<div class="setting-overlay" id="setting-modal" onclick="if(event.target===this)closeSetting()">
+  <div class="setting-sheet">
+    <div class="modal-handle"></div>
+    <div class="setting-title">⚙️ PENGATURAN APLIKASI</div>
+
+    <!-- Logo -->
+    <div class="setting-section">
+      <div class="setting-section-label">🖼️ LOGO SEKOLAH</div>
+      <div class="logo-preview-wrap">
+        <div class="logo-preview" id="logo-preview-box">
+          <img id="logo-preview-img" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px;">
+          <span id="logo-preview-placeholder">🏫</span>
+        </div>
+        <div style="flex:1;">
+          <label class="btn-upload-logo" for="logo-upload-input">
+            📁 Pilih Logo (PNG / JPG)
+          </label>
+          <input type="file" id="logo-upload-input" accept="image/png,image/jpeg,image/jpg" style="display:none" onchange="previewLogo(this)">
+          <div style="font-size:9px;color:var(--muted);margin-top:6px;line-height:1.5;">Ukuran ideal: 200×200px<br>Format: PNG atau JPG</div>
+        </div>
+      </div>
+      <button class="btn-setting-cancel" style="width:100%;margin-top:4px;font-size:10px;" onclick="hapusLogo()">🗑️ HAPUS LOGO</button>
+    </div>
+
+    <!-- Nama Aplikasi -->
+    <div class="setting-section">
+      <div class="setting-section-label">✏️ NAMA & KOP APLIKASI</div>
+      <div class="form-group">
+        <label class="form-label">NAMA APLIKASI (singkatan)</label>
+        <input type="text" class="form-input" id="setting-appname" placeholder="Contoh: KURIKU" maxlength="12">
+      </div>
+      <div class="form-group">
+        <label class="form-label">KOP / SUBJUDUL</label>
+        <input type="text" class="form-input" id="setting-appsub" placeholder="Contoh: WAKA KURIKULUM DASHBOARD" maxlength="50">
+      </div>
+      <div class="form-group">
+        <label class="form-label">NAMA SEKOLAH</label>
+        <input type="text" class="form-input" id="setting-schoolname" placeholder="Contoh: SMP Negeri 1 Contoh">
+      </div>
+      <div class="form-group">
+        <label class="form-label">NAMA WAKA KURIKULUM</label>
+        <input type="text" class="form-input" id="setting-wakaname" placeholder="Contoh: Drs. Ahmad Fauzi, M.Pd">
+      </div>
+    </div>
+
+    <!-- Tampilan -->
+    <div class="setting-section">
+      <div class="setting-section-label">🎨 WARNA TEMA</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button onclick="setThemeColor('cyan')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--cyan);background:rgba(0,212,255,0.15);color:var(--cyan);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">● CYAN</button>
+        <button onclick="setThemeColor('green')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--green);background:rgba(0,255,136,0.15);color:var(--green);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">● GREEN</button>
+        <button onclick="setThemeColor('purple')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--purple);background:rgba(180,0,255,0.15);color:var(--purple);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">● PURPLE</button>
+        <button onclick="setThemeColor('orange')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--orange);background:rgba(255,140,0,0.15);color:var(--orange);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">● ORANGE</button>
+      </div>
+    </div>
+
+    <!-- Reset -->
+    <div class="setting-section">
+      <div class="setting-section-label">⚠️ DATA</div>
+      <button onclick="resetSemuaData()" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--red);background:rgba(255,59,92,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:1px;">
+        🗑️ RESET SEMUA DATA
+      </button>
+      <div style="font-size:9px;color:var(--muted);margin-top:6px;text-align:center;">Hapus semua data tersimpan & kembali ke awal</div>
+    </div>
+
+    <div class="setting-actions">
+      <button class="btn-setting-cancel" onclick="closeSetting()">✕ BATAL</button>
+      <button class="btn-setting-save" onclick="saveSetting()">💾 SIMPAN PENGATURAN</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FORM (CRUD) -->
+<div class="modal-form-overlay" id="modal-form" onclick="if(event.target===this)closeModalForm()">
+  <div class="modal-form-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-form-title" id="modal-form-title">TAMBAH DATA</div>
+    <div id="modal-form-body"><!-- Injected by JS --></div>
+    <div class="modal-form-actions">
+      <button class="btn-cancel" onclick="closeModalForm()">✕ BATAL</button>
+      <button class="btn-save" onclick="saveModalForm()">💾 SIMPAN</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOTIF -->
+<div class="modal-overlay" id="notif-modal" onclick="if(event.target===this)closeModal('notif-modal')">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🔔 NOTIFIKASI</div>
+    <div id="notif-list">
+      <!-- Generated by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA =====
+const GURU_DATA = [
+  // MTK
+  { nama: 'Siti Fauziyah', mapel: 'MTK', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'9A', tugas:['Guru Wali','Wali Kelas 9A'] },
+  { nama: 'Nurlaily', mapel: 'MTK', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'9B', tugas:['Guru Wali','Wali Kelas 9B'] },
+  // IPA
+  { nama: 'Etty Fauziyah', mapel: 'IPA', jp: 26, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'] },
+  { nama: 'Mulyadi', mapel: 'IPA', jp: 28, wali: true, kepala: true, max: 40, kelas_wali:'', tugas:['Ka. Lab IPA','Guru Wali'] },
+  // IPS
+  { nama: 'Rohman Hidayat', mapel: 'IPS', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','CO Kurikuler(9)'] },
+  { nama: 'Christiana Tiwi', mapel: 'IPS', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Ka. Perpus','Guru Wali'] },
+  // BIG
+  { nama: 'Zaimmatur Rohmah', mapel: 'B. Inggris', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul'] },
+  { nama: 'Dwi Denia Candra', mapel: 'B. Inggris', jp: 25, wali: false, kepala: false, max: 40, kelas_wali:'', tugas:['Waka Kur','Guru Wali'] },
+  // BIN
+  { nama: 'Hidayatun Nisak', mapel: 'B. Indonesia', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'] },
+  { nama: 'Dian Sapto', mapel: 'B. Indonesia', jp: 28, wali: true, kepala: false, max: 40, kelas_wali:'7B', tugas:['Guru Wali','Wali Kelas 7B'] },
+  // PAI
+  { nama: 'Siti Zubaidah', mapel: 'PAI', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'7A', tugas:['Guru Wali','Wali Kelas 7A','TbTq'] },
+  { nama: 'Zulailiyah', mapel: 'PAI', jp: 26, wali: true, kepala: false, max: 40, kelas_wali:'8C', tugas:['Guru Wali','Wali Kelas 8C','TbTq','Pemb. Ekskul','CO Kurikuler(8)','Guru Piket'] },
+  // BK
+  { nama: 'Elisabeth', mapel: 'BK', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul'] },
+  { nama: 'Yusro', mapel: 'BK', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul','Waka Sarpras'] },
+  // PKN
+  { nama: 'Atik Jatmika', mapel: 'PKN', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'8B', tugas:['Guru Wali','Wali Kelas 8B'] },
+  // TIK & B.Madura
+  { nama: 'Nurul Jamila', mapel: 'TIK & B.Madura', jp: 28, wali: true, kepala: false, max: 40, kelas_wali:'9C', tugas:['Guru Wali','Wali Kelas 9C','CO Kurikuler(7)'] },
+  // PJOK
+  { nama: 'Herman Wahyudi', mapel: 'PJOK', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'8C', tugas:['Guru Wali','Wali Kelas 8C'] },
+  // SENI RUPA
+  { nama: 'Wuly Handoko', mapel: 'Seni Rupa', jp: 31, wali: false, kepala: false, max: 40, kelas_wali:'', tugas:['Waka Kesiswaan','Guru Wali'] },
+  // Prakarya & TIK & B.Madura
+  { nama: 'Endang Mukti', mapel: 'Prakarya & TIK & B.Madura', jp: 32, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'] },
+];
+
+const JADWAL_DATA = {
+  1: [ // Senin
+    { jam: '07:00', guru: 'Budi Santoso', kelas: '7A', mapel: 'Matematika', ruang: 'R.01', status: 'hadir' },
+    { jam: '07:40', guru: 'Sari Dewi', kelas: '7B', mapel: 'B. Indonesia', ruang: 'R.02', status: 'hadir' },
+    { jam: '08:20', guru: 'Ahmad Fauzi', kelas: '8A', mapel: 'IPA', ruang: 'Lab IPA', status: 'telat' },
+    { jam: '09:00', guru: 'Rina Kurniawati', kelas: '8B', mapel: 'B. Inggris', ruang: 'R.04', status: 'belum' },
+    { jam: '10:00', guru: 'Hendra Wijaya', kelas: '9A', mapel: 'IPS', ruang: 'R.05', status: 'belum' },
+    { jam: '10:40', guru: 'Dewi Lestari', kelas: '9B', mapel: 'PKn', ruang: 'R.06', status: 'belum' },
+  ],
+  2: [ // Selasa
+    { jam: '07:00', guru: 'Ahmad Fauzi', kelas: '7A', mapel: 'IPA', ruang: 'Lab IPA', status: 'hadir' },
+    { jam: '07:40', guru: 'Budi Santoso', kelas: '8A', mapel: 'Matematika', ruang: 'R.01', status: 'hadir' },
+    { jam: '08:20', guru: 'Rudi Hermawan', kelas: '7B', mapel: 'Informatika', ruang: 'Lab Komputer', status: 'hadir' },
+    { jam: '09:00', guru: 'Fitri Handayani', kelas: '9A', mapel: 'Seni Budaya', ruang: 'R.Seni', status: 'belum' },
+  ],
+  3: [ // Rabu
+    { jam: '07:00', guru: 'Sari Dewi', kelas: '8B', mapel: 'B. Indonesia', ruang: 'R.02', status: 'hadir' },
+    { jam: '07:40', guru: 'Rina Kurniawati', kelas: '7A', mapel: 'B. Inggris', ruang: 'R.03', status: 'telat' },
+    { jam: '08:20', guru: 'Agus Priyono', kelas: '7B', mapel: 'PJOK', ruang: 'Lap. Olahraga', status: 'hadir' },
+  ],
+  4: [ // Kamis
+    { jam: '07:00', guru: 'Hendra Wijaya', kelas: '7A', mapel: 'IPS', ruang: 'R.05', status: 'belum' },
+    { jam: '07:40', guru: 'Dewi Lestari', kelas: '8A', mapel: 'PKn', ruang: 'R.06', status: 'belum' },
+    { jam: '08:20', guru: 'Budi Santoso', kelas: '9A', mapel: 'Matematika', ruang: 'R.01', status: 'belum' },
+    { jam: '10:00', guru: 'Aisyah Putri', kelas: '7A', mapel: 'Prakarya', ruang: 'R.Prakarya', status: 'belum' },
+  ],
+  5: [ // Jumat
+    { jam: '07:00', guru: 'Agus Priyono', kelas: '8A', mapel: 'PJOK', ruang: 'Lap. Olahraga', status: 'belum' },
+    { jam: '07:40', guru: 'Ahmad Fauzi', kelas: '9B', mapel: 'IPA', ruang: 'Lab IPA', status: 'belum' },
+  ],
+  6: [ // Sabtu
+    [ { jam: '07:00', guru: 'Rudi Hermawan', kelas: '8B', mapel: 'Informatika', ruang: 'Lab Komputer', status: 'belum' } ]
+  ]
+};
+
+let lateRecords = [];
+let uploadedPhotos = [];
+let currentScreen = 'home';
+
+// ===== CLOCK =====
+function updateClock() {
+  const now = new Date();
+  const days = ['MINGGU','SENIN','SELASA','RABU','KAMIS','JUMAT','SABTU'];
+  const months = ['JAN','FEB','MAR','APR','MEI','JUN','JUL','AGU','SEP','OKT','NOV','DES'];
+  const d = `${days[now.getDay()]} ${String(now.getDate()).padStart(2,'0')} ${months[now.getMonth()]} ${now.getFullYear()}`;
+  const t = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+  document.getElementById('live-clock').innerHTML = `📅 <span>${d}</span> &nbsp; ⏱ <span>${t}</span>`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ===== PARTICLES =====
+const canvas = document.getElementById('particles-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+for (let i = 0; i < 50; i++) {
+  particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3, r: Math.random()*1.5+0.5, a: Math.random()*0.5+0.1 });
+}
+function animParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => {
+    p.x += p.vx; p.y += p.vy;
+    if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+    if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(0,212,255,${p.a})`; ctx.fill();
+  });
+  requestAnimationFrame(animParticles);
+}
+animParticles();
+
+// ===== SCREEN SWITCH =====
+function switchScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  const nb = document.getElementById('nav-' + name);
+  if (nb) nb.classList.add('active');
+  currentScreen = name;
+  
+  if (name === 'jam') renderGuruList();
+  if (name === 'jadwal') { renderGrid(); populateListGuruSel(); populateMGMPGuruSel(); }
+  if (name === 'monitoring') renderRiwayat();
+  if (name === 'regulasi') loadRegulasi();
+  if (name === 'home') renderMiniSchedule();
+  if (name === 'notulen') renderNotulenList();
+}
+
+// ===== PLANNING TABS =====
+function switchPlan(id, el) {
+  document.querySelectorAll('.plan-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.plan-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('plan-' + id).classList.add('active');
+}
+
+// ===== JADWAL SYSTEM =====
+const DAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+const JAM_LABELS = {
+  1:'07:00', 2:'07:40', 3:'08:20', 4:'09:00', 5:'10:00',
+  6:'10:40', 7:'11:20', 8:'12:40', 9:'13:00'
+};
+const KELAS_LIST = ['7A','7B','7C','8A','8B','8C','9A','9B','9C'];
+
+// JADWAL_DATA2: { hari: { kelas: { jam_ke: {guru, mapel, ruang} } } }
+let JADWAL_DATA2 = {};
+let mgmpData = [
+  // SENIN — PJOK & PKN
+  { guru: 'Herman Wahyudi',   jenis:'rutin', hari:'1', minggu:'2', mapel:'MGMP PJOK', catatan:'Setiap Senin Minggu ke-2' },
+  { guru: 'Atik Jatmika',     jenis:'rutin', hari:'1', minggu:'2', mapel:'MGMP PKN',  catatan:'Setiap Senin Minggu ke-2' },
+  // SELASA — B.Indo & TIK
+  { guru: 'Hidayatun Nisak',  jenis:'rutin', hari:'2', minggu:'2', mapel:'MGMP B. Indonesia', catatan:'Setiap Selasa Minggu ke-2' },
+  { guru: 'Dian Sapto',       jenis:'rutin', hari:'2', minggu:'2', mapel:'MGMP B. Indonesia', catatan:'Setiap Selasa Minggu ke-2' },
+  { guru: 'Nurul Jamila',     jenis:'rutin', hari:'2', minggu:'2', mapel:'MGMP TIK & B.Madura', catatan:'Setiap Selasa Minggu ke-2' },
+  { guru: 'Endang Mukti',     jenis:'rutin', hari:'2', minggu:'2', mapel:'MGMP TIK & Prakarya', catatan:'Setiap Selasa Minggu ke-2' },
+  // RABU — Matematika
+  { guru: 'Siti Fauziyah',    jenis:'rutin', hari:'3', minggu:'2', mapel:'MGMP Matematika', catatan:'Setiap Rabu Minggu ke-2' },
+  { guru: 'Nurlaily',         jenis:'rutin', hari:'3', minggu:'2', mapel:'MGMP Matematika', catatan:'Setiap Rabu Minggu ke-2' },
+  // KAMIS — IPA & PAI
+  { guru: 'Etty Fauziyah',    jenis:'rutin', hari:'4', minggu:'2', mapel:'MGMP IPA', catatan:'Setiap Kamis Minggu ke-2' },
+  { guru: 'Mulyadi',          jenis:'rutin', hari:'4', minggu:'2', mapel:'MGMP IPA', catatan:'Setiap Kamis Minggu ke-2' },
+  { guru: 'Siti Zubaidah',    jenis:'rutin', hari:'4', minggu:'2', mapel:'MGMP PAI', catatan:'Setiap Kamis Minggu ke-2' },
+  { guru: 'Zulailiyah',       jenis:'rutin', hari:'4', minggu:'2', mapel:'MGMP PAI', catatan:'Setiap Kamis Minggu ke-2' },
+  // SABTU — B.Inggris, BK, IPS
+  { guru: 'Zaimmatur Rohmah', jenis:'rutin', hari:'6', minggu:'2', mapel:'MGMP B. Inggris', catatan:'Setiap Sabtu Minggu ke-2' },
+  { guru: 'Dwi Denia Candra', jenis:'rutin', hari:'6', minggu:'2', mapel:'MGMP B. Inggris', catatan:'Setiap Sabtu Minggu ke-2' },
+  { guru: 'Elisabeth',        jenis:'rutin', hari:'6', minggu:'2', mapel:'MGMP BK',          catatan:'Setiap Sabtu Minggu ke-2' },
+  { guru: 'Yusro',            jenis:'rutin', hari:'6', minggu:'2', mapel:'MGMP BK',          catatan:'Setiap Sabtu Minggu ke-2' },
+  { guru: 'Rohman Hidayat',   jenis:'rutin', hari:'6', minggu:'2', mapel:'MGMP IPS',         catatan:'Setiap Sabtu Minggu ke-2' },
+  { guru: 'Christiana Tiwi',  jenis:'rutin', hari:'6', minggu:'2', mapel:'MGMP IPS',         catatan:'Setiap Sabtu Minggu ke-2' },
+];
+let selectedDay = new Date().getDay() || 1;
+
+function switchJadwalTab(tab, el) {
+  document.querySelectorAll('.notulen-tab[id^="jtab"]').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.jadwal-tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('jadwal-tab-' + tab).classList.add('active');
+  try { localStorage.setItem('kuriku_jadwal_tab', tab); } catch(e) {}
+  if (tab === 'grid') renderGrid();
+  if (tab === 'list') { populateListGuruSel(); renderListGuru(); }
+  if (tab === 'mgmp') { populateMGMPGuruSel(); renderMGMPList(); }
+}
+
+function switchJamTab(tab, el) {
+  document.querySelectorAll('.notulen-tab[id^="jamtab"]').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#screen-jam .jadwal-tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('jamcontent-' + tab).classList.add('active');
+  try { localStorage.setItem('kuriku_jam_tab', tab); } catch(e) {}
+  if (tab === 'tugas') renderTugasList();
+}
+
+// ===== GRID RENDERER =====
+// ===== CONFLICT DETECTION =====
+function detectConflicts() {
+  const conflicts = [];
+  [1,2,3,4,5,6].forEach(hari => {
+    const hariData = JADWAL_DATA2[hari] || {};
+    // Map: jam -> list of {kelas, guru, mapel}
+    const jamMap = {};
+    Object.entries(hariData).forEach(([kelas, jamObj]) => {
+      Object.entries(jamObj).forEach(([jam, cell]) => {
+        if (!jamMap[jam]) jamMap[jam] = [];
+        jamMap[jam].push({ kelas, guru: cell.guru, mapel: cell.mapel });
+      });
+    });
+    // Check: same guru in same jam across different classes
+    Object.entries(jamMap).forEach(([jam, sesiList]) => {
+      const guruCount = {};
+      sesiList.forEach(s => {
+        if (!guruCount[s.guru]) guruCount[s.guru] = [];
+        guruCount[s.guru].push(s.kelas);
+      });
+      Object.entries(guruCount).forEach(([guru, kelasList]) => {
+        if (kelasList.length > 1) {
+          conflicts.push({
+            type: 'guru',
+            hari, jam: parseInt(jam), guru,
+            detail: `${guru} dijadwalkan di JP${jam} (${JAM_LABELS[jam]}) ${HARI[hari]} untuk ${kelasList.join(' & ')} sekaligus`
+          });
+        }
+      });
+      // Check: same class same jam multiple entries (shouldn't happen with grid but safety check)
+      const kelasCount = {};
+      sesiList.forEach(s => {
+        if (!kelasCount[s.kelas]) kelasCount[s.kelas] = [];
+        kelasCount[s.kelas].push(s.guru);
+      });
+      Object.entries(kelasCount).forEach(([kelas, guruList]) => {
+        if (guruList.length > 1) {
+          conflicts.push({
+            type: 'kelas',
+            hari, jam: parseInt(jam), kelas,
+            detail: `Kelas ${kelas} di JP${jam} (${JAM_LABELS[jam]}) ${HARI[hari]} diisi oleh ${guruList.join(' & ')} sekaligus`
+          });
+        }
+      });
+    });
+  });
+  return conflicts;
+}
+
+function renderConflictAlert() {
+  const el = document.getElementById('conflict-alert-box');
+  if (!el) return;
+  const conflicts = detectConflicts();
+  if (!conflicts.length) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <div style="background:rgba(255,59,92,0.1);border:1px solid var(--red);border-radius:12px;padding:12px;margin-bottom:10px;">
+      <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--red);letter-spacing:1px;margin-bottom:8px;">
+        ⚠️ TERDETEKSI ${conflicts.length} BENTROK JADWAL
+      </div>
+      ${conflicts.map(c => `
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(255,59,92,0.15);">
+          <span style="font-size:14px;">${c.type==='guru'?'👤':'🏫'}</span>
+          <div style="font-size:10px;color:var(--white);line-height:1.5;flex:1;">${c.detail}</div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderGrid() {
+  const hari = parseInt(document.getElementById('grid-hari-sel')?.value || 1);
+  const kelasFilter = document.getElementById('grid-kelas-filter')?.value || '';
+  const kelasList = kelasFilter ? [kelasFilter] : KELAS_LIST;
+  const hariData = JADWAL_DATA2[hari] || {};
+  const mgmpToday = getMGMPForDay(hari);
+
+  // Build conflict lookup for this hari: "jam-guru" -> [kelas,...]
+  const jamGuruMap = {};
+  Object.entries(hariData).forEach(([kelas, jamObj]) => {
+    Object.entries(jamObj).forEach(([jam, cell]) => {
+      const key = `${jam}-${cell.guru}`;
+      if (!jamGuruMap[key]) jamGuruMap[key] = [];
+      jamGuruMap[key].push(kelas);
+    });
+  });
+
+  let html = '<table class="jadwal-grid"><thead><tr>';
+  html += '<th style="min-width:44px;">JAM</th>';
+  kelasList.forEach(k => { html += `<th>${k}</th>`; });
+  html += '</tr></thead><tbody>';
+
+  for (let jam = 1; jam <= 9; jam++) {
+    html += `<tr><td class="td-jam"><span class="jam-label">JP${jam}</span>${JAM_LABELS[jam]}</td>`;
+    kelasList.forEach(kelas => {
+      const cell = (hariData[kelas] || {})[jam];
+      if (cell) {
+        const isMGMP = mgmpToday.some(m => m.guru === cell.guru);
+        const guruKey = `${jam}-${cell.guru}`;
+        const isBentrok = (jamGuruMap[guruKey] || []).length > 1;
+        let cellClass = 'jadwal-cell';
+        if (isMGMP) cellClass += ' mgmp-cell';
+        if (isBentrok) cellClass += ' bentrok-cell';
+        const shortName = cell.guru.split(' ').slice(-2).join(' ');
+        html += `<td><div class="${cellClass}" onclick="editJadwalCell(${hari},'${kelas}',${jam})">
+          <span class="jc-del" onclick="event.stopPropagation();hapusJadwalCell(${hari},'${kelas}',${jam})">✕</span>
+          ${isBentrok ? '<span class="jc-bentrok" title="Guru bentrok!">⚠️</span>' : ''}
+          <div class="jc-guru">${isMGMP ? '🏫 MGMP' : shortName}</div>
+          <div class="jc-mapel">${cell.mapel || ''}</div>
+          <div class="jc-ruang">${cell.ruang || ''}</div>
+        </div></td>`;
+      } else {
+        html += `<td><div class="td-empty" onclick="openJadwalFormCell(${hari},'${kelas}',${jam})" title="Tap untuk isi">＋</div></td>`;
+      }
+    });
+    html += '</tr>';
+  }
+  html += '</tbody></table>';
+  document.getElementById('jadwal-grid-container').innerHTML = html;
+  renderConflictAlert();
+}
+
+// Patch openJadwalFormCell to warn if guru already has class this jam
+const _origOpenCell = openJadwalFormCell;
+openJadwalFormCell = function(hari, kelas, jam) {
+  _origOpenCell(hari, kelas, jam);
+  // Add conflict warning inside form
+  setTimeout(() => {
+    const sel = document.getElementById('mf-guru');
+    if (sel) sel.addEventListener('change', function() {
+      checkGuruConflictLive(hari, kelas, jam, this.value);
+    });
+  }, 80);
+};
+
+function checkGuruConflictLive(hari, kelas, jam, guruNama) {
+  const hariData = JADWAL_DATA2[hari] || {};
+  const bentrokKelas = [];
+  Object.entries(hariData).forEach(([k, jamObj]) => {
+    if (k !== kelas && jamObj[jam]?.guru === guruNama) bentrokKelas.push(k);
+  });
+  let warn = document.getElementById('mf-conflict-warn');
+  if (!warn) {
+    warn = document.createElement('div');
+    warn.id = 'mf-conflict-warn';
+    warn.style.cssText = 'font-size:10px;padding:6px 10px;border-radius:8px;margin-top:6px;display:none;';
+    document.getElementById('mf-guru')?.parentElement?.appendChild(warn);
+  }
+  if (bentrokKelas.length) {
+    warn.style.display = 'block';
+    warn.style.background = 'rgba(255,59,92,0.15)';
+    warn.style.color = 'var(--red)';
+    warn.style.border = '1px solid var(--red)';
+    warn.textContent = `⚠️ BENTROK: ${guruNama} sudah mengajar di ${bentrokKelas.join(', ')} pada JP${jam} hari yang sama!`;
+  } else {
+    warn.style.display = 'none';
+  }
+}
+
+function getMGMPForDay(hari) {
+  return mgmpData.filter(m => {
+    if (m.jenis === 'tanggal') {
+      const d = new Date(m.tanggal);
+      return d.getDay() === hari;
+    } else {
+      return parseInt(m.hari) === hari;
+    }
+  });
+}
+
+// ===== JADWAL FORM =====
+let _jadwalFormCtx = null;
+function openJadwalForm() {
+  const hari = parseInt(document.getElementById('grid-hari-sel')?.value || 1);
+  openJadwalFormCell(hari, KELAS_LIST[0], 1);
+}
+function openJadwalFormCell(hari, kelas, jam) {
+  _jadwalFormCtx = { hari, kelas, jam };
+  const existing = (JADWAL_DATA2[hari]?.[kelas]?.[jam]) || {};
+  const guruOptions = GURU_DATA.map(g => `<option value="${g.nama}" ${existing.guru===g.nama?'selected':''}>${g.nama} (${g.mapel})</option>`).join('');
+  document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[hari]} JP${jam} [${kelas}]`;
+  document.getElementById('modal-form-body').innerHTML = `
+    <div class="form-group"><label class="form-label">GURU</label>
+      <select class="form-select" id="mf-guru">${guruOptions}</select></div>
+    <div class="form-group"><label class="form-label">MATA PELAJARAN</label>
+      <input type="text" class="form-input" id="mf-mapel" value="${existing.mapel||''}" placeholder="Mapel"></div>
+    <div class="form-group"><label class="form-label">RUANG / LAB</label>
+      <input type="text" class="form-input" id="mf-ruang" value="${existing.ruang||''}" placeholder="Contoh: R.01 / Lab IPA"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;width:100%;margin-bottom:4px;">HARI</div>
+      ${[1,2,3,4,5].map(h=>`<span class="jam-badge ${h===hari?'selected':''}" onclick="setFormHari(${h},this)">${HARI[h]}</span>`).join('')}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:8px;">
+      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;width:100%;margin-bottom:4px;">KELAS</div>
+      ${KELAS_LIST.map(k=>`<span class="jam-badge ${k===kelas?'selected':''}" onclick="setFormKelas('${k}',this)">${k}</span>`).join('')}
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;">
+      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;width:100%;margin-bottom:4px;">JAM KE</div>
+      ${[1,2,3,4,5,6,7,8,9].map(j=>`<span class="jam-badge ${j===jam?'selected':''}" onclick="setFormJam(${j},this)">JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span></span>`).join('')}
+    </div>`;
+  currentModalType = 'jadwal-cell';
+  document.getElementById('modal-form').classList.add('open');
+}
+function setFormHari(h, el) {
+  document.querySelectorAll('#modal-form-body .jam-badge').forEach(b => {
+    if ([1,2,3,4,5].map(x=>HARI[x]).includes(b.textContent.trim())) b.classList.remove('selected');
+  });
+  el.classList.add('selected');
+  _jadwalFormCtx.hari = h;
+  document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[h]} JP${_jadwalFormCtx.jam} [${_jadwalFormCtx.kelas}]`;
+}
+function setFormKelas(k, el) {
+  el.parentElement.querySelectorAll('.jam-badge').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  _jadwalFormCtx.kelas = k;
+}
+function setFormJam(j, el) {
+  el.parentElement.querySelectorAll('.jam-badge').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  _jadwalFormCtx.jam = j;
+}
+function editJadwalCell(hari, kelas, jam) { openJadwalFormCell(hari, kelas, jam); }
+function hapusJadwalCell(hari, kelas, jam) {
+  if (!JADWAL_DATA2[hari]?.[kelas]) return;
+  delete JADWAL_DATA2[hari][kelas][jam];
+  renderGrid(); saveAll();
+  showToast('🗑️ Jadwal dihapus');
+}
+
+// ===== LIST PER GURU =====
+function populateListGuruSel() {
+  const sel = document.getElementById('list-guru-sel');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">-- Pilih Guru --</option>' +
+    GURU_DATA.map(g => `<option value="${g.nama}">${g.nama}</option>`).join('');
+}
+function renderListGuru() {
+  const sel = document.getElementById('list-guru-sel');
+  const nama = sel?.value || '';
+  const el = document.getElementById('jadwal-list-guru');
+  if (!nama) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:20px;">Pilih guru untuk lihat jadwal</div>'; return; }
+  const mgmpG = mgmpData.filter(m => m.guru === nama);
+  let html = '';
+  [1,2,3,4,5].forEach(hari => {
+    const hariData = JADWAL_DATA2[hari] || {};
+    let hasSesi = false;
+    let sesiHtml = '';
+    KELAS_LIST.forEach(kelas => {
+      const kelasData = hariData[kelas] || {};
+      Object.entries(kelasData).forEach(([jam, cell]) => {
+        if (cell.guru === nama) {
+          hasSesi = true;
+          sesiHtml += `<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
+            <span style="font-family:'Orbitron',monospace;font-size:10px;color:var(--cyan);min-width:36px;">JP${jam}</span>
+            <span style="font-size:9px;color:var(--muted);min-width:36px;">${JAM_LABELS[jam]}</span>
+            <span style="font-weight:700;font-size:11px;color:var(--white);flex:1;">${kelas}</span>
+            <span style="font-size:10px;color:var(--muted);">${cell.mapel||''}</span>
+            <span style="font-size:9px;color:var(--muted);">${cell.ruang||''}</span>
+          </div>`;
+        }
+      });
+    });
+    if (hasSesi) {
+      html += `<div class="card" style="margin-bottom:8px;">
+        <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--cyan);margin-bottom:8px;">${HARI[hari].toUpperCase()}</div>
+        ${sesiHtml}</div>`;
+    }
+  });
+  // MGMP info
+  if (mgmpG.length) {
+    html += `<div class="card" style="border-color:rgba(255,140,0,0.3);margin-bottom:8px;">
+      <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--orange);margin-bottom:8px;">🏫 JADWAL MGMP</div>
+      ${mgmpG.map(m => `<div style="font-size:11px;color:var(--white);padding:4px 0;">${m.mapel} — ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[m.hari]+' Minggu ke-'+m.minggu}</div>`).join('')}
+    </div>`;
+  }
+  if (!html) html = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:20px;">Belum ada jadwal tersimpan untuk guru ini</div>';
+  el.innerHTML = html;
+}
+
+// ===== MGMP =====
+function populateMGMPGuruSel() {
+  const sel = document.getElementById('mgmp-guru-sel');
+  if (!sel) return;
+  sel.innerHTML = GURU_DATA.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel})</option>`).join('');
+}
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'mgmp-jenis') {
+    const isRutin = e.target.value === 'rutin';
+    document.getElementById('mgmp-field-tanggal').style.display = isRutin ? 'none' : 'block';
+    document.getElementById('mgmp-field-rutin').style.display = isRutin ? 'block' : 'none';
+  }
+});
+function tambahMGMP() {
+  const guru = document.getElementById('mgmp-guru-sel')?.value;
+  const jenis = document.getElementById('mgmp-jenis')?.value;
+  const tanggal = document.getElementById('mgmp-tanggal')?.value;
+  const hari = document.getElementById('mgmp-hari')?.value;
+  const minggu = document.getElementById('mgmp-minggu')?.value;
+  const mapel = document.getElementById('mgmp-mapel')?.value.trim();
+  const catatan = document.getElementById('mgmp-catatan')?.value.trim();
+  if (!guru || !mapel) { showToast('⚠️ Lengkapi data MGMP!', true); return; }
+  if (jenis === 'tanggal' && !tanggal) { showToast('⚠️ Pilih tanggal MGMP!', true); return; }
+  mgmpData.push({ guru, jenis, tanggal, hari, minggu, mapel, catatan });
+  renderMGMPList(); renderGrid(); saveAll();
+  showToast('✅ MGMP tersimpan!');
+}
+function renderMGMPList() {
+  const el = document.getElementById('mgmp-list');
+  if (!el) return;
+  if (!mgmpData.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;font-family:\'Orbitron\',monospace;">Belum ada jadwal MGMP</div>'; return; }
+  el.innerHTML = mgmpData.map((m, i) => `
+    <div class="mgmp-card">
+      <div class="mgmp-icon">🏫</div>
+      <div class="mgmp-info">
+        <div class="mgmp-nama">${m.guru}</div>
+        <div class="mgmp-detail">${m.mapel} · ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[parseInt(m.hari)]+' Minggu ke-'+m.minggu}</div>
+        ${m.catatan?`<div class="mgmp-catatan">📝 ${m.catatan}</div>`:''}
+      </div>
+      <button class="btn-del" onclick="hapusMGMP(${i})" style="align-self:flex-start;">🗑️</button>
+    </div>`).join('');
+}
+function hapusMGMP(i) {
+  mgmpData.splice(i, 1);
+  renderMGMPList(); renderGrid(); saveAll();
+  showToast('🗑️ MGMP dihapus');
+}
+
+// ===== TUGAS TAMBAHAN =====
+function renderTugasList() {
+  const el = document.getElementById('tugas-list');
+  if (!el) return;
+  el.innerHTML = GURU_DATA.map((g, i) => {
+    const tugasArr = g.tugas || [];
+    if (!tugasArr.length && !g.wali && !g.kepala) return '';
+    const allTugas = [...tugasArr];
+    return `<div class="tugas-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+        <div>
+          <div class="tugas-nama">${g.nama}</div>
+          <div style="font-size:9px;color:var(--muted);">${g.mapel}</div>
+        </div>
+        <button class="btn-edit" onclick="editTugasGuru(${i})">✏️ Edit</button>
+      </div>
+      <div class="tugas-list">${allTugas.map(t=>`<span class="tugas-badge">${t}</span>`).join('') || '<span style="font-size:10px;color:var(--muted);">—</span>'}</div>
+    </div>`;
+  }).join('');
+}
+function editTugasGuru(i) {
+  const g = GURU_DATA[i];
+  const tugasCurrent = (g.tugas || []).join(', ');
+  document.getElementById('modal-form-title').textContent = '🏷️ EDIT TUGAS TAMBAHAN';
+  document.getElementById('modal-form-body').innerHTML = `
+    <div style="font-size:11px;color:var(--white);margin-bottom:10px;font-weight:700;">${g.nama}</div>
+    <div class="form-group"><label class="form-label">TUGAS TAMBAHAN (pisahkan koma)</label>
+      <textarea class="form-input" id="mf-tugas" rows="4" placeholder="Wali Kelas 8A, Ka. Lab IPA, Pemb. Ekskul">${tugasCurrent}</textarea></div>
+    <div style="font-size:9px;color:var(--muted);margin-top:4px;">Contoh: Wali Kelas 8A, Guru Piket, Ka. Perpus, CO Kurikuler(7)</div>`;
+  currentModalType = '__tugas-edit__';
+  currentModalData = { idx: i };
+  document.getElementById('modal-form').classList.add('open');
+}
+
+// ===== EXPORT JADWAL PDF =====
+function exportJadwalPDF() {
+  const hari = parseInt(document.getElementById('grid-hari-sel')?.value || 1);
+  const kelasFilter = document.getElementById('grid-kelas-filter')?.value || '';
+  const kelasList = kelasFilter ? [kelasFilter] : KELAS_LIST;
+  const hariData = JADWAL_DATA2[hari] || {};
+  const win = window.open('', '_blank');
+  let rows = '';
+  for (let jam = 1; jam <= 9; jam++) {
+    rows += `<tr><td style="font-weight:700;text-align:center;background:#eef;">JP${jam}<br><span style="font-size:9px;">${JAM_LABELS[jam]}</span></td>`;
+    kelasList.forEach(kelas => {
+      const cell = (hariData[kelas] || {})[jam];
+      rows += cell ? `<td><b>${cell.guru}</b><br><span style="font-size:10px;color:#555;">${cell.mapel||''}</span><br><span style="font-size:9px;color:#888;">${cell.ruang||''}</span></td>`
+                   : '<td style="color:#ccc;text-align:center;">—</td>';
+    });
+    rows += '</tr>';
+  }
+  win.document.write(`<!DOCTYPE html><html><head><title>Jadwal ${HARI[hari]}</title>
+  <style>body{font-family:Arial,sans-serif;padding:24px;font-size:11px;}
+  h2{text-align:center;color:#003366;}table{width:100%;border-collapse:collapse;}
+  th,td{border:1px solid #ccc;padding:6px 8px;vertical-align:top;}
+  th{background:#003366;color:white;text-align:center;}</style></head><body>
+  <h2>${currentSetting.schoolName||'SMP — Kurikulum Merdeka'}</h2>
+  <h3 style="text-align:center;">JADWAL MENGAJAR — ${HARI[hari].toUpperCase()}</h3>
+  <table><thead><tr><th>JAM</th>${kelasList.map(k=>`<th>${k}</th>`).join('')}</tr></thead>
+  <tbody>${rows}</tbody></table>
+  <div style="margin-top:16px;font-size:10px;text-align:right;">Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
+
+// Legacy renderJadwal (home mini schedule still uses JADWAL_DATA)
+function renderJadwal() { renderGrid(); }
+
+// ===== MINI SCHEDULE HOME =====
+function renderMiniSchedule() {
+  const now = new Date();
+  const day = now.getDay() || 1;
+  const items = (JADWAL_DATA[day] || []).slice(0, 3);
+  const el = document.getElementById('mini-schedule');
+  if (!items.length) { el.innerHTML = '<div style="font-size:11px;color:var(--muted);">Tidak ada jadwal hari ini</div>'; return; }
+  const statusMap = { hadir: ['status-hadir','✅'], telat: ['status-telat','⚠️'], belum: ['status-belum','🕐'] };
+  el.innerHTML = items.map(s => {
+    const [cls, ico] = statusMap[s.status] || ['status-belum','🕐'];
+    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
+      <div><span style="color:var(--muted);font-family:"Orbitron",monospace;font-size:9px;">${s.jam}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span></div>
+      <span>${ico}</span>
+    </div>`;
+  }).join('') + `<div style="text-align:right;margin-top:6px;"><span onclick="switchScreen('jadwal')" style="font-size:10px;color:var(--cyan);cursor:pointer;font-family:"Orbitron",monospace;">LIHAT SEMUA →</span></div>`;
+}
+renderMiniSchedule();
+
+// ===== MONITORING =====
+function switchMonitor(id, el) {
+  document.querySelectorAll('.monitor-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.monitor-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('monitor-' + id).classList.add('active');
+  if (id === 'riwayat') renderRiwayat();
+  if (id === 'statistik') renderStatistik();
+}
+
+function handlePhotos(e) {
+  const files = Array.from(e.target.files);
+  const prev = document.getElementById('photo-previews');
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      uploadedPhotos.push(ev.target.result);
+      const img = document.createElement('img');
+      img.src = ev.target.result; img.className = 'photo-preview';
+      prev.appendChild(img);
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+function simpanKeterlambatan() {
+  const guru = document.getElementById('rekam-guru').value;
+  const waktu = document.getElementById('rekam-waktu').value;
+  const kelas = document.getElementById('rekam-kelas').value;
+  const durasi = document.getElementById('rekam-durasi').value;
+  const ket = document.getElementById('rekam-ket').value;
+  if (!guru || !waktu) { showToast('⚠️ Lengkapi nama guru & waktu!', true); return; }
+  const dt = new Date(waktu);
+  lateRecords.unshift({ guru, waktu: dt.toLocaleString('id-ID'), kelas, durasi, ket, photos: [...uploadedPhotos] });
+  uploadedPhotos = [];
+  document.getElementById('photo-previews').innerHTML = '';
+  document.getElementById('rekam-guru').value = '';
+  document.getElementById('rekam-waktu').value = '';
+  document.getElementById('rekam-kelas').value = '';
+  document.getElementById('rekam-ket').value = '';
+  document.getElementById('telat-count').textContent = parseInt(document.getElementById('telat-count').textContent) + 1;
+  showToast('✅ Dokumen tersimpan!');
+}
+
+function renderRiwayat() {
+  const list = document.getElementById('riwayat-list');
+  if (!lateRecords.length) {
+    list.innerHTML = '<div class="card" style="text-align:center;color:var(--muted);font-size:12px;padding:24px;">📭 Belum ada catatan keterlambatan</div>';
+    return;
+  }
+  list.innerHTML = lateRecords.map((r, i) => `
+    <div class="late-list-item">
+      <div class="lli-top">
+        <div>
+          <div class="lli-name">👩‍🏫 ${r.guru}</div>
+          <div class="lli-date">${r.waktu}</div>
+        </div>
+        <button class="btn-danger" onclick="hapusRecord(${i})">🗑️ Hapus</button>
+      </div>
+      <div class="lli-meta">📚 ${r.kelas || '—'} &nbsp;|&nbsp; ⏱ ${r.durasi}</div>
+      <div class="lli-late">Keterangan: ${r.ket || 'Tidak ada keterangan'}</div>
+      ${r.photos.length ? `<div class="lli-photos">${r.photos.map(p => `<img src="${p}">`).join('')}</div>` : ''}
+      <div class="lli-actions">
+        <button class="btn-danger" onclick="cetakDokumen(${i})">🖨️ Cetak</button>
+        <button style="padding:7px 12px;border:1px solid var(--cyan);border-radius:8px;background:rgba(0,212,255,0.1);color:var(--cyan);font-size:10px;font-weight:600;cursor:pointer;" onclick="">📤 Bagikan</button>
+      </div>
+    </div>`).join('');
+}
+
+function hapusRecord(i) {
+  lateRecords.splice(i, 1);
+  renderRiwayat();
+  showToast('🗑️ Catatan dihapus');
+}
+
+function cetakDokumen(i) {
+  const r = lateRecords[i];
+  const win = window.open('', '_blank');
+  win.document.write(`<html><head><title>Dokumen Keterlambatan</title>
+  <style>body{font-family:Arial;padding:30px;max-width:600px;margin:0 auto;}
+  h2{color:#003366;border-bottom:2px solid #003366;padding-bottom:8px;}
+  .row{display:flex;gap:10px;margin:8px 0;font-size:13px;}
+  .label{font-weight:bold;min-width:150px;color:#555;}
+  .watermark{margin-top:40px;font-size:10px;color:#aaa;text-align:center;}</style></head>
+  <body><h2>📋 DOKUMEN KETERLAMBATAN GURU</h2>
+  <div class="row"><span class="label">Nama Guru</span><span>${r.guru}</span></div>
+  <div class="row"><span class="label">Waktu Terlambat</span><span>${r.waktu}</span></div>
+  <div class="row"><span class="label">Kelas / Jam Ke-</span><span>${r.kelas || '—'}</span></div>
+  <div class="row"><span class="label">Durasi</span><span>${r.durasi}</span></div>
+  <div class="row"><span class="label">Keterangan</span><span>${r.ket || '—'}</span></div>
+  ${r.photos.length ? `<div><b>Bukti Foto:</b><br>${r.photos.map(p => `<img src="${p}" style="width:120px;margin:5px;border-radius:6px;">`).join('')}</div>` : ''}
+  <div class="watermark">Developed by D.D Candra © 2026 | Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+  </body></html>`);
+  win.document.close(); win.print();
+}
+
+function renderStatistik() {
+  const el = document.getElementById('stat-chart');
+  const counts = {};
+  lateRecords.forEach(r => { counts[r.guru] = (counts[r.guru] || 0) + 1; });
+  if (!Object.keys(counts).length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;">Belum ada data statistik</div>'; return; }
+  const max = Math.max(...Object.values(counts));
+  el.innerHTML = Object.entries(counts).map(([g, c]) => {
+    const pct = (c / max) * 100;
+    const name = g.split(',')[0];
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;">
+        <span style="color:var(--white)">${name}</span>
+        <span style="color:var(--red);font-family:"Orbitron",monospace;">${c}×</span>
+      </div>
+      <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--red),#FF8C00);border-radius:4px;"></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===== REGULASI (AI) =====
+let regulasiLoaded = false;
+async function loadRegulasi() {
+  if (regulasiLoaded) return;
+  regulasiLoaded = true;
+  const container = document.getElementById('regulasi-container');
+  container.innerHTML = '<div class="loading-news"><div class="loading-spinner"></div>MEMUAT INFORMASI REGULASI...</div>';
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Buatkan 5 item informasi regulasi dan kebijakan terkini seputar Kurikulum Merdeka untuk jenjang SMP/MTs di Indonesia tahun 2025-2026. 
+          Jawab HANYA dalam format JSON array, tanpa preamble atau markdown backtick, seperti ini:
+          [
+            {
+              "tag": "REGULASI",
+              "tanggal": "2025",
+              "judul": "judul singkat maks 60 karakter",
+              "ringkasan": "ringkasan 2-3 kalimat informatif",
+              "sumber": "nama sumber (Kemendikbudristek/BAN-S-M/dll)"
+            }
+          ]
+          Tag harus salah satu dari: REGULASI, INFO, KEBIJAKAN.
+          Fokus pada: Permendikbudristek terbaru, P5, KOSP, Asesmen Merdeka, Platform Merdeka Mengajar, jam mengajar guru, supervisi akademik.`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content.map(i => i.text || '').join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const items = JSON.parse(clean);
+    renderRegulasi(items);
+  } catch (e) {
+    renderRegulasi(FALLBACK_REGULASI);
+  }
+}
+
+const FALLBACK_REGULASI = [
+  { tag: 'REGULASI', tanggal: '2022', judul: 'Permendikbudristek No. 56 Tahun 2022', ringkasan: 'Pedoman penerapan Kurikulum Merdeka pada satuan pendidikan. Mengatur struktur kurikulum, beban belajar, dan alokasi waktu untuk semua jenjang.', sumber: 'Kemendikbudristek' },
+  { tag: 'KEBIJAKAN', tanggal: '2024', judul: 'Implementasi P5 Wajib untuk Semua Kelas', ringkasan: 'Projek Penguatan Profil Pelajar Pancasila wajib dilaksanakan dengan alokasi waktu 20–30% dari total jam pelajaran. Tema dipilih sesuai konteks satuan pendidikan.', sumber: 'Kemendikbudristek' },
+  { tag: 'INFO', tanggal: '2025', judul: 'Platform Merdeka Mengajar: Pelatihan Wajib Guru', ringkasan: 'Semua guru diwajibkan menyelesaikan modul pelatihan di Platform Merdeka Mengajar (PMM) minimal level Mahir. Capaian PMM berpengaruh pada penilaian kinerja.', sumber: 'Platform Merdeka Mengajar' },
+  { tag: 'REGULASI', tanggal: '2023', judul: 'Ketentuan Beban Mengajar Guru SMP/MTs', ringkasan: 'Guru wajib memenuhi 24 jam tatap muka per minggu (JTM). Tugas tambahan seperti wali kelas (+2 JTM) dan kepala lab (+4 JTM) dapat dihitung ke dalam beban mengajar.', sumber: 'Permendikbud No. 15/2018 jo. Kurikulum Merdeka' },
+  { tag: 'INFO', tanggal: '2025', judul: 'KOSP: Dokumen Wajib Satuan Pendidikan', ringkasan: 'Kurikulum Operasional Satuan Pendidikan (KOSP) wajib disusun, ditetapkan, dan diperbarui setiap tahun ajaran. KOSP menjadi acuan seluruh kegiatan pembelajaran di sekolah.', sumber: 'Kemendikbudristek' },
+];
+
+function renderRegulasi(items) {
+  const tagCls = { 'REGULASI': 'tag-regulasi', 'INFO': 'tag-info', 'KEBIJAKAN': 'tag-kebijakan' };
+  document.getElementById('regulasi-container').innerHTML = items.map(item => `
+    <div class="news-card">
+      <div class="news-badge-strip"></div>
+      <div class="news-body">
+        <div class="news-meta">
+          <span class="news-tag ${tagCls[item.tag] || 'tag-info'}">${item.tag}</span>
+          <span class="news-date">${item.tanggal}</span>
+        </div>
+        <div class="news-title">${item.judul}</div>
+        <div class="news-excerpt">${item.ringkasan}</div>
+        <div class="news-source">📌 ${item.sumber}</div>
+      </div>
+    </div>`).join('');
+}
+
+// ===== NOTIF MODAL — DINAMIS =====
+let readNotifIds = new Set();
+try {
+  const saved = localStorage.getItem('kuriku_read_notifs');
+  if (saved) readNotifIds = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function buildNotifs() {
+  const notifs = [];
+  // Notif dari riwayat keterlambatan (5 terbaru)
+  lateRecords.slice(0, 5).forEach((r, i) => {
+    notifs.push({
+      id: 'late_' + i,
+      ico: '⚠️',
+      msg: r.guru + ' terlambat masuk ' + (r.kelas || 'kelas') + (r.durasi ? ' — ' + r.durasi : ''),
+      time: r.waktu ? r.waktu.split(',')[0] : '—',
+      type: 'warning'
+    });
+  });
+  // Notif dari notulen tersimpan (3 terbaru)
+  notulenRecords.slice(0, 3).forEach((n, i) => {
+    notifs.push({
+      id: 'notulen_' + i,
+      ico: '📋',
+      msg: 'Notulen disimpan: "' + n.judul + '"',
+      time: n.waktu ? n.waktu.split(',')[0] : '—',
+      type: 'info'
+    });
+  });
+  // Reminder sistem
+  [
+    { id: 'sys_1', ico: '📢', msg: 'Reminder: Supervisi Akademik — pastikan sudah ≥50% terlaksana', time: 'Sistem', type: 'info' },
+    { id: 'sys_2', ico: '📚', msg: 'Pengumpulan Modul Ajar: periksa kelengkapan semua guru', time: 'Sistem', type: 'info' },
+    { id: 'sys_3', ico: '🎯', msg: 'P5: pastikan tema & fasilitator sudah ditetapkan semester ini', time: 'Sistem', type: 'info' },
+  ].forEach(s => notifs.push(s));
+  return notifs;
+}
+
+function updateNotifDot() {
+  const unread = buildNotifs().filter(n => !readNotifIds.has(n.id));
+  const dot = document.getElementById('notif-dot');
+  if (dot) dot.style.display = unread.length > 0 ? 'block' : 'none';
+}
+
+function showNotifModal() {
+  const notifs = buildNotifs();
+  notifs.forEach(n => readNotifIds.add(n.id));
+  try { localStorage.setItem('kuriku_read_notifs', JSON.stringify([...readNotifIds])); } catch(e) {}
+  updateNotifDot();
+  const colorMap = { warning: 'var(--red)', info: 'var(--cyan)', success: 'var(--green)' };
+  document.getElementById('notif-list').innerHTML = notifs.length
+    ? notifs.map(n => '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">'
+        + '<span style="font-size:18px;">' + n.ico + '</span>'
+        + '<div style="flex:1;">'
+        + '<div style="font-size:11px;color:var(--white);line-height:1.5;">' + n.msg + '</div>'
+        + '<div style="font-size:9px;color:' + (colorMap[n.type]||'var(--muted)') + ';margin-top:2px;font-family:"Orbitron",monospace;">' + n.time + '</div>'
+        + '</div></div>').join('')
+    : '<div style="text-align:center;padding:20px;color:var(--muted);font-size:11px;">Tidak ada notifikasi</div>';
+  document.getElementById('notif-modal').classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+// ===== TOAST =====
+function showToast(msg, warn = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = warn ? 'rgba(255,59,92,0.15)' : 'rgba(0,255,136,0.15)';
+  t.style.borderColor = warn ? 'var(--red)' : 'var(--green)';
+  t.style.color = warn ? 'var(--red)' : 'var(--green)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ===== SET DATETIME DEFAULT =====
+const nowDt = new Date();
+nowDt.setMinutes(nowDt.getMinutes() - nowDt.getTimezoneOffset());
+const dtVal = nowDt.toISOString().slice(0,16);
+const dtInput = document.getElementById('rekam-waktu');
+if (dtInput) dtInput.value = dtVal;
+
+// ===== CRUD MODAL FORM =====
+let currentModalType = '';
+let currentModalData = null;
+
+const MODAL_FORMS = {
+  'planning-add': {
+    title: '➕ TAMBAH ITEM PLANNING',
+    fields: `
+      <div class="form-group"><label class="form-label">WAKTU / PERIODE</label><input type="text" class="form-input" id="mf-waktu" placeholder="Contoh: Bulan 1 — Minggu 1"></div>
+      <div class="form-group"><label class="form-label">JUDUL KEGIATAN</label><input type="text" class="form-input" id="mf-judul" placeholder="Nama kegiatan planning"></div>
+      <div class="form-group"><label class="form-label">DESKRIPSI</label><textarea class="form-input" id="mf-desc" rows="3" placeholder="Deskripsi detail kegiatan..."></textarea></div>
+      <div class="form-group"><label class="form-label">STATUS</label><select class="form-select" id="mf-status">
+        <option value="badge-todo">BELUM DIMULAI</option>
+        <option value="badge-progress">DALAM PROSES</option>
+        <option value="badge-done">SELESAI</option>
+      </select></div>
+      <div class="form-group"><label class="form-label">JANGKA</label><select class="form-select" id="mf-jangka">
+        <option value="pendek">Jangka Pendek (1–3 Bulan)</option>
+        <option value="menengah">Jangka Menengah (3–12 Bulan)</option>
+        <option value="panjang">Jangka Panjang (1–3 Tahun)</option>
+      </select></div>`
+  },
+  'planning-edit': {
+    title: '✏️ EDIT ITEM PLANNING',
+    fields: `
+      <div class="form-group"><label class="form-label">WAKTU / PERIODE</label><input type="text" class="form-input" id="mf-waktu"></div>
+      <div class="form-group"><label class="form-label">JUDUL KEGIATAN</label><input type="text" class="form-input" id="mf-judul"></div>
+      <div class="form-group"><label class="form-label">DESKRIPSI</label><textarea class="form-input" id="mf-desc" rows="3"></textarea></div>
+      <div class="form-group"><label class="form-label">STATUS</label><select class="form-select" id="mf-status">
+        <option value="badge-todo">BELUM DIMULAI</option>
+        <option value="badge-progress">DALAM PROSES</option>
+        <option value="badge-done">SELESAI</option>
+      </select></div>`
+  },
+  'guru-add': {
+    title: '➕ TAMBAH DATA GURU',
+    fields: `
+      <div class="form-group"><label class="form-label">NAMA GURU</label><input type="text" class="form-input" id="mf-nama" placeholder="Nama lengkap + gelar"></div>
+      <div class="form-group"><label class="form-label">MATA PELAJARAN</label><input type="text" class="form-input" id="mf-mapel" placeholder="Mata pelajaran yang diampu"></div>
+      <div class="form-group"><label class="form-label">JAM PELAJARAN (JP/MINGGU)</label><input type="number" class="form-input" id="mf-jp" placeholder="24–40 JP" min="0" max="60"></div>
+      <div class="form-group"><label class="form-label">TUGAS TAMBAHAN</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--white);">
+          <input type="checkbox" id="mf-wali"> Wali Kelas (+2 JP)</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--white);">
+          <input type="checkbox" id="mf-kepala"> Kepala Lab (+4 JP)</label>
+      </div>`
+  },
+  'jadwal-add': {
+    title: '➕ TAMBAH JADWAL',
+    fields: `
+      <div class="form-group"><label class="form-label">HARI</label><select class="form-select" id="mf-hari">
+        <option value="1">Senin</option><option value="2">Selasa</option><option value="3">Rabu</option>
+        <option value="4">Kamis</option><option value="5">Jumat</option>
+      </select></div>
+      <div class="form-group"><label class="form-label">JAM MULAI</label><input type="time" class="form-input" id="mf-jam" value="07:00"></div>
+      <div class="form-group"><label class="form-label">NAMA GURU</label><select class="form-select" id="mf-guru">
+        ${GURU_DATA.map(g => `<option>${g.nama}</option>`).join('')}
+      </select></div>
+      <div class="form-group"><label class="form-label">KELAS</label><input type="text" class="form-input" id="mf-kelas" placeholder="Contoh: 7A"></div>
+      <div class="form-group"><label class="form-label">MATA PELAJARAN</label><input type="text" class="form-input" id="mf-mapel" placeholder="Contoh: Matematika"></div>
+      <div class="form-group"><label class="form-label">RUANG</label><input type="text" class="form-input" id="mf-ruang" placeholder="Contoh: R.01"></div>`
+  },
+  'notulen-add': {
+    title: '➕ NOTULEN BARU',
+    fields: `
+      <div class="form-group"><label class="form-label">JUDUL RAPAT</label><input type="text" class="form-input" id="mf-judul" placeholder="Agenda / judul rapat"></div>
+      <div class="form-group"><label class="form-label">TEMPAT & TANGGAL</label><input type="text" class="form-input" id="mf-tempat" placeholder="Tempat, DD MMM YYYY"></div>
+      <div class="form-group"><label class="form-label">PESERTA</label><input type="text" class="form-input" id="mf-peserta" placeholder="Daftar peserta rapat"></div>
+      <div class="form-group"><label class="form-label">ISI NOTULEN</label><textarea class="form-input" id="mf-isi" rows="5" placeholder="Tulis isi notulen rapat..."></textarea></div>`
+  }
+};
+
+function openModalForm(type, data = null) {
+  const config = MODAL_FORMS[type];
+  if (!config) return;
+  currentModalType = type;
+  currentModalData = data;
+  document.getElementById('modal-form-title').textContent = config.title;
+  document.getElementById('modal-form-body').innerHTML = config.fields;
+  // Pre-fill edit fields
+  if (data) {
+    if (data.waktu && document.getElementById('mf-waktu')) document.getElementById('mf-waktu').value = data.waktu;
+    if (data.judul && document.getElementById('mf-judul')) document.getElementById('mf-judul').value = data.judul;
+    if (data.status && document.getElementById('mf-status')) document.getElementById('mf-status').value = data.status;
+  }
+  document.getElementById('modal-form').classList.add('open');
+}
+function closeModalForm() {
+  document.getElementById('modal-form').classList.remove('open');
+  currentModalType = '';
+  currentModalData = null;
+}
+function saveModalForm() {
+  const type = currentModalType;
+  if (type === 'planning-add' || type === 'planning-edit') {
+    const waktu = document.getElementById('mf-waktu')?.value.trim();
+    const judul = document.getElementById('mf-judul')?.value.trim();
+    const desc = document.getElementById('mf-desc')?.value.trim();
+    const status = document.getElementById('mf-status')?.value;
+    const jangka = document.getElementById('mf-jangka')?.value || 'pendek';
+    if (!judul) { showToast('⚠️ Judul harus diisi!', true); return; }
+    if (type === 'planning-add') {
+      const colors = { pendek: 'cyan', menengah: 'green', panjang: 'purple' };
+      const statusLabels = { 'badge-todo': 'BELUM DIMULAI', 'badge-progress': 'DALAM PROSES', 'badge-done': 'SELESAI' };
+      const container = document.getElementById('plan-' + jangka)?.querySelector('.card');
+      if (container) {
+        const div = document.createElement('div');
+        div.className = 'timeline-item';
+        div.innerHTML = `<div class="tl-dot ${colors[jangka]}"></div>
+          <div style="flex:1">
+            <div class="tl-time">${waktu || 'PERIODE BARU'}</div>
+            <div class="tl-title">${judul}</div>
+            <div class="tl-desc">${desc || ''}</div>
+            <span class="tl-badge ${status}">${statusLabels[status]}</span>
+            <div class="crud-actions" style="margin-top:8px;">
+              <button class="btn-edit" onclick="openModalForm('planning-edit',{judul:'${judul}',waktu:'${waktu}',status:'${status}'})">✏️ Edit</button>
+              <button class="btn-del" onclick="hapusTlItem(this)">🗑️</button>
+            </div>
+          </div>`;
+        container.appendChild(div);
+      }
+      showToast('✅ Item planning ditambahkan!');
+    } else {
+      showToast('✅ Item planning diperbarui!');
+    }
+  } else if (type === 'guru-add') {
+    const nama = document.getElementById('mf-nama')?.value.trim();
+    const mapel = document.getElementById('mf-mapel')?.value.trim();
+    const jp = parseInt(document.getElementById('mf-jp')?.value) || 24;
+    const wali = document.getElementById('mf-wali')?.checked || false;
+    const kepala = document.getElementById('mf-kepala')?.checked || false;
+    if (!nama || !mapel) { showToast('⚠️ Nama & mapel harus diisi!', true); return; }
+    GURU_DATA.push({ nama, mapel, jp, wali, kepala, max: 40 });
+    renderGuruList();
+    showToast('✅ Guru berhasil ditambahkan!');
+  } else if (type === '__guru-edit__') {
+    const idx = currentModalData?.idx;
+    if (idx === undefined) return;
+    const nama = document.getElementById('mf-nama')?.value.trim();
+    const mapel = document.getElementById('mf-mapel')?.value.trim();
+    const jp = parseInt(document.getElementById('mf-jp')?.value) || 24;
+    const wali = document.getElementById('mf-wali')?.checked || false;
+    const kepala = document.getElementById('mf-kepala')?.checked || false;
+    if (!nama || !mapel) { showToast('⚠️ Nama & mapel harus diisi!', true); return; }
+    GURU_DATA[idx] = { nama, mapel, jp, wali, kepala, max: 40 };
+    renderGuruList();
+    showToast('✅ Data guru diperbarui!');
+  } else if (type === 'jadwal-cell') {
+    const ctx = _jadwalFormCtx;
+    if (!ctx) return;
+    const guru = document.getElementById('mf-guru')?.value;
+    const mapel = document.getElementById('mf-mapel')?.value.trim();
+    const ruang = document.getElementById('mf-ruang')?.value.trim();
+    if (!guru) { showToast('⚠️ Pilih guru!', true); return; }
+    if (!JADWAL_DATA2[ctx.hari]) JADWAL_DATA2[ctx.hari] = {};
+    if (!JADWAL_DATA2[ctx.hari][ctx.kelas]) JADWAL_DATA2[ctx.hari][ctx.kelas] = {};
+    JADWAL_DATA2[ctx.hari][ctx.kelas][ctx.jam] = { guru, mapel, ruang };
+    renderGrid(); saveAll();
+    showToast('✅ Jadwal disimpan!');
+  } else if (type === '__tugas-edit__') {
+    const idx = currentModalData?.idx;
+    if (idx === undefined) return;
+    const raw = document.getElementById('mf-tugas')?.value.trim();
+    GURU_DATA[idx].tugas = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
+    renderTugasList(); saveAll();
+    showToast('✅ Tugas tambahan diperbarui!');
+  } else if (type === 'jadwal-add') {
+    const hari = parseInt(document.getElementById('mf-hari')?.value);
+    const jam = document.getElementById('mf-jam')?.value;
+    const guru = document.getElementById('mf-guru')?.value;
+    const kelas = document.getElementById('mf-kelas')?.value.trim();
+    const mapel = document.getElementById('mf-mapel')?.value.trim();
+    const ruang = document.getElementById('mf-ruang')?.value.trim();
+    if (!kelas || !mapel) { showToast('⚠️ Kelas & mapel harus diisi!', true); return; }
+    if (!JADWAL_DATA[hari]) JADWAL_DATA[hari] = [];
+    JADWAL_DATA[hari].push({ jam, guru: guru.split(',')[0], kelas, mapel, ruang, status: 'belum' });
+    JADWAL_DATA[hari].sort((a,b) => a.jam.localeCompare(b.jam));
+    renderJadwal();
+    showToast('✅ Jadwal berhasil ditambahkan!');
+  } else if (type === 'notulen-add') {
+    const judul = document.getElementById('mf-judul')?.value.trim();
+    const tempat = document.getElementById('mf-tempat')?.value.trim();
+    const peserta = document.getElementById('mf-peserta')?.value.trim();
+    const isi = document.getElementById('mf-isi')?.value.trim();
+    if (!judul) { showToast('⚠️ Judul rapat harus diisi!', true); return; }
+    addNotulenToArsip({ judul, tempat: tempat || '—', peserta: peserta || '—', isi: isi || '—', teks: '', waktu: new Date().toLocaleString('id-ID') });
+    showToast('✅ Notulen disimpan ke arsip!');
+  }
+  closeModalForm();
+}
+
+function hapusTlItem(btn) {
+  const item = btn.closest('.timeline-item');
+  if (item) {
+    item.style.transition = 'opacity 0.3s, transform 0.3s';
+    item.style.opacity = '0'; item.style.transform = 'translateX(-20px)';
+    setTimeout(() => item.remove(), 300);
+    showToast('🗑️ Item dihapus');
+  }
+}
+
+// ===== GURU LIST with edit/delete =====
+function renderGuruList(filter = '') {
+  const list = document.getElementById('guru-list');
+  const data = filter ? GURU_DATA.filter(g => g.nama.toLowerCase().includes(filter.toLowerCase()) || g.mapel.toLowerCase().includes(filter.toLowerCase())) : GURU_DATA;
+  list.innerHTML = data.map((g, i) => {
+    const realIdx = GURU_DATA.indexOf(g);
+    const pct = Math.min((g.jp / g.max) * 100, 100);
+    const status = g.jp < 24 ? 'over' : g.jp > 40 ? 'over' : g.jp >= 24 && g.jp <= 32 ? 'ok' : 'warn';
+    const statusLabel = g.jp < 24 ? `⚠️ KURANG (${g.jp}/24)` : g.jp > 40 ? `🔴 LEBIH (${g.jp}/40)` : `✅ SESUAI`;
+    const extras = [];
+    if (g.wali) extras.push('Wali Kelas (+2 JP)');
+    if (g.kepala) extras.push('Kepala Lab (+4 JP)');
+    return `
+    <div class="teacher-card">
+      <div class="tc-top" onclick="toggleDetail('tc-${realIdx}')">
+        <div>
+          <div class="tc-name">${g.nama}</div>
+          <div class="tc-mapel">${g.mapel}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+          <div class="tc-hours ${status}">${g.jp}<span>JP/minggu</span></div>
+          <div class="crud-actions">
+            <button class="btn-edit" onclick="event.stopPropagation();editGuru(${realIdx})">✏️</button>
+            <button class="btn-del" onclick="event.stopPropagation();hapusGuru(${realIdx})">🗑️</button>
+          </div>
+        </div>
+      </div>
+      <div class="tc-bar-wrap">
+        <div class="tc-bar-bg">
+          <div class="tc-bar-fill ${status}" style="width:${pct}%;"></div>
+        </div>
+      </div>
+      <div class="tc-detail" id="tc-${realIdx}">
+        <div style="height:8px;"></div>
+        <div class="tc-row"><span class="tc-row-label">Status JP</span><span class="tc-row-val">${statusLabel}</span></div>
+        <div class="tc-row"><span class="tc-row-label">Tugas Tambahan</span><span class="tc-row-val">${extras.length ? extras.join(', ') : '—'}</span></div>
+        <div class="tc-row"><span class="tc-row-label">JP Mengajar Murni</span><span class="tc-row-val">${g.jp - (g.wali ? 2 : 0) - (g.kepala ? 4 : 0)} JP</span></div>
+        <div class="tc-row"><span class="tc-row-label">Ketentuan Sertifikasi</span><span class="tc-row-val">${g.jp >= 24 ? '✅ Terpenuhi' : '❌ Belum Terpenuhi'}</span></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function editGuru(i) {
+  const g = GURU_DATA[i];
+  openModalForm('guru-add', g);
+  document.getElementById('modal-form-title').textContent = '✏️ EDIT DATA GURU';
+  setTimeout(() => {
+    if(document.getElementById('mf-nama')) document.getElementById('mf-nama').value = g.nama;
+    if(document.getElementById('mf-mapel')) document.getElementById('mf-mapel').value = g.mapel;
+    if(document.getElementById('mf-jp')) document.getElementById('mf-jp').value = g.jp;
+    if(document.getElementById('mf-wali')) document.getElementById('mf-wali').checked = g.wali;
+    if(document.getElementById('mf-kepala')) document.getElementById('mf-kepala').checked = g.kepala;
+    // Override save to edit
+    currentModalType = '__guru-edit__';
+    currentModalData = { idx: i };
+  }, 50);
+}
+function hapusGuru(i) {
+  if (confirm(`Hapus data guru: ${GURU_DATA[i].nama}?`)) {
+    GURU_DATA.splice(i, 1);
+    renderGuruList();
+    showToast('🗑️ Data guru dihapus');
+  }
+}
+function toggleDetail(id) { document.getElementById(id)?.classList.toggle('open'); }
+function filterGuru(v) { renderGuruList(v); }
+
+// ===== NOTULEN RAPAT =====
+let notulenRecords = [];
+let mediaRecorder = null;
+let audioChunks = [];
+let recTimerInterval = null;
+let recSeconds = 0;
+let isRecording = false;
+let isPaused = false;
+let waveAnimInterval = null;
+
+function switchNotulen(tab, el) {
+  document.querySelectorAll('.notulen-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.notulen-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('notulen-' + tab).classList.add('active');
+  if (tab === 'arsip-rapat') renderNotulenList();
+}
+
+async function toggleRecord() {
+  if (isRecording) return;
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    audioChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+    mediaRecorder.onstop = () => {
+      const blob = new Blob(audioChunks, { type: 'audio/webm' });
+      const url = URL.createObjectURL(blob);
+      const audioPlayer = document.getElementById('audio-player');
+      audioPlayer.src = url;
+      document.getElementById('audio-playback').classList.add('show');
+      document.getElementById('btn-convert').style.display = 'block';
+      setRecStatus('done', '✅ REKAMAN SELESAI');
+      stopWaveAnim();
+      stream.getTracks().forEach(t => t.stop());
+    };
+    mediaRecorder.start();
+    isRecording = true;
+    document.getElementById('btn-record').classList.add('recording');
+    document.getElementById('btn-record').textContent = '⏸';
+    document.getElementById('btn-stop').style.display = 'flex';
+    setRecStatus('recording', '🔴 MEREKAM...');
+    startRecTimer();
+    startWaveAnim();
+  } catch(e) {
+    showToast('⚠️ Izin mikrofon diperlukan!', true);
+  }
+}
+
+function stopRecording() {
+  if (mediaRecorder && isRecording) {
+    mediaRecorder.stop();
+    isRecording = false;
+    isPaused = false;
+    document.getElementById('btn-record').classList.remove('recording');
+    document.getElementById('btn-record').textContent = '🎙️';
+    document.getElementById('btn-stop').style.display = 'none';
+    document.getElementById('btn-pause').style.display = 'none';
+    stopRecTimer();
+  }
+}
+
+function pauseRecording() {
+  if (!mediaRecorder) return;
+  if (!isPaused) {
+    mediaRecorder.pause();
+    isPaused = true;
+    document.getElementById('btn-pause').textContent = '▶️';
+    stopRecTimer();
+    setRecStatus('recording', '⏸ DIJEDA');
+  } else {
+    mediaRecorder.resume();
+    isPaused = false;
+    document.getElementById('btn-pause').textContent = '⏸';
+    startRecTimer();
+    setRecStatus('recording', '🔴 MEREKAM...');
+  }
+}
+
+function setRecStatus(cls, txt) {
+  const el = document.getElementById('rec-status-label');
+  el.className = 'rec-status ' + cls;
+  el.textContent = txt;
+}
+
+function startRecTimer() {
+  recTimerInterval = setInterval(() => {
+    recSeconds++;
+    const m = String(Math.floor(recSeconds/60)).padStart(2,'0');
+    const s = String(recSeconds%60).padStart(2,'0');
+    document.getElementById('rec-timer').textContent = `${m}:${s}`;
+  }, 1000);
+}
+function stopRecTimer() { clearInterval(recTimerInterval); }
+
+function startWaveAnim() {
+  const bars = document.querySelectorAll('.voice-wave-bar');
+  waveAnimInterval = setInterval(() => {
+    bars.forEach(b => {
+      b.style.height = (Math.random() * 24 + 4) + 'px';
+      b.style.background = 'var(--red)';
+    });
+  }, 120);
+}
+function stopWaveAnim() {
+  clearInterval(waveAnimInterval);
+  document.querySelectorAll('.voice-wave-bar').forEach((b,i) => {
+    b.style.height = [6,10,6,14,8,18,10,6][i] + 'px';
+    b.style.background = 'var(--muted)';
+  });
+}
+
+async function convertToText() {
+  const box = document.getElementById('converted-text-box');
+  const loading = document.getElementById('convert-loading');
+  const content = document.getElementById('converted-text-content');
+  box.classList.add('show');
+  loading.style.display = 'block';
+  content.textContent = '';
+
+  const judul = document.getElementById('rapat-judul')?.value || 'Rapat Kurikulum';
+  const tempat = document.getElementById('rapat-tempat')?.value || 'Sekolah';
+  const peserta = document.getElementById('rapat-peserta')?.value || 'Dewan guru';
+  const catatan = document.getElementById('rapat-catatan')?.value || '';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `Buat notulen rapat sekolah yang lengkap dan profesional berdasarkan informasi berikut:
+Judul Rapat: ${judul}
+Tempat & Waktu: ${tempat}
+Peserta: ${peserta}
+Catatan Tambahan: ${catatan || 'tidak ada'}
+
+Buat notulen dalam format:
+PEMBUKAAN: [kalimat pembuka rapat]
+AGENDA: [poin-poin agenda]
+PEMBAHASAN: [isi pembahasan 3-5 poin penting seputar kurikulum merdeka SMP]
+KESIMPULAN & TINDAK LANJUT: [poin keputusan]
+PENUTUP: [kalimat penutup]
+
+Gunakan bahasa Indonesia formal dan sesuaikan dengan konteks Waka Kurikulum SMP Kurikulum Merdeka.`
+        }]
+      })
+    });
+    const data = await resp.json();
+    const teks = data.content.map(i => i.text || '').join('');
+    loading.style.display = 'none';
+    content.innerHTML = teks.replace(/\n/g, '<br>');
+    showToast('✅ Transkripsi AI selesai!');
+    // Store for save
+    window._lastConvertedText = teks;
+  } catch(e) {
+    loading.style.display = 'none';
+    const fallback = `PEMBUKAAN:\nRapat ${judul} dibuka oleh Waka Kurikulum.\n\nAGENDA:\n• Evaluasi pelaksanaan pembelajaran\n• Monitoring pengumpulan modul ajar\n• Tindak lanjut supervisi akademik\n\nPEMBAHASAN:\n• Seluruh guru diminta segera melengkapi modul ajar sesuai format Kurikulum Merdeka\n• Jadwal supervisi akademik semester ini akan dilaksanakan minggu depan\n• P5 semester ini berjalan sesuai rencana\n\nKESIMPULAN & TINDAK LANJUT:\n• Guru mengumpulkan modul ajar maksimal akhir pekan ini\n• Supervisi akademik dimulai Senin depan\n\nPEMBUTUP:\nRapat ditutup pukul selesai. Notulen ini dibuat sebagai arsip resmi sekolah.`;
+    content.innerHTML = fallback.replace(/\n/g, '<br>');
+    window._lastConvertedText = fallback;
+    showToast('⚠️ Menggunakan template notulen', true);
+  }
+}
+
+function simpanNotulen() {
+  const judul = document.getElementById('rapat-judul')?.value.trim();
+  const tempat = document.getElementById('rapat-tempat')?.value.trim();
+  const peserta = document.getElementById('rapat-peserta')?.value.trim();
+  const catatan = document.getElementById('rapat-catatan')?.value.trim();
+  const teks = window._lastConvertedText || catatan || '—';
+  if (!judul) { showToast('⚠️ Isi judul rapat terlebih dahulu!', true); return; }
+  const record = {
+    judul: judul || 'Rapat Tanpa Judul',
+    tempat: tempat || '—',
+    peserta: peserta || '—',
+    catatan,
+    teks,
+    waktu: new Date().toLocaleString('id-ID'),
+    durasi: document.getElementById('rec-timer')?.textContent || '00:00'
+  };
+  addNotulenToArsip(record);
+  downloadNotulenPDF(record);
+  showToast('💾 Notulen disimpan & PDF diunduh!');
+}
+
+function addNotulenToArsip(record) {
+  notulenRecords.unshift(record);
+  renderNotulenList();
+  try { saveAll(); } catch(e) {}
+}
+
+function renderNotulenList() {
+  const el = document.getElementById('notulen-list');
+  if (!notulenRecords.length) {
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:\'Orbitron\',monospace;">Belum ada notulen tersimpan</div>';
+    return;
+  }
+  el.innerHTML = notulenRecords.map((n, i) => `
+    <div class="notulen-card">
+      <div class="notulen-header">
+        <div>
+          <div class="notulen-title">📋 ${n.judul}</div>
+          <div class="notulen-meta">📅 ${n.waktu} ${n.durasi ? '· ⏱ ' + n.durasi : ''}</div>
+          <div class="notulen-meta">📍 ${n.tempat}</div>
+        </div>
+        <div class="crud-actions">
+          <button class="btn-edit" onclick="downloadNotulenPDF(notulenRecords[${i}])">📄</button>
+          <button class="btn-del" onclick="hapusNotulen(${i})">🗑️</button>
+        </div>
+      </div>
+      <div class="notulen-preview">${String(n.teks || n.catatan || '-').replace(/<br>/g,' ').substring(0, 120)}...</div>
+      <div class="notulen-footer">
+        <button class="btn-edit" style="font-size:10px;padding:6px 10px;" onclick="downloadNotulenPDF(notulenRecords[${i}])">📥 Download PDF</button>
+        <span style="font-size:9px;color:var(--muted);align-self:center;">👥 ${n.peserta}</span>
+      </div>
+    </div>`).join('');
+}
+
+function hapusNotulen(i) {
+  notulenRecords.splice(i, 1);
+  renderNotulenList();
+  showToast('🗑️ Notulen dihapus');
+}
+
+function downloadNotulenPDF(r) {
+  const win = window.open('', '_blank');
+  const teksFormatted = (r.teks || r.catatan || '—').replace(/<br>/g, '\n').replace(/\n/g, '<br>');
+  win.document.write(`<!DOCTYPE html><html><head><title>Notulen Rapat</title>
+  <style>
+    @media print { body { -webkit-print-color-adjust: exact; } }
+    body { font-family: 'Times New Roman', serif; padding: 40px; max-width: 700px; margin: 0 auto; font-size: 13px; }
+    .kop { text-align: center; border-bottom: 3px double #003366; padding-bottom: 12px; margin-bottom: 20px; }
+    .kop h2 { font-size: 18px; color: #003366; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .kop p { font-size: 11px; color: #555; margin: 2px 0; }
+    .title { text-align: center; font-size: 16px; font-weight: bold; color: #003366; text-decoration: underline; margin: 16px 0 20px; text-transform: uppercase; }
+    .info-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
+    .info-table td { padding: 4px 8px; font-size: 12px; vertical-align: top; }
+    .info-table td:first-child { width: 140px; font-weight: bold; color: #333; }
+    .info-table td:nth-child(2) { width: 10px; }
+    .content { border: 1px solid #ccc; border-radius: 4px; padding: 16px; min-height: 200px; font-size: 12px; line-height: 1.8; background: #fafafa; }
+    .footer { margin-top: 40px; display: flex; justify-content: space-between; font-size: 11px; }
+    .sign-box { text-align: center; }
+    .sign-line { width: 140px; border-bottom: 1px solid #333; margin: 60px auto 4px; }
+    .watermark { margin-top: 30px; text-align: center; font-size: 9px; color: #aaa; border-top: 1px solid #eee; padding-top: 8px; }
+  </style></head><body>
+  <div class="kop">
+    <h2>🏫 ${currentSetting.schoolName || 'SMP / MTs — KURIKULUM MERDEKA'}</h2>
+    <p>Waka Kurikulum Dashboard — KURIKU © 2026</p>
+  </div>
+  <div class="title">NOTULEN RAPAT</div>
+  <table class="info-table">
+    <tr><td>Judul / Agenda</td><td>:</td><td>${r.judul}</td></tr>
+    <tr><td>Tempat & Waktu</td><td>:</td><td>${r.tempat}</td></tr>
+    <tr><td>Peserta</td><td>:</td><td>${r.peserta}</td></tr>
+    <tr><td>Tanggal Cetak</td><td>:</td><td>${r.waktu}</td></tr>
+    ${r.durasi ? `<tr><td>Durasi Rekaman</td><td>:</td><td>${r.durasi}</td></tr>` : ''}
+  </table>
+  <div style="font-weight:bold;margin-bottom:8px;color:#003366;font-size:12px;">ISI NOTULEN:</div>
+  <div class="content">${teksFormatted}</div>
+  <div class="footer">
+    <div class="sign-box">
+      <div style="font-size:11px;color:#333;">Notulis,</div>
+      <div class="sign-line"></div>
+      <div style="font-size:11px;">(.......................................)</div>
+    </div>
+    <div class="sign-box">
+      <div style="font-size:11px;color:#333;">Waka Kurikulum,</div>
+      <div class="sign-line"></div>
+      <div style="font-size:11px;">(.......................................)</div>
+    </div>
+    <div class="sign-box">
+      <div style="font-size:11px;color:#333;">Kepala Sekolah,</div>
+      <div class="sign-line"></div>
+      <div style="font-size:11px;">(.......................................)</div>
+    </div>
+  </div>
+  <div class="watermark">Developed by D.D Candra © 2026 | Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+
+// ===== SETTING =====
+const LS_SETTING = 'kuriku_setting';
+let currentSetting = {
+  appName: 'KURIKU', appSub: 'WAKA KURIKULUM DASHBOARD',
+  schoolName: 'SMP / MTs — Kurikulum Merdeka',
+  wakaName: '', logoData: '', themeColor: 'cyan'
+};
+
+function loadSetting() {
+  try {
+    const s = localStorage.getItem(LS_SETTING);
+    if (s) Object.assign(currentSetting, JSON.parse(s));
+    applySetting();
+  } catch(e) {}
+}
+
+function applySetting() {
+  // App name
+  const nameEl = document.getElementById('header-app-name');
+  const subEl  = document.getElementById('header-app-sub');
+  if (nameEl) {
+    nameEl.childNodes[0].textContent = currentSetting.appName || 'KURIKU';
+  }
+  if (subEl) subEl.textContent = currentSetting.appSub || 'WAKA KURIKULUM DASHBOARD';
+  // Logo
+  const logoImg = document.getElementById('header-logo-img');
+  if (logoImg) {
+    if (currentSetting.logoData) {
+      logoImg.src = currentSetting.logoData;
+      logoImg.style.display = 'inline-block';
+    } else {
+      logoImg.style.display = 'none';
+    }
+  }
+  // School name on welcome
+  const schoolEl = document.querySelector('.welcome-school');
+  if (schoolEl && currentSetting.schoolName) schoolEl.textContent = currentSetting.schoolName;
+  // Theme color
+  if (currentSetting.themeColor) {
+    const colorMap = { cyan: '#00D4FF', green: '#00FF88', purple: '#B400FF', orange: '#FF8C00' };
+    const c = colorMap[currentSetting.themeColor] || '#00D4FF';
+    document.documentElement.style.setProperty('--cyan', c);
+  }
+}
+
+function openSetting() {
+  // Fill form with current values
+  document.getElementById('setting-appname').value  = currentSetting.appName || '';
+  document.getElementById('setting-appsub').value   = currentSetting.appSub || '';
+  document.getElementById('setting-schoolname').value = currentSetting.schoolName || '';
+  document.getElementById('setting-wakaname').value = currentSetting.wakaName || '';
+  // Logo preview
+  const prevImg = document.getElementById('logo-preview-img');
+  const prevPh  = document.getElementById('logo-preview-placeholder');
+  if (currentSetting.logoData) {
+    prevImg.src = currentSetting.logoData;
+    prevImg.style.display = 'block';
+    prevPh.style.display = 'none';
+  } else {
+    prevImg.style.display = 'none';
+    prevPh.style.display = 'block';
+  }
+  document.getElementById('setting-modal').classList.add('open');
+}
+
+function closeSetting() {
+  document.getElementById('setting-modal').classList.remove('open');
+}
+
+function previewLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    currentSetting.logoData = e.target.result;
+    const prevImg = document.getElementById('logo-preview-img');
+    const prevPh  = document.getElementById('logo-preview-placeholder');
+    prevImg.src = e.target.result;
+    prevImg.style.display = 'block';
+    prevPh.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function hapusLogo() {
+  currentSetting.logoData = '';
+  document.getElementById('logo-preview-img').style.display = 'none';
+  document.getElementById('logo-preview-placeholder').style.display = 'block';
+  document.getElementById('logo-upload-input').value = '';
+  const logoImg = document.getElementById('header-logo-img');
+  if (logoImg) logoImg.style.display = 'none';
+  showToast('🗑️ Logo dihapus');
+}
+
+function setThemeColor(color) {
+  currentSetting.themeColor = color;
+  applySetting();
+  showToast('🎨 Tema diubah!');
+}
+
+function saveSetting() {
+  currentSetting.appName    = document.getElementById('setting-appname').value.trim() || 'KURIKU';
+  currentSetting.appSub     = document.getElementById('setting-appsub').value.trim() || 'WAKA KURIKULUM DASHBOARD';
+  currentSetting.schoolName = document.getElementById('setting-schoolname').value.trim();
+  currentSetting.wakaName   = document.getElementById('setting-wakaname').value.trim();
+  try { localStorage.setItem(LS_SETTING, JSON.stringify(currentSetting)); } catch(e) {}
+  applySetting();
+  closeSetting();
+  showToast('✅ Pengaturan disimpan!');
+}
+
+function resetSemuaData() {
+  if (!confirm('Reset SEMUA data? Tindakan ini tidak bisa dibatalkan!')) return;
+  try { localStorage.clear(); } catch(e) {}
+  showToast('🗑️ Semua data direset. Memuat ulang...');
+  setTimeout(() => location.reload(), 1500);
+}
+
+// ===== LOCALSTORAGE PERSISTENCE =====
+const LS_KEYS = {
+  screen:    'kuriku_screen',
+  subTab:    'kuriku_subtab',
+  guru:      'kuriku_guru',
+  jadwal:    'kuriku_jadwal',
+  jadwal2:   'kuriku_jadwal2',
+  mgmp:      'kuriku_mgmp',
+  late:      'kuriku_late',
+  notulen:   'kuriku_notulen',
+  planning:  'kuriku_planning',
+};
+
+function saveAll() {
+  try {
+    localStorage.setItem(LS_KEYS.screen,  currentScreen);
+    localStorage.setItem(LS_KEYS.guru,    JSON.stringify(GURU_DATA));
+    localStorage.setItem(LS_KEYS.jadwal,  JSON.stringify(JADWAL_DATA));
+    localStorage.setItem(LS_KEYS.jadwal2, JSON.stringify(JADWAL_DATA2));
+    localStorage.setItem(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
+    localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
+    localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
+    // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
+    const planSnap = {};
+    ['pendek','menengah','panjang'].forEach(j => {
+      const card = document.getElementById('plan-' + j)?.querySelector('.card');
+      if (card) planSnap[j] = card.innerHTML;
+    });
+    localStorage.setItem(LS_KEYS.planning, JSON.stringify(planSnap));
+  } catch(e) { console.warn('Save gagal:', e); }
+}
+
+function loadAll() {
+  try {
+    // Guru
+    const g = localStorage.getItem(LS_KEYS.guru);
+    if (g) { const p = JSON.parse(g); GURU_DATA.length = 0; p.forEach(x => GURU_DATA.push(x)); }
+    // Jadwal lama (legacy)
+    const j = localStorage.getItem(LS_KEYS.jadwal);
+    if (j) { const p = JSON.parse(j); Object.keys(p).forEach(k => JADWAL_DATA[k] = p[k]); }
+    // Jadwal grid baru
+    const j2 = localStorage.getItem(LS_KEYS.jadwal2);
+    if (j2) JADWAL_DATA2 = JSON.parse(j2);
+    // MGMP — only load if localStorage has data (preserve defaults otherwise)
+    const mg = localStorage.getItem(LS_KEYS.mgmp);
+    if (mg) mgmpData = JSON.parse(mg);
+    // Keterlambatan
+    const l = localStorage.getItem(LS_KEYS.late);
+    if (l) lateRecords = JSON.parse(l);
+    // Notulen
+    const n = localStorage.getItem(LS_KEYS.notulen);
+    if (n) notulenRecords = JSON.parse(n);
+    // Planning DOM
+    const pl = localStorage.getItem(LS_KEYS.planning);
+    if (pl) {
+      const snap = JSON.parse(pl);
+      ['pendek','menengah','panjang'].forEach(j => {
+        if (!snap[j]) return;
+        const card = document.getElementById('plan-' + j)?.querySelector('.card');
+        if (card) card.innerHTML = snap[j];
+      });
+    }
+  } catch(e) { console.warn('Load gagal:', e); }
+}
+
+// Patch fungsi yang mengubah data agar otomatis auto-save
+const _origSKeterlambatan = simpanKeterlambatan;
+simpanKeterlambatan = function() { _origSKeterlambatan(); saveAll(); setTimeout(updateNotifDot, 100); };
+
+const _origHRecord = hapusRecord;
+hapusRecord = function(i) { _origHRecord(i); saveAll(); };
+
+const _origHTl = hapusTlItem;
+hapusTlItem = function(btn) { _origHTl(btn); setTimeout(saveAll, 350); };
+
+const _origHNotulen = hapusNotulen;
+hapusNotulen = function(i) {
+  notulenRecords.splice(i, 1); renderNotulenList();
+  showToast('🗑️ Notulen dihapus'); saveAll();
+};
+
+const _origHGuru = hapusGuru;
+hapusGuru = function(i) {
+  if (!confirm('Hapus data guru: ' + GURU_DATA[i].nama + '?')) return;
+  GURU_DATA.splice(i, 1); renderGuruList();
+  showToast('🗑️ Data guru dihapus'); saveAll();
+};
+
+const _origSaveModal = saveModalForm;
+saveModalForm = function() { _origSaveModal(); setTimeout(saveAll, 100); };
+
+const _origSimpanNotulen = simpanNotulen;
+simpanNotulen = function() { _origSimpanNotulen(); saveAll(); };
+
+// ===== INIT =====
+loadAll();          // pulihkan semua data tersimpan
+loadSetting();      // terapkan pengaturan (nama, logo, tema)
+renderGuruList();
+renderJadwal();
+updateNotifDot();
+
+// Patch saveAll agar dot notif selalu update
+const _origSaveAll = saveAll;
+saveAll = function() { _origSaveAll(); updateNotifDot(); };
+
+// Pulihkan halaman terakhir
+const _lastScreen = (() => { try { return localStorage.getItem(LS_KEYS.screen) || 'home'; } catch(e) { return 'home'; } })();
+if (_lastScreen && _lastScreen !== 'home') {
+  switchScreen(_lastScreen);
+  // Pulihkan sub-tab jadwal
+  if (_lastScreen === 'jadwal') {
+    const lastJTab = localStorage.getItem('kuriku_jadwal_tab') || 'grid';
+    const jtabEl = document.getElementById('jtab-' + lastJTab);
+    if (jtabEl) switchJadwalTab(lastJTab, jtabEl);
+  }
+  // Pulihkan sub-tab jam
+  if (_lastScreen === 'jam') {
+    const lastJamTab = localStorage.getItem('kuriku_jam_tab') || 'jp';
+    const jamTabEl = document.getElementById('jamtab-' + lastJamTab);
+    if (jamTabEl) switchJamTab(lastJamTab, jamTabEl);
+  }
+} else {
+  renderMiniSchedule();
+}
+
+// ===== AUTO-SAVE AGRESIF =====
+// Simpan SETIAP 3 detik (bukan 30)
+setInterval(saveAll, 3000);
+
+// Mobile: simpan saat tab/app di-minimize atau pindah app
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') saveAll();
+});
+
+// Desktop: simpan saat halaman ditutup/refresh
+window.addEventListener('beforeunload', saveAll);
+window.addEventListener('pagehide', saveAll);
+
+// Simpan setiap kali user tap/klik di halaman
+document.addEventListener('click', () => { try { saveAll(); } catch(e){} }, { passive: true });
+
+// Simpan setiap kali user selesai ketik di input manapun
+document.addEventListener('change', () => { try { saveAll(); } catch(e){} }, { passive: true });
+document.addEventListener('input', () => {
+  clearTimeout(window._inputSaveTimer);
+  window._inputSaveTimer = setTimeout(() => { try { saveAll(); } catch(e){} }, 800);
+}, { passive: true });
+
+// Simpan screen saat pindah tab/screen
+const _origSwitch2 = switchScreen;
+switchScreen = function(name) {
+  _origSwitch2(name);
+  try { localStorage.setItem(LS_KEYS.screen, name); } catch(e) {}
+};
+</script>
+</body>
+</html>

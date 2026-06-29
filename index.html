@@ -676,6 +676,30 @@
   .rec-status.recording { background: rgba(255,59,92,0.15); color: var(--red); }
   .rec-status.done { background: rgba(0,255,136,0.15); color: var(--green); }
 
+  /* Hari tab buttons in grid */
+  .hari-tab-btn {
+    padding: 7px 12px; border-radius: 10px; font-size: 11px; font-weight: 700;
+    border: 1px solid var(--border); background: var(--slate2); color: var(--muted);
+    cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+    transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
+  }
+  .hari-tab-btn.active {
+    background: rgba(0,212,255,0.2); border-color: var(--cyan); color: var(--cyan);
+  }
+  .hari-tab-btn:active { transform: scale(0.93); }
+
+  /* Kelas filter buttons */
+  .kelas-filter-btn {
+    padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 600;
+    border: 1px solid var(--border); background: var(--slate2); color: var(--muted);
+    cursor: pointer; font-family: 'Orbitron', monospace; transition: all 0.15s;
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .kelas-filter-btn.active {
+    background: rgba(0,255,136,0.15); border-color: var(--green); color: var(--green);
+  }
+  .kelas-filter-btn:active { transform: scale(0.93); }
+
   /* ===== JADWAL GRID & SCHEDULER ===== */
   .jadwal-tab-content { display: none; }
   .jadwal-tab-content.active { display: block; }
@@ -1264,19 +1288,42 @@
     <!-- TAB GRID -->
     <div id="jadwal-tab-grid" class="jadwal-tab-content active">
       <div id="conflict-alert-box"></div>
-      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center;">
-        <select class="form-select" id="grid-hari-sel" onchange="renderGrid()" style="flex:1;min-width:100px;">
-          <option value="1">Senin</option><option value="2">Selasa</option>
-          <option value="3">Rabu</option><option value="4">Kamis</option><option value="5">Jumat</option>
-        </select>
-        <select class="form-select" id="grid-kelas-filter" onchange="renderGrid()" style="flex:1;min-width:80px;">
-          <option value="">Semua Kelas</option>
-          <option>7A</option><option>7B</option><option>7C</option>
-          <option>8A</option><option>8B</option><option>8C</option>
-          <option>9A</option><option>9B</option><option>9C</option>
-        </select>
-        <button class="btn-add" onclick="openJadwalForm()" style="padding:8px 12px;">＋ Tambah</button>
+
+      <!-- Hari Tabs — langsung klik tanpa dropdown -->
+      <div style="display:flex;gap:4px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px;">
+        <button class="hari-tab-btn active" id="htab-1" onclick="setGridHari(1,this)">Sen</button>
+        <button class="hari-tab-btn" id="htab-2" onclick="setGridHari(2,this)">Sel</button>
+        <button class="hari-tab-btn" id="htab-3" onclick="setGridHari(3,this)">Rab</button>
+        <button class="hari-tab-btn" id="htab-4" onclick="setGridHari(4,this)">Kam</button>
+        <button class="hari-tab-btn" id="htab-5" onclick="setGridHari(5,this)">Jum</button>
+        <button class="hari-tab-btn" id="htab-6" onclick="setGridHari(6,this)">Sab</button>
+        <div style="flex:1;"></div>
+        <button class="btn-add" onclick="openJadwalForm()" style="padding:6px 12px;font-size:12px;white-space:nowrap;">＋ Tambah</button>
       </div>
+
+      <!-- Filter Kelas -->
+      <div style="display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px;">
+        <button class="kelas-filter-btn active" onclick="setGridKelas('',this)">Semua</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('7A',this)">7A</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('7B',this)">7B</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('7C',this)">7C</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('8A',this)">8A</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('8B',this)">8B</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('8C',this)">8C</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('9A',this)">9A</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('9B',this)">9B</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('9C',this)">9C</button>
+      </div>
+
+      <!-- Hidden select for JS compatibility -->
+      <select id="grid-hari-sel" style="display:none">
+        <option value="1">Senin</option><option value="2">Selasa</option>
+        <option value="3">Rabu</option><option value="4">Kamis</option>
+        <option value="5">Jumat</option><option value="6">Sabtu</option>
+      </select>
+      <select id="grid-kelas-filter" style="display:none">
+        <option value="">Semua Kelas</option>
+      </select>
       <div style="overflow-x:auto;">
         <div id="jadwal-grid-container"></div>
       </div>
@@ -1319,7 +1366,8 @@
             <label class="form-label">HARI</label>
             <select class="form-select" id="mgmp-hari">
               <option value="1">Senin</option><option value="2">Selasa</option>
-              <option value="3">Rabu</option><option value="4">Kamis</option><option value="5">Jumat</option>
+              <option value="3">Rabu</option><option value="4">Kamis</option>
+              <option value="5">Jumat</option><option value="6">Sabtu</option>
             </select>
           </div>
           <div class="form-group">
@@ -1761,6 +1809,25 @@ function switchJamTab(tab, el) {
 }
 
 // ===== GRID RENDERER =====
+function setGridHari(h, el) {
+  document.querySelectorAll('.hari-tab-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // Sync hidden select
+  const sel = document.getElementById('grid-hari-sel');
+  if (sel) sel.value = h;
+  renderGrid();
+  try { localStorage.setItem('kuriku_grid_hari', h); } catch(e) {}
+}
+
+function setGridKelas(k, el) {
+  document.querySelectorAll('.kelas-filter-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  const sel = document.getElementById('grid-kelas-filter');
+  if (sel) sel.value = k;
+  renderGrid();
+  try { localStorage.setItem('kuriku_grid_kelas', k); } catch(e) {}
+}
+
 // ===== CONFLICT DETECTION =====
 function detectConflicts() {
   const conflicts = [];
@@ -1997,7 +2064,7 @@ function openJadwalFormCell(hari, kelas, jam) {
     <div style="margin-bottom:10px;">
       <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:6px;">HARI</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;">
-        ${[1,2,3,4,5].map(h=>`<span class="jam-badge hari-badge ${h===hari?'selected':''}" data-hari="${h}" onclick="setFormHari(${h},this)">${HARI[h]}</span>`).join('')}
+        ${[1,2,3,4,5,6].map(h=>`<span class="jam-badge hari-badge ${h===hari?'selected':''}" data-hari="${h}" onclick="setFormHari(${h},this)">${HARI[h]}</span>`).join('')}
       </div>
     </div>
 
@@ -2426,7 +2493,7 @@ const FALLBACK_REGULASI = [
   { tag: 'REGULASI', tanggal: '2022', judul: 'Permendikbudristek No. 56 Tahun 2022', ringkasan: 'Pedoman penerapan Kurikulum Merdeka pada satuan pendidikan. Mengatur struktur kurikulum, beban belajar, dan alokasi waktu untuk semua jenjang.', sumber: 'Kemendikbudristek' },
   { tag: 'KEBIJAKAN', tanggal: '2024', judul: 'Implementasi P5 Wajib untuk Semua Kelas', ringkasan: 'Projek Penguatan Profil Pelajar Pancasila wajib dilaksanakan dengan alokasi waktu 20–30% dari total jam pelajaran. Tema dipilih sesuai konteks satuan pendidikan.', sumber: 'Kemendikbudristek' },
   { tag: 'INFO', tanggal: '2025', judul: 'Platform Merdeka Mengajar: Pelatihan Wajib Guru', ringkasan: 'Semua guru diwajibkan menyelesaikan modul pelatihan di Platform Merdeka Mengajar (PMM) minimal level Mahir. Capaian PMM berpengaruh pada penilaian kinerja.', sumber: 'Platform Merdeka Mengajar' },
-  { tag: 'REGULASI', tanggal: '2023', judul: 'Ketentuan Beban Mengajar Guru SMP/MTs', ringkasan: 'Guru wajib memenuhi 24 jam tatap muka per minggu (JTM). Tugas tambahan seperti wali kelas (+2 JTM) dan kepala lab (+4 JTM) dapat dihitung ke dalam beban mengajar.', sumber: 'Permendikbud No. 15/2018 jo. Kurikulum Merdeka' },
+  { tag: 'REGULASI', tanggal: '2023', judul: 'Ketentuan Beban Mengajar Guru SMP/MTs', ringkasan: 'Guru wajib memenuhi 24 jam tatap muka per minggu (JTM). Tugas tambahan seperti wali kelas (+2 JTM) dan kepala lab (+12 JJM) dan Wakasek (+12 JJM) dapat dihitung ke dalam beban mengajar.', sumber: 'Permendikbud No. 15/2018 jo. Kurikulum Merdeka' },
   { tag: 'INFO', tanggal: '2025', judul: 'KOSP: Dokumen Wajib Satuan Pendidikan', ringkasan: 'Kurikulum Operasional Satuan Pendidikan (KOSP) wajib disusun, ditetapkan, dan diperbarui setiap tahun ajaran. KOSP menjadi acuan seluruh kegiatan pembelajaran di sekolah.', sumber: 'Kemendikbudristek' },
 ];
 
@@ -2573,9 +2640,11 @@ const MODAL_FORMS = {
       <div class="form-group"><label class="form-label">JAM PELAJARAN (JP/MINGGU)</label><input type="number" class="form-input" id="mf-jp" placeholder="24–40 JP" min="0" max="60"></div>
       <div class="form-group"><label class="form-label">TUGAS TAMBAHAN</label>
         <label style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--white);">
-          <input type="checkbox" id="mf-wali"> Wali Kelas (+2 JP)</label>
+          <input type="checkbox" id="mf-wali"> Wali Kelas — non-PAI (+2 JJM) / PAI (+4 JJM)</label>
         <label style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--white);">
-          <input type="checkbox" id="mf-kepala"> Kepala Lab (+4 JP)</label>
+          <input type="checkbox" id="mf-kepala"> Ka. Lab IPA / Ka. Perpus (+12 JJM)</label>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:6px;font-size:11px;color:var(--white);">
+          <input type="checkbox" id="mf-wakasek"> Wakasek (Kur/Humas/Sarpras/Kesiswaan) (+12 JJM)</label>
       </div>`
   },
   'jadwal-add': {
@@ -2662,8 +2731,13 @@ function saveModalForm() {
     const jp = parseInt(document.getElementById('mf-jp')?.value) || 24;
     const wali = document.getElementById('mf-wali')?.checked || false;
     const kepala = document.getElementById('mf-kepala')?.checked || false;
+    const wakasek = document.getElementById('mf-wakasek')?.checked || false;
     if (!nama || !mapel) { showToast('⚠️ Nama & mapel harus diisi!', true); return; }
-    GURU_DATA.push({ nama, mapel, jp, wali, kepala, max: 40 });
+    const tugasAuto = [];
+    if (wali) tugasAuto.push('Guru Wali');
+    if (kepala) tugasAuto.push('Ka. Lab IPA');
+    if (wakasek) tugasAuto.push('Waka Kur');
+    GURU_DATA.push({ nama, mapel, jp, wali, kepala, wakasek, max: 40, tugas: tugasAuto });
     renderGuruList();
     showToast('✅ Guru berhasil ditambahkan!');
   } else if (type === '__guru-edit__') {
@@ -2674,8 +2748,15 @@ function saveModalForm() {
     const jp = parseInt(document.getElementById('mf-jp')?.value) || 24;
     const wali = document.getElementById('mf-wali')?.checked || false;
     const kepala = document.getElementById('mf-kepala')?.checked || false;
+    const wakasek = document.getElementById('mf-wakasek')?.checked || false;
     if (!nama || !mapel) { showToast('⚠️ Nama & mapel harus diisi!', true); return; }
-    GURU_DATA[idx] = { nama, mapel, jp, wali, kepala, max: 40 };
+    const prevTugas = GURU_DATA[idx].tugas || [];
+    const coreTugas = prevTugas.filter(t => !['Guru Wali','Ka. Lab IPA','Waka Kur'].includes(t));
+    const newTugas = [...coreTugas];
+    if (wali) newTugas.push('Guru Wali');
+    if (kepala) newTugas.push('Ka. Lab IPA');
+    if (wakasek) newTugas.push('Waka Kur');
+    GURU_DATA[idx] = { ...GURU_DATA[idx], nama, mapel, jp, wali, kepala, wakasek, max: 40, tugas: newTugas };
     renderGuruList();
     showToast('✅ Data guru diperbarui!');
   } else if (type === 'jadwal-cell') {
@@ -2849,6 +2930,7 @@ function editGuru(i) {
     if(document.getElementById('mf-jp')) document.getElementById('mf-jp').value = g.jp;
     if(document.getElementById('mf-wali')) document.getElementById('mf-wali').checked = g.wali;
     if(document.getElementById('mf-kepala')) document.getElementById('mf-kepala').checked = g.kepala;
+    if(document.getElementById('mf-wakasek')) document.getElementById('mf-wakasek').checked = g.wakasek || false;
     // Override save to edit
     currentModalType = '__guru-edit__';
     currentModalData = { idx: i };
@@ -3381,6 +3463,10 @@ if (_lastScreen && _lastScreen !== 'home') {
     const lastJTab = localStorage.getItem('kuriku_jadwal_tab') || 'grid';
     const jtabEl = document.getElementById('jtab-' + lastJTab);
     if (jtabEl) switchJadwalTab(lastJTab, jtabEl);
+    // Pulihkan hari & kelas yang dipilih
+    const lastHari = localStorage.getItem('kuriku_grid_hari') || '1';
+    const hTabEl = document.getElementById('htab-' + lastHari);
+    if (hTabEl) setGridHari(parseInt(lastHari), hTabEl);
   }
   // Pulihkan sub-tab jam
   if (_lastScreen === 'jam') {

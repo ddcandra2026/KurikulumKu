@@ -1572,6 +1572,26 @@
       </div>
     </div>
 
+    <!-- Backup & Restore -->
+    <div class="setting-section">
+      <div class="setting-section-label">💾 BACKUP & RESTORE DATA</div>
+      <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+        Backup semua data (jadwal, guru, notulen, planning) ke file <b style="color:var(--cyan);">.json</b> dan restore di perangkat lain tanpa mulai dari awal.
+      </div>
+
+      <!-- Backup -->
+      <button onclick="backupData()" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,212,255,0.1);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        📥 DOWNLOAD BACKUP (.json)
+      </button>
+
+      <!-- Restore -->
+      <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--green);background:rgba(0,255,136,0.08);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;">
+        📤 PILIH FILE RESTORE (.json)
+        <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="restoreData(this)">
+      </label>
+      <div id="restore-status" style="font-size:10px;margin-top:8px;text-align:center;display:none;"></div>
+    </div>
+
     <!-- Reset -->
     <div class="setting-section">
       <div class="setting-section-label">⚠️ DATA</div>
@@ -1761,6 +1781,8 @@ const KELAS_LIST = ['7A','7B','7C','8A','8B','8C','9A','9B','9C'];
 
 // JADWAL_DATA2: { hari: { kelas: { jam_ke: {guru, mapel, ruang} } } }
 let JADWAL_DATA2 = {};
+let _gridHari = 1;   // active hari in grid
+let _gridKelas = ''; // active kelas filter ('' = semua)
 let mgmpData = [
   // SENIN — PJOK & PKN
   { guru: 'Herman Wahyudi',   jenis:'rutin', hari:'1', minggu:'2', mapel:'MGMP PJOK', catatan:'Setiap Senin Minggu ke-2' },
@@ -1810,20 +1832,17 @@ function switchJamTab(tab, el) {
 
 // ===== GRID RENDERER =====
 function setGridHari(h, el) {
+  _gridHari = parseInt(h);
   document.querySelectorAll('.hari-tab-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  // Sync hidden select
-  const sel = document.getElementById('grid-hari-sel');
-  if (sel) sel.value = h;
+  if (el) el.classList.add('active');
   renderGrid();
   try { localStorage.setItem('kuriku_grid_hari', h); } catch(e) {}
 }
 
 function setGridKelas(k, el) {
+  _gridKelas = k;
   document.querySelectorAll('.kelas-filter-btn').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  const sel = document.getElementById('grid-kelas-filter');
-  if (sel) sel.value = k;
+  if (el) el.classList.add('active');
   renderGrid();
   try { localStorage.setItem('kuriku_grid_kelas', k); } catch(e) {}
 }
@@ -1896,8 +1915,8 @@ function renderConflictAlert() {
 }
 
 function renderGrid() {
-  const hari = parseInt(document.getElementById('grid-hari-sel')?.value || 1);
-  const kelasFilter = document.getElementById('grid-kelas-filter')?.value || '';
+  const hari = _gridHari || 1;
+  const kelasFilter = _gridKelas || '';
   const kelasList = kelasFilter ? [kelasFilter] : KELAS_LIST;
   const hariData = JADWAL_DATA2[hari] || {};
   const mgmpToday = getMGMPForDay(hari);
@@ -2024,8 +2043,7 @@ function getSelectedJams() {
 }
 
 function openJadwalForm() {
-  const hari = parseInt(document.getElementById('grid-hari-sel')?.value || 1);
-  openJadwalFormCell(hari, KELAS_LIST[0], 1);
+  openJadwalFormCell(_gridHari || 1, _gridKelas || KELAS_LIST[0], 1);
 }
 
 function openJadwalFormCell(hari, kelas, jam) {
@@ -2279,8 +2297,8 @@ function editTugasGuru(i) {
 
 // ===== EXPORT JADWAL PDF =====
 function exportJadwalPDF() {
-  const hari = parseInt(document.getElementById('grid-hari-sel')?.value || 1);
-  const kelasFilter = document.getElementById('grid-kelas-filter')?.value || '';
+  const hari = _gridHari || 1;
+  const kelasFilter = _gridKelas || '';
   const kelasList = kelasFilter ? [kelasFilter] : KELAS_LIST;
   const hariData = JADWAL_DATA2[hari] || {};
   const win = window.open('', '_blank');
@@ -3231,6 +3249,113 @@ function downloadNotulenPDF(r) {
   setTimeout(() => win.print(), 500);
 }
 
+// ===== BACKUP & RESTORE =====
+function backupData() {
+  try {
+    // Snapshot planning DOM
+    const planSnap = {};
+    ['pendek','menengah','panjang'].forEach(j => {
+      const card = document.getElementById('plan-' + j)?.querySelector('.card');
+      if (card) planSnap[j] = card.innerHTML;
+    });
+
+    const backup = {
+      _version: 2,
+      _timestamp: new Date().toISOString(),
+      _app: 'KurikulumKu',
+      guru: GURU_DATA,
+      jadwal2: JADWAL_DATA2,
+      mgmp: mgmpData,
+      late: lateRecords,
+      notulen: notulenRecords.map(n => ({ ...n, teks: n.teks?.substring(0, 2000) })), // trim large teks
+      planning: planSnap,
+      setting: currentSetting,
+    };
+
+    const json = JSON.stringify(backup, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const tgl = new Date().toISOString().slice(0,10);
+    a.href = url;
+    a.download = `kuriku-backup-${tgl}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('✅ Backup berhasil diunduh!');
+  } catch(e) {
+    showToast('❌ Gagal backup: ' + e.message, true);
+  }
+}
+
+function restoreData(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('restore-status');
+  statusEl.style.display = 'block';
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = '⏳ Memuat file backup...';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (data._app !== 'KurikulumKu') {
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = '❌ File bukan backup KurikulumKu yang valid!';
+        return;
+      }
+
+      if (!confirm(`Restore backup dari ${data._timestamp?.slice(0,10) || '?'}?\nSemua data saat ini akan diganti!`)) {
+        statusEl.style.display = 'none';
+        input.value = '';
+        return;
+      }
+
+      // Restore guru
+      if (data.guru) {
+        GURU_DATA.length = 0;
+        data.guru.forEach(g => GURU_DATA.push(g));
+      }
+      // Restore jadwal
+      if (data.jadwal2) JADWAL_DATA2 = data.jadwal2;
+      // Restore MGMP
+      if (data.mgmp) mgmpData = data.mgmp;
+      // Restore keterlambatan
+      if (data.late) lateRecords = data.late;
+      // Restore notulen
+      if (data.notulen) notulenRecords = data.notulen;
+      // Restore setting
+      if (data.setting) {
+        Object.assign(currentSetting, data.setting);
+        applySetting();
+      }
+      // Restore planning DOM
+      if (data.planning) {
+        ['pendek','menengah','panjang'].forEach(j => {
+          if (!data.planning[j]) return;
+          const card = document.getElementById('plan-' + j)?.querySelector('.card');
+          if (card) card.innerHTML = data.planning[j];
+        });
+      }
+
+      // Save all to localStorage
+      saveAll();
+      renderGuruList();
+      renderGrid();
+      updateNotifDot();
+
+      statusEl.style.color = 'var(--green)';
+      statusEl.textContent = `✅ Restore berhasil! ${data.guru?.length || 0} guru, ${Object.keys(data.jadwal2 || {}).length} hari jadwal.`;
+      input.value = '';
+      showToast('✅ Data berhasil direstore!');
+    } catch(err) {
+      statusEl.style.color = 'var(--red)';
+      statusEl.textContent = '❌ File rusak atau format tidak valid: ' + err.message;
+    }
+  };
+  reader.readAsText(file);
+}
+
 // ===== SETTING =====
 const LS_SETTING = 'kuriku_setting';
 let currentSetting = {
@@ -3465,8 +3590,16 @@ if (_lastScreen && _lastScreen !== 'home') {
     if (jtabEl) switchJadwalTab(lastJTab, jtabEl);
     // Pulihkan hari & kelas yang dipilih
     const lastHari = localStorage.getItem('kuriku_grid_hari') || '1';
+    const lastKelas = localStorage.getItem('kuriku_grid_kelas') || '';
+    _gridHari = parseInt(lastHari);
+    _gridKelas = lastKelas;
     const hTabEl = document.getElementById('htab-' + lastHari);
-    if (hTabEl) setGridHari(parseInt(lastHari), hTabEl);
+    if (hTabEl) { document.querySelectorAll('.hari-tab-btn').forEach(b=>b.classList.remove('active')); hTabEl.classList.add('active'); }
+    if (lastKelas) {
+      document.querySelectorAll('.kelas-filter-btn').forEach(b => {
+        if (b.textContent.trim() === lastKelas) { document.querySelectorAll('.kelas-filter-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active'); }
+      });
+    }
   }
   // Pulihkan sub-tab jam
   if (_lastScreen === 'jam') {

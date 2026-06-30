@@ -1779,6 +1779,34 @@ const JAM_LABELS = {
 };
 const KELAS_LIST = ['7A','7B','7C','8A','8B','8C','9A','9B','9C'];
 
+// JJM per mapel per minggu (acuan struktur kurikulum)
+const MAPEL_JJM = {
+  'B. INDONESIA': 6, 'BAHASA INDONESIA': 6, 'BIN': 6,
+  'PKN': 3, 'PPKN': 3,
+  'PJOK': 3,
+  'IPA': 5,
+  'MTK': 5, 'MATEMATIKA': 5,
+  'IPS': 4,
+  'B. INGGRIS': 4, 'BAHASA INGGRIS': 4, 'BIG': 4,
+  'S RUPA': 3, 'SENI RUPA': 3, 'SENI BUDAYA': 3,
+  'MADURA': 2, 'B. MADURA': 2, 'BAHASA MADURA': 2,
+  'TIK': 3, 'INFORMATIKA': 3,
+  'PAI': 3,
+  'BK': 0, // BK biasanya tidak punya JJM tatap muka tetap
+};
+
+function getMapelJJM(mapelName) {
+  if (!mapelName) return null;
+  const key = mapelName.trim().toUpperCase();
+  // Exact match dulu
+  if (MAPEL_JJM[key] !== undefined) return MAPEL_JJM[key];
+  // Partial match (contoh: "TIK & B.Madura" mengandung "TIK")
+  for (const [k, v] of Object.entries(MAPEL_JJM)) {
+    if (key.includes(k)) return v;
+  }
+  return null; // tidak ditemukan di acuan
+}
+
 // JADWAL_DATA2: { hari: { kelas: { jam_ke: {guru, mapel, ruang} } } }
 let JADWAL_DATA2 = {};
 let _gridHari = 1;   // active hari in grid
@@ -1972,13 +2000,32 @@ function renderGrid() {
 }
 
 // Real-time conflict check — dipanggil saat guru dipilih atau jam berubah
+// ===== CEK OVER-JJM PER MAPEL PER KELAS =====
+function hitungTotalJJMMapel(kelas, mapel, excludeHari = null, excludeJams = []) {
+  // Hitung total jam (JP) untuk mapel tertentu di kelas tertentu, across semua hari
+  let total = 0;
+  const mapelNorm = (mapel || '').trim().toUpperCase();
+  [1,2,3,4,5,6].forEach(hari => {
+    const kelasData = (JADWAL_DATA2[hari] || {})[kelas] || {};
+    Object.entries(kelasData).forEach(([jam, cell]) => {
+      // Skip jam yang sedang diedit di hari yang sama (supaya tidak double count)
+      if (excludeHari !== null && parseInt(hari) === parseInt(excludeHari) && excludeJams.includes(parseInt(jam))) return;
+      const cellMapelNorm = (cell.mapel || '').trim().toUpperCase();
+      if (cellMapelNorm === mapelNorm) total++;
+    });
+  });
+  return total;
+}
+
 function checkGuruConflictLive() {
   const guru = document.getElementById('mf-guru')?.value;
+  const mapelInput = document.getElementById('mf-mapel')?.value || '';
   if (!guru || !_jadwalFormCtx) return;
   const { hari, kelas } = _jadwalFormCtx;
   const jamDipilih = getSelectedJams();
   const hariData = JADWAL_DATA2[hari] || {};
   const bentrokList = [];
+  const warnList = []; // non-critical warnings (over JJM)
 
   jamDipilih.forEach(jam => {
     Object.entries(hariData).forEach(([k, jamObj]) => {
@@ -1993,6 +2040,20 @@ function checkGuruConflictLive() {
     }
   });
 
+  // ===== CEK OVER-JJM MAPEL =====
+  if (mapelInput.trim()) {
+    const jjmAcuan = getMapelJJM(mapelInput);
+    if (jjmAcuan !== null && jjmAcuan > 0) {
+      const sudahTerpakai = hitungTotalJJMMapel(kelas, mapelInput, hari, jamDipilih);
+      const akanJadi = sudahTerpakai + jamDipilih.length;
+      if (akanJadi > jjmAcuan) {
+        warnList.push(`📊 OVER JJM: ${mapelInput} di kelas ${kelas} akan jadi ${akanJadi} JJM/minggu, padahal acuan hanya ${jjmAcuan} JJM. (Sudah terisi ${sudahTerpakai} JJM di hari lain + ${jamDipilih.length} JJM baru)`);
+      } else if (akanJadi === jjmAcuan) {
+        warnList.push(`✅ JJM ${mapelInput} di kelas ${kelas} pas ${akanJadi}/${jjmAcuan} JJM minggu ini.`);
+      }
+    }
+  }
+
   let warn = document.getElementById('mf-conflict-warn');
   if (!warn) {
     warn = document.createElement('div');
@@ -2002,22 +2063,22 @@ function checkGuruConflictLive() {
     if (body) body.appendChild(warn);
   }
 
+  let html = '';
   if (bentrokList.length) {
-    warn.innerHTML = `<div style="background:rgba(255,59,92,0.15);border:1px solid var(--red);border-radius:10px;padding:10px;font-size:10px;color:var(--red);">
+    html += `<div style="background:rgba(255,59,92,0.15);border:1px solid var(--red);border-radius:10px;padding:10px;font-size:10px;color:var(--red);margin-bottom:6px;">
       <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1px;margin-bottom:5px;">⚠️ TERDETEKSI BENTROK JAM!</div>
       ${bentrokList.map(b => `<div style="padding:2px 0;">• ${b}</div>`).join('')}
     </div>`;
-    // Tambah ke notif bell
-    bentrokList.forEach(b => {
-      const key = 'bentrok_' + b;
-      if (!readNotifIds.has(key)) {
-        readNotifIds.delete(key); // ensure fresh
-      }
-    });
-    updateNotifDot();
-  } else {
-    warn.innerHTML = '';
   }
+  warnList.forEach(w => {
+    const isOver = w.startsWith('📊');
+    html += `<div style="background:${isOver?'rgba(255,140,0,0.15)':'rgba(0,255,136,0.1)'};border:1px solid ${isOver?'var(--orange)':'var(--green)'};border-radius:10px;padding:10px;font-size:10px;color:${isOver?'var(--orange)':'var(--green)'};margin-bottom:6px;line-height:1.5;">
+      ${w}
+    </div>`;
+  });
+  warn.innerHTML = html;
+
+  if (bentrokList.length) updateNotifDot();
 }
 
 function getMGMPForDay(hari) {
@@ -2072,7 +2133,7 @@ function openJadwalFormCell(hari, kelas, jam) {
     </div>
     <div class="form-group">
       <label class="form-label">MATA PELAJARAN</label>
-      <input type="text" class="form-input" id="mf-mapel" value="${existing.mapel||''}" placeholder="Mapel">
+      <input type="text" class="form-input" id="mf-mapel" value="${existing.mapel||''}" placeholder="Mapel" oninput="checkGuruConflictLive()">
     </div>
     <div class="form-group">
       <label class="form-label">RUANG / LAB</label>
@@ -2541,9 +2602,10 @@ try {
 
 function buildNotifs() {
   const notifs = [];
-  // Notif bentrok jadwal (real-time dari input)
+  // Notif bentrok jadwal & over-JJM (real-time dari input)
   (window._bentrokNotifs || []).forEach((msg, i) => {
-    notifs.push({ id: 'bentrok_' + i, ico: '🔴', msg, time: 'Baru saja', type: 'warning' });
+    const isOverJJM = msg.startsWith('📊');
+    notifs.push({ id: 'bentrok_' + i, ico: isOverJJM ? '📊' : '🔴', msg, time: 'Baru saja', type: 'warning' });
   });
   // Notif dari riwayat keterlambatan (5 terbaru)
   lateRecords.slice(0, 5).forEach((r, i) => {
@@ -2798,6 +2860,19 @@ function saveModalForm() {
       });
     });
 
+    // Detect over-JJM mapel
+    let overJJMMsg = null;
+    if (mapel) {
+      const jjmAcuan = getMapelJJM(mapel);
+      if (jjmAcuan !== null && jjmAcuan > 0) {
+        const sudahTerpakai = hitungTotalJJMMapel(ctx.kelas, mapel, ctx.hari, jams);
+        const akanJadi = sudahTerpakai + jams.length;
+        if (akanJadi > jjmAcuan) {
+          overJJMMsg = `📊 OVER JJM: ${mapel} kelas ${ctx.kelas} jadi ${akanJadi} JJM/minggu (acuan: ${jjmAcuan} JJM)`;
+        }
+      }
+    }
+
     if (conflicts.length) {
       // Still allow save but push to notif
       const notifMsg = `⚠️ BENTROK: ${guru} — ${conflicts.join(', ')} pada hari yang sama`;
@@ -2806,6 +2881,12 @@ function saveModalForm() {
       window._bentrokNotifs.unshift(notifMsg);
       updateNotifDot();
       showToast(`⚠️ Tersimpan tapi ada bentrok jam!`, true);
+    } else if (overJJMMsg) {
+      if (!window._bentrokNotifs) window._bentrokNotifs = [];
+      window._bentrokNotifs = window._bentrokNotifs.filter(n => n !== overJJMMsg);
+      window._bentrokNotifs.unshift(overJJMMsg);
+      updateNotifDot();
+      showToast(`⚠️ Tersimpan, tapi JJM ${mapel} melebihi batas!`, true);
     } else {
       showToast(`✅ JP${jams[0]}${jams.length>1?'–JP'+jams[jams.length-1]:''} [${ctx.kelas}] disimpan!`);
     }

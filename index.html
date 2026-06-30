@@ -2,30 +2,30 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>KURIKU — Dashboard Waka Kurikulum</title>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #0A0E1A;
-    --navy2: #0F1525;
-    --slate: #1A2035;
-    --slate2: #232B45;
-    --cyan: #00D4FF;
-    --cyan2: #00A8CC;
-    --green: #00FF88;
-    --green2: #00CC6A;
-    --purple: #7B5CEA;
-    --orange: #FF6B35;
-    --red: #FF3B5C;
-    --yellow: #FFD700;
-    --white: #E8EEFF;
-    --muted: #8892B0;
-    --border: rgba(0,212,255,0.15);
-    --card-bg: rgba(26,32,53,0.9);
-    --glow-cyan: 0 0 20px rgba(0,212,255,0.4);
-    --glow-green: 0 0 20px rgba(0,255,136,0.4);
-    --glow-purple: 0 0 20px rgba(123,92,234,0.4);
+    --navy: #F4F6FA;
+    --navy2: #FFFFFF;
+    --slate: #FFFFFF;
+    --slate2: #ECEFF5;
+    --cyan: #0090C7;
+    --cyan2: #0077A8;
+    --green: #00A86B;
+    --green2: #008F5B;
+    --purple: #6B46C1;
+    --orange: #E0660A;
+    --red: #DC2640;
+    --yellow: #B8860B;
+    --white: #1A2035;
+    --muted: #6B7488;
+    --border: rgba(0,144,199,0.18);
+    --card-bg: rgba(255,255,255,0.95);
+    --glow-cyan: 0 2px 12px rgba(0,144,199,0.15);
+    --glow-green: 0 2px 12px rgba(0,168,107,0.15);
+    --glow-purple: 0 2px 12px rgba(107,70,193,0.15);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,7 +41,7 @@
   /* ===== CANVAS BG ===== */
   #particles-canvas {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 0; opacity: 0.4;
+    pointer-events: none; z-index: 0; opacity: 0.15;
   }
 
   /* ===== LAYOUT ===== */
@@ -54,7 +54,7 @@
 
   /* ===== HEADER ===== */
   .app-header {
-    background: linear-gradient(135deg, rgba(0,212,255,0.08), rgba(123,92,234,0.08));
+    background: linear-gradient(135deg, rgba(0,144,199,0.08), rgba(107,70,193,0.08));
     border-bottom: 1px solid var(--border);
     padding: 16px 20px 14px;
     position: sticky; top: 0; z-index: 100;
@@ -65,7 +65,7 @@
     display: flex; align-items: center; justify-content: space-between;
   }
   .app-logo {
-    font-family: 'Orbitron', monospace;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-weight: 900; font-size: 22px;
     background: linear-gradient(90deg, var(--cyan), var(--green));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
@@ -78,15 +78,16 @@
     background: var(--slate2); border: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; cursor: pointer; position: relative;
+    box-shadow: 0 1px 4px rgba(26,32,53,0.08);
   }
   .hdr-notulen {
     width: 36px; height: 36px; border-radius: 10px;
-    background: rgba(0,212,255,0.1); border: 1px solid rgba(0,212,255,0.3);
+    background: rgba(0,144,199,0.1); border: 1px solid rgba(0,144,199,0.3);
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; cursor: pointer; position: relative;
     transition: all 0.2s;
   }
-  .hdr-notulen:active { transform: scale(0.92); background: rgba(0,212,255,0.2); }
+  .hdr-notulen:active { transform: scale(0.92); background: rgba(0,144,199,0.2); }
   .notif-dot {
     width: 8px; height: 8px; background: var(--red);
     border-radius: 50%; position: absolute; top: 6px; right: 6px;
@@ -94,7 +95,7 @@
   }
   .header-date {
     font-size: 10px; color: var(--muted); margin-top: 6px;
-    font-family: 'Orbitron', monospace; letter-spacing: 1px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
   }
   .header-date span { color: var(--cyan); }
 
@@ -105,7 +106,7 @@
 
   /* ===== SECTION TITLE ===== */
   .section-title {
-    font-family: 'Orbitron', monospace;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 11px; font-weight: 700;
     color: var(--cyan); letter-spacing: 2px; text-transform: uppercase;
     margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
@@ -124,6 +125,7 @@
     backdrop-filter: blur(10px);
     position: relative; overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 3px rgba(236,239,245,0.06), 0 1px 2px rgba(236,239,245,0.04);
   }
   .card::before {
     content: ''; position: absolute;
@@ -132,22 +134,22 @@
     opacity: 0.5;
   }
   .card:active { transform: scale(0.98); }
-  .card.glow-cyan { box-shadow: var(--glow-cyan); border-color: rgba(0,212,255,0.3); }
-  .card.glow-green { box-shadow: var(--glow-green); border-color: rgba(0,255,136,0.3); }
-  .card.glow-purple { box-shadow: var(--glow-purple); border-color: rgba(123,92,234,0.3); }
+  .card.glow-cyan { box-shadow: var(--glow-cyan); border-color: rgba(0,144,199,0.3); }
+  .card.glow-green { box-shadow: var(--glow-green); border-color: rgba(0,168,107,0.3); }
+  .card.glow-purple { box-shadow: var(--glow-purple); border-color: rgba(107,70,193,0.3); }
 
   /* ===== DASHBOARD HOME ===== */
   .welcome-block {
-    background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(123,92,234,0.15));
-    border: 1px solid rgba(0,212,255,0.2);
+    background: linear-gradient(135deg, rgba(0,144,199,0.1), rgba(107,70,193,0.15));
+    border: 1px solid rgba(0,144,199,0.2);
     border-radius: 18px; padding: 18px; margin-bottom: 16px;
     position: relative; overflow: hidden;
   }
   .welcome-block::after {
     content: 'KURIKULUM'; position: absolute;
     right: -20px; top: 50%; transform: translateY(-50%);
-    font-family: 'Orbitron', monospace; font-size: 40px; font-weight: 900;
-    color: rgba(0,212,255,0.05); white-space: nowrap;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 40px; font-weight: 900;
+    color: rgba(0,144,199,0.05); white-space: nowrap;
   }
   .welcome-name { font-size: 18px; font-weight: 700; color: var(--white); }
   .welcome-role { font-size: 12px; color: var(--cyan); margin-top: 2px; letter-spacing: 1px; }
@@ -163,17 +165,17 @@
   }
   .stat-icon { font-size: 22px; margin-bottom: 4px; }
   .stat-value {
-    font-family: 'Orbitron', monospace;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 22px; font-weight: 700;
   }
   .stat-label { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 0.5px; }
-  .stat-card.cyan { border-color: rgba(0,212,255,0.3); }
+  .stat-card.cyan { border-color: rgba(0,144,199,0.3); }
   .stat-card.cyan .stat-value { color: var(--cyan); }
-  .stat-card.green { border-color: rgba(0,255,136,0.3); }
+  .stat-card.green { border-color: rgba(0,168,107,0.3); }
   .stat-card.green .stat-value { color: var(--green); }
-  .stat-card.purple { border-color: rgba(123,92,234,0.3); }
+  .stat-card.purple { border-color: rgba(107,70,193,0.3); }
   .stat-card.purple .stat-value { color: var(--purple); }
-  .stat-card.orange { border-color: rgba(255,107,53,0.3); }
+  .stat-card.orange { border-color: rgba(224,102,10,0.3); }
   .stat-card.orange .stat-value { color: var(--orange); }
 
   /* Menu Grid */
@@ -188,7 +190,7 @@
   .menu-item:active { transform: scale(0.95); }
   .menu-item.active-menu, .menu-item:hover {
     border-color: var(--cyan);
-    background: rgba(0,212,255,0.08);
+    background: rgba(0,144,199,0.08);
     box-shadow: var(--glow-cyan);
   }
   .menu-icon { font-size: 28px; margin-bottom: 6px; display: block; }
@@ -202,10 +204,10 @@
     background: var(--slate2); border: 1px solid var(--border);
     border-radius: 10px; font-size: 10px; font-weight: 600;
     cursor: pointer; transition: all 0.2s; color: var(--muted);
-    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
   }
   .plan-tab.active {
-    background: rgba(0,212,255,0.15); border-color: var(--cyan);
+    background: rgba(0,144,199,0.15); border-color: var(--cyan);
     color: var(--cyan); box-shadow: var(--glow-cyan);
   }
   .plan-content { display: none; }
@@ -225,16 +227,16 @@
   .tl-dot.cyan { background: var(--cyan); color: var(--cyan); }
   .tl-dot.green { background: var(--green); color: var(--green); }
   .tl-dot.purple { background: var(--purple); color: var(--purple); }
-  .tl-time { font-size: 9px; color: var(--cyan); font-family: 'Orbitron', monospace; margin-bottom: 2px; }
+  .tl-time { font-size: 10px; color: var(--cyan); font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 2px; font-weight: 700; letter-spacing: 0.2px; }
   .tl-title { font-size: 12px; font-weight: 600; color: var(--white); }
   .tl-desc { font-size: 10px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
   .tl-badge {
     display: inline-block; padding: 2px 6px; border-radius: 4px;
     font-size: 9px; font-weight: 600; margin-top: 4px; letter-spacing: 0.5px;
   }
-  .badge-todo { background: rgba(255,107,53,0.2); color: var(--orange); }
-  .badge-progress { background: rgba(0,212,255,0.2); color: var(--cyan); }
-  .badge-done { background: rgba(0,255,136,0.2); color: var(--green); }
+  .badge-todo { background: rgba(224,102,10,0.2); color: var(--orange); }
+  .badge-progress { background: rgba(0,144,199,0.2); color: var(--cyan); }
+  .badge-done { background: rgba(0,168,107,0.2); color: var(--green); }
 
   /* ===== JAM MENGAJAR ===== */
   .teacher-search {
@@ -253,13 +255,14 @@
     background: var(--card-bg); border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 10px;
     cursor: pointer; transition: all 0.2s;
+    box-shadow: 0 1px 3px rgba(236,239,245,0.06);
   }
   .teacher-card:active { transform: scale(0.98); }
   .tc-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .tc-name { font-size: 13px; font-weight: 700; color: var(--white); }
   .tc-mapel { font-size: 10px; color: var(--cyan); margin-top: 2px; }
   .tc-hours {
-    font-family: 'Orbitron', monospace;
+    font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 18px; font-weight: 700;
   }
   .tc-hours.ok { color: var(--green); }
@@ -288,7 +291,7 @@
     cursor: pointer; transition: all 0.2s; color: var(--muted);
   }
   .monitor-tab.active {
-    background: rgba(255,59,92,0.15); border-color: var(--red);
+    background: rgba(220,38,64,0.15); border-color: var(--red);
     color: var(--red);
   }
   .monitor-content { display: none; }
@@ -299,16 +302,16 @@
     border-radius: 14px; padding: 14px; margin-bottom: 12px;
   }
   .form-group { margin-bottom: 10px; }
-  .form-label { font-size: 10px; color: var(--muted); margin-bottom: 5px; display: block; letter-spacing: 0.5px; font-family: 'Orbitron', monospace; }
+  .form-label { font-size: 10px; color: var(--muted); margin-bottom: 5px; display: block; letter-spacing: 0.5px; font-family: 'Plus Jakarta Sans', sans-serif; }
   .form-input {
-    width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    width: 100%; background: var(--slate2); border: 1px solid var(--border);
     border-radius: 10px; padding: 9px 12px; color: var(--white);
     font-size: 12px; outline: none; font-family: 'Inter', sans-serif;
     transition: border-color 0.2s;
   }
-  .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 10px rgba(0,212,255,0.2); }
+  .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 8px rgba(0,144,199,0.25); }
   .form-select {
-    width: 100%; background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+    width: 100%; background: var(--slate2); border: 1px solid var(--border);
     border-radius: 10px; padding: 9px 12px; color: var(--white);
     font-size: 12px; outline: none; font-family: 'Inter', sans-serif;
     -webkit-appearance: none;
@@ -317,13 +320,13 @@
     width: 100%; padding: 12px; border: none; border-radius: 12px;
     background: linear-gradient(135deg, var(--cyan), var(--purple));
     color: white; font-size: 13px; font-weight: 700;
-    font-family: 'Orbitron', monospace; letter-spacing: 1px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
     cursor: pointer; transition: all 0.2s;
   }
   .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
   .btn-danger {
     padding: 7px 12px; border: 1px solid var(--red); border-radius: 8px;
-    background: rgba(255,59,92,0.1); color: var(--red);
+    background: rgba(220,38,64,0.1); color: var(--red);
     font-size: 10px; font-weight: 600; cursor: pointer;
     font-family: 'Inter', sans-serif;
   }
@@ -334,7 +337,7 @@
     padding: 20px; text-align: center; cursor: pointer;
     transition: all 0.2s; position: relative; overflow: hidden;
   }
-  .photo-upload:hover { border-color: var(--cyan); background: rgba(0,212,255,0.03); }
+  .photo-upload:hover { border-color: var(--cyan); background: rgba(0,144,199,0.03); }
   .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .photo-upload-icon { font-size: 28px; margin-bottom: 6px; }
   .photo-upload-text { font-size: 11px; color: var(--muted); }
@@ -348,11 +351,11 @@
   }
   .lli-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .lli-name { font-size: 12px; font-weight: 700; }
-  .lli-date { font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace; }
+  .lli-date { font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; }
   .lli-meta { font-size: 10px; color: var(--muted); margin-top: 4px; }
   .lli-late { font-size: 11px; color: var(--red); font-weight: 700; margin-top: 2px; }
   .lli-photos { display: flex; gap: 5px; margin-top: 8px; }
-  .lli-photos img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,59,92,0.3); }
+  .lli-photos img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(220,38,64,0.3); }
   .lli-actions { display: flex; gap: 6px; margin-top: 8px; }
 
   /* ===== REGULASI / BERITA ===== */
@@ -370,19 +373,19 @@
   .news-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
   .news-tag {
     font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
-    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
   }
-  .tag-regulasi { background: rgba(123,92,234,0.2); color: var(--purple); }
-  .tag-info { background: rgba(0,212,255,0.2); color: var(--cyan); }
-  .tag-kebijakan { background: rgba(255,107,53,0.2); color: var(--orange); }
-  .news-date { font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace; }
+  .tag-regulasi { background: rgba(107,70,193,0.2); color: var(--purple); }
+  .tag-info { background: rgba(0,144,199,0.2); color: var(--cyan); }
+  .tag-kebijakan { background: rgba(224,102,10,0.2); color: var(--orange); }
+  .news-date { font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; }
   .news-title { font-size: 13px; font-weight: 700; color: var(--white); line-height: 1.4; margin-bottom: 5px; }
   .news-excerpt { font-size: 10px; color: var(--muted); line-height: 1.5; }
   .news-source { font-size: 9px; color: var(--cyan); margin-top: 6px; }
   
   .loading-news {
     text-align: center; padding: 30px;
-    font-size: 11px; color: var(--muted); font-family: 'Orbitron', monospace; letter-spacing: 1px;
+    font-size: 11px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
   }
   .loading-spinner {
     width: 30px; height: 30px; border: 2px solid var(--border);
@@ -401,10 +404,10 @@
     cursor: pointer; transition: all 0.2s; text-align: center; min-width: 52px;
   }
   .day-btn.active {
-    background: rgba(0,212,255,0.15); border-color: var(--cyan);
+    background: rgba(0,144,199,0.15); border-color: var(--cyan);
     color: var(--cyan); box-shadow: var(--glow-cyan);
   }
-  .day-num { font-family: 'Orbitron', monospace; font-size: 14px; font-weight: 700; }
+  .day-num { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; }
   
   .schedule-item {
     display: flex; gap: 12px; padding: 10px 0;
@@ -413,33 +416,34 @@
   }
   .sch-time {
     width: 48px; flex-shrink: 0; text-align: center;
-    font-family: 'Orbitron', monospace; font-size: 9px; color: var(--muted);
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; color: var(--muted);
     padding-top: 3px;
   }
   .sch-line {
     width: 2px; flex-shrink: 0; border-radius: 2px; align-self: stretch; min-height: 40px;
   }
   .sch-body { flex: 1; }
-  .sch-name { font-size: 12px; font-weight: 700; color: var(--white); }
+  .sch-name { font-size: 13px; font-weight: 700; color: var(--white); }
   .sch-class { font-size: 10px; color: var(--cyan); margin-top: 1px; }
   .sch-room { font-size: 9px; color: var(--muted); margin-top: 2px; }
   .sch-status {
     padding: 3px 8px; border-radius: 5px; font-size: 9px; font-weight: 700;
-    white-space: nowrap; align-self: center; font-family: 'Orbitron', monospace;
+    white-space: nowrap; align-self: center; font-family: 'Plus Jakarta Sans', sans-serif;
   }
-  .status-hadir { background: rgba(0,255,136,0.15); color: var(--green); }
+  .status-hadir { background: rgba(0,168,107,0.15); color: var(--green); }
   .status-belum { background: rgba(255,215,0,0.15); color: var(--yellow); }
-  .status-telat { background: rgba(255,59,92,0.15); color: var(--red); }
-  .status-ijin { background: rgba(123,92,234,0.15); color: var(--purple); }
+  .status-telat { background: rgba(220,38,64,0.15); color: var(--red); }
+  .status-ijin { background: rgba(107,70,193,0.15); color: var(--purple); }
 
   /* ===== BOTTOM NAV ===== */
   .bottom-nav {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 480px; z-index: 200;
-    background: rgba(10,14,26,0.95); border-top: 1px solid var(--border);
+    background: rgba(255,255,255,0.92); border-top: 1px solid var(--border);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
     display: flex;
+    box-shadow: 0 -2px 12px rgba(236,239,245,0.06);
   }
   .nav-btn {
     flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -473,15 +477,15 @@
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
   .modal-handle { width: 36px; height: 3px; background: rgba(255,255,255,0.2); border-radius: 3px; margin: 0 auto 16px; }
-  .modal-title { font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 14px; letter-spacing: 1px; }
+  .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 14px; letter-spacing: 1px; }
 
   /* ===== TOAST ===== */
   .toast {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,255,136,0.15); border: 1px solid var(--green);
+    background: rgba(0,168,107,0.15); border: 1px solid var(--green);
     color: var(--green); padding: 10px 20px; border-radius: 30px;
     font-size: 11px; font-weight: 700; z-index: 400;
-    font-family: 'Orbitron', monospace; letter-spacing: 1px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
     opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
   }
   .toast.show { opacity: 1; }
@@ -490,7 +494,7 @@
   .watermark {
     text-align: center; padding: 16px 0 4px;
     font-size: 9px; color: rgba(136,146,176,0.4);
-    font-family: 'Orbitron', monospace; letter-spacing: 1px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
   }
 
   /* ===== ANIMATIONS ===== */
@@ -499,14 +503,152 @@
     50% { opacity: 0.6; transform: scale(1.3); }
   }
   @keyframes glow-pulse {
-    0%, 100% { box-shadow: 0 0 8px rgba(0,212,255,0.3); }
-    50% { box-shadow: 0 0 20px rgba(0,212,255,0.7); }
+    0%, 100% { box-shadow: 0 0 8px rgba(0,144,199,0.3); }
+    50% { box-shadow: 0 0 20px rgba(0,144,199,0.7); }
   }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 3px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 3px; }
+  /* ===== TYPOGRAPHY IMPROVEMENTS ===== */
+  body { letter-spacing: 0; -webkit-font-smoothing: antialiased; }
+
+  /* Section titles use Plus Jakarta Sans properly */
+  .section-title { font-size: 14px; font-weight: 800; letter-spacing: 0.3px; }
+  .modal-title, .modal-form-title, .setting-title, .notulen-tab {
+    letter-spacing: 0.2px;
+  }
+  /* Label text less spaced for readability */
+  .form-label { letter-spacing: 0.3px; font-size: 11px; font-weight: 700; }
+  .app-logo { letter-spacing: 1px; }
+
+  /* ===== TABLET / IPAD AIR 4 RESPONSIVE ===== */
+  /* iPad Air 4: 820×1180 (portrait) | 1180×820 (landscape) */
+
+  @media (min-width: 600px) {
+    /* Base tablet — larger padding, wider layout */
+    #app {
+      max-width: 100%;
+      padding: 0;
+    }
+    .screen { padding: 24px 32px 100px; }
+    .app-header { padding: 20px 32px 16px; }
+    .bottom-nav { max-width: 100%; }
+    .nav-btn { font-size: 13px; }
+    .nav-label { font-size: 11px; }
+
+    /* Cards larger on tablet */
+    .card { padding: 20px; border-radius: 18px; }
+    .teacher-card { padding: 16px 18px; }
+
+    /* Typography scale up on tablet */
+    .section-title { font-size: 16px; }
+    .tc-name { font-size: 15px; }
+    .app-logo { font-size: 26px; }
+    .app-logo span { font-size: 11px; }
+    .header-date { font-size: 11px; }
+    .form-input, .form-select { font-size: 14px; padding: 12px 14px; }
+    .form-label { font-size: 12px; }
+    .btn-primary { font-size: 14px; padding: 14px; }
+    .btn-add { font-size: 13px; padding: 8px 14px; }
+
+    /* Menu grid: 3 columns on tablet portrait */
+    .menu-grid { grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .menu-item { padding: 20px 16px; }
+    .menu-icon { font-size: 28px; }
+    .menu-label { font-size: 13px; }
+    .menu-sub { font-size: 10px; }
+
+    /* Jadwal grid larger cells */
+    .jadwal-grid { font-size: 12px; }
+    .jadwal-grid th { padding: 9px 6px; font-size: 10px; }
+    .jadwal-cell .jc-guru { font-size: 11px; }
+    .jadwal-cell .jc-mapel { font-size: 10px; }
+
+    /* Bigger touch targets */
+    .hari-tab-btn { padding: 9px 16px; font-size: 13px; }
+    .kelas-filter-btn { padding: 7px 14px; font-size: 11px; }
+    .jam-badge { padding: 6px 14px; font-size: 11px; }
+    .notulen-tab { padding: 10px 8px; font-size: 11px; }
+
+    /* Modal wider on tablet */
+    .modal-form-sheet, .setting-sheet, .notif-sheet {
+      max-width: 640px; border-radius: 20px; margin: 32px auto 0;
+    }
+    .modal-form-overlay, .setting-overlay, .notif-overlay {
+      align-items: center; justify-content: center;
+    }
+    .modal-form-sheet, .setting-sheet, .notif-sheet {
+      max-height: 85vh;
+    }
+
+    /* Bottom nav items larger */
+    .nav-icon { font-size: 22px; }
+  }
+
+  @media (min-width: 820px) {
+    /* iPad Air 4 Portrait (820px) */
+    #app { max-width: 100%; }
+    .screen { padding: 28px 40px 110px; }
+    .app-header { padding: 22px 40px 18px; max-width: 100%; }
+    .bottom-nav { max-width: 100%; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); }
+
+    /* 2-column layout for content on iPad portrait */
+    .menu-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+
+    /* Teacher list in 2 columns */
+    #guru-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    #guru-list .teacher-card { margin-bottom: 0; }
+
+    /* Planning tabs wider */
+    .plan-tabs { gap: 10px; }
+
+    /* Bigger stats */
+    .section-title { font-size: 17px; }
+    .tc-name { font-size: 15px; }
+    .app-logo { font-size: 28px; }
+
+    /* Form modal centered and wider */
+    .modal-form-sheet, .setting-sheet, .notif-sheet {
+      max-width: 700px;
+    }
+  }
+
+  @media (min-width: 820px) and (orientation: landscape),
+         (min-width: 1024px) {
+    /* iPad Air 4 Landscape (1180px) */
+    .screen { padding: 24px 48px 90px; }
+    .app-header { padding: 18px 48px 14px; }
+    .bottom-nav { padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
+
+    /* 3-col menu */
+    .menu-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+
+    /* 3-col guru list */
+    #guru-list { grid-template-columns: 1fr 1fr 1fr; }
+
+    /* Jadwal grid: show ALL kelas comfortably */
+    .jadwal-grid { font-size: 11px; }
+    .jadwal-grid td { padding: 5px; }
+    .jadwal-cell { padding: 5px 6px; }
+    .jadwal-cell .jc-guru { font-size: 10px; }
+
+    /* Rekap table larger font on landscape */
+    .rekap-table { font-size: 9px; }
+    .rekap-table .rekap-nama { min-width: 140px; max-width: 140px; font-size: 10px; }
+
+    /* Split layout for some screens */
+    #screen-jam .jadwal-tab-content { max-height: calc(100vh - 180px); overflow-y: auto; }
+    #screen-jadwal .jadwal-tab-content { max-height: calc(100vh - 160px); overflow-y: auto; }
+  }
+
+  @media (min-width: 1100px) {
+    /* iPad Air 4 Landscape full width */
+    .menu-grid { grid-template-columns: repeat(4, 1fr); }
+    #guru-list { grid-template-columns: 1fr 1fr 1fr; }
+    .section-title { font-size: 18px; }
+    .modal-form-sheet, .setting-sheet, .notif-sheet { max-width: 760px; }
+  }
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: rgba(26,32,53,0.04); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,144,199,0.25); border-radius: 4px; }
 
   /* ===== CRUD ACTION BUTTONS ===== */
   .crud-actions {
@@ -514,7 +656,7 @@
   }
   .btn-add {
     padding: 6px 10px; border: 1px solid var(--green); border-radius: 8px;
-    background: rgba(0,255,136,0.1); color: var(--green);
+    background: rgba(0,168,107,0.1); color: var(--green);
     font-size: 14px; font-weight: 700; cursor: pointer;
     display: flex; align-items: center; gap: 4px; transition: all 0.2s;
     font-family: 'Inter', sans-serif;
@@ -522,14 +664,14 @@
   .btn-add:active { transform: scale(0.93); }
   .btn-edit {
     padding: 5px 8px; border: 1px solid var(--cyan); border-radius: 7px;
-    background: rgba(0,212,255,0.1); color: var(--cyan);
+    background: rgba(0,144,199,0.1); color: var(--cyan);
     font-size: 12px; cursor: pointer; transition: all 0.2s;
     font-family: 'Inter', sans-serif;
   }
   .btn-edit:active { transform: scale(0.93); }
   .btn-del {
     padding: 5px 8px; border: 1px solid var(--red); border-radius: 7px;
-    background: rgba(255,59,92,0.1); color: var(--red);
+    background: rgba(220,38,64,0.1); color: var(--red);
     font-size: 12px; cursor: pointer; transition: all 0.2s;
     font-family: 'Inter', sans-serif;
   }
@@ -550,13 +692,14 @@
   .modal-form-sheet {
     width: 100%; max-width: 480px;
     background: var(--navy2); border-radius: 20px 20px 0 0;
-    border-top: 1px solid var(--border); padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    border-top: 2px solid var(--border); padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
     max-height: 90vh; overflow-y: auto;
     animation: slideUp 0.3s ease;
+    box-shadow: 0 -4px 24px rgba(26,32,53,0.08);
   }
   .modal-form-title {
-    font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700;
-    color: var(--cyan); margin-bottom: 14px; letter-spacing: 1px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 800;
+    color: var(--cyan); margin-bottom: 14px; letter-spacing: 0.2px;
   }
   .modal-form-actions {
     display: flex; gap: 8px; margin-top: 14px;
@@ -565,13 +708,13 @@
     flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 12px;
     background: var(--slate2); color: var(--muted);
     font-size: 12px; font-weight: 600; cursor: pointer;
-    font-family: 'Orbitron', monospace;
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
   .btn-save {
     flex: 2; padding: 11px; border: none; border-radius: 12px;
     background: linear-gradient(135deg, var(--cyan), var(--purple));
     color: white; font-size: 12px; font-weight: 700;
-    font-family: 'Orbitron', monospace; letter-spacing: 1px; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; cursor: pointer;
   }
 
   /* ===== REGULASI DETAIL ===== */
@@ -582,28 +725,30 @@
   .notulen-card {
     background: var(--card-bg); border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(26,32,53,0.05);
   }
   .notulen-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
   .notulen-title { font-size: 13px; font-weight: 700; color: var(--white); }
-  .notulen-meta { font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace; margin-top: 2px; }
+  .notulen-meta { font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 2px; }
   .notulen-preview { font-size: 10px; color: var(--muted); line-height: 1.5; margin-top: 6px; }
   .notulen-footer { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 
   /* Voice Recorder */
   .voice-recorder {
-    background: var(--slate); border: 1px solid var(--border);
+    background: var(--slate2); border: 1px solid var(--border);
     border-radius: 14px; padding: 16px; margin-bottom: 12px; text-align: center;
+    box-shadow: 0 1px 3px rgba(26,32,53,0.06);
   }
   .voice-recorder-label {
-    font-size: 10px; color: var(--muted); font-family: 'Orbitron', monospace;
+    font-size: 10px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: 1px; margin-bottom: 12px;
   }
   .voice-btn-row { display: flex; gap: 10px; justify-content: center; align-items: center; margin-bottom: 12px; }
   .btn-record {
     width: 62px; height: 62px; border-radius: 50%; border: none;
-    background: linear-gradient(135deg, var(--red), #FF6B35);
+    background: linear-gradient(135deg, var(--red), var(--orange));
     font-size: 24px; cursor: pointer; transition: all 0.2s;
-    box-shadow: 0 0 20px rgba(255,59,92,0.4);
+    box-shadow: 0 0 20px rgba(220,38,64,0.4);
     display: flex; align-items: center; justify-content: center;
   }
   .btn-record.recording {
@@ -611,8 +756,8 @@
     background: linear-gradient(135deg, #CC002A, var(--red));
   }
   @keyframes glow-pulse-red {
-    0%,100% { box-shadow: 0 0 12px rgba(255,59,92,0.5); }
-    50% { box-shadow: 0 0 30px rgba(255,59,92,0.9); }
+    0%,100% { box-shadow: 0 0 12px rgba(220,38,64,0.5); }
+    50% { box-shadow: 0 0 30px rgba(220,38,64,0.9); }
   }
   .btn-stop-record {
     width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--muted);
@@ -620,7 +765,7 @@
     display: flex; align-items: center; justify-content: center;
   }
   .voice-timer {
-    font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 700;
     color: var(--red); letter-spacing: 2px; margin-bottom: 8px;
   }
   .voice-wave {
@@ -631,7 +776,7 @@
     transition: height 0.1s;
   }
   .audio-playback {
-    background: rgba(0,0,0,0.3); border-radius: 10px; padding: 10px;
+    background: var(--slate2); border: 1px solid var(--border); border-radius: 10px; padding: 10px;
     margin-top: 6px; display: none;
   }
   .audio-playback.show { display: block; }
@@ -640,14 +785,14 @@
     width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 10px;
     background: linear-gradient(135deg, var(--green2), var(--cyan2));
     color: white; font-size: 11px; font-weight: 700;
-    font-family: 'Orbitron', monospace; letter-spacing: 1px; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; cursor: pointer;
   }
   .converted-text {
-    background: rgba(0,0,0,0.4); border: 1px solid var(--border);
+    background: var(--slate2); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px; margin-top: 10px; display: none;
   }
   .converted-text.show { display: block; }
-  .converted-text-label { font-size: 9px; color: var(--green); font-family: 'Orbitron', monospace; letter-spacing: 1px; margin-bottom: 6px; }
+  .converted-text-label { font-size: 9px; color: var(--green); font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; margin-bottom: 6px; }
   .converted-text-body { font-size: 11px; color: var(--white); line-height: 1.6; }
 
   /* Notulen tabs */
@@ -657,10 +802,10 @@
     background: var(--slate2); border: 1px solid var(--border);
     border-radius: 10px; font-size: 10px; font-weight: 600;
     cursor: pointer; transition: all 0.2s; color: var(--muted);
-    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
   }
   .notulen-tab.active {
-    background: rgba(0,212,255,0.15); border-color: var(--cyan);
+    background: rgba(0,144,199,0.15); border-color: var(--cyan);
     color: var(--cyan);
   }
   .notulen-content { display: none; }
@@ -670,21 +815,21 @@
   .rec-status {
     font-size: 10px; font-weight: 600; padding: 5px 12px;
     border-radius: 20px; display: inline-block; margin: 0 auto 8px;
-    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
   }
   .rec-status.idle { background: rgba(136,146,176,0.1); color: var(--muted); }
-  .rec-status.recording { background: rgba(255,59,92,0.15); color: var(--red); }
-  .rec-status.done { background: rgba(0,255,136,0.15); color: var(--green); }
+  .rec-status.recording { background: rgba(220,38,64,0.15); color: var(--red); }
+  .rec-status.done { background: rgba(0,168,107,0.15); color: var(--green); }
 
   /* Hari tab buttons in grid */
   .hari-tab-btn {
     padding: 7px 12px; border-radius: 10px; font-size: 11px; font-weight: 700;
     border: 1px solid var(--border); background: var(--slate2); color: var(--muted);
-    cursor: pointer; font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
     transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
   }
   .hari-tab-btn.active {
-    background: rgba(0,212,255,0.2); border-color: var(--cyan); color: var(--cyan);
+    background: rgba(0,144,199,0.2); border-color: var(--cyan); color: var(--cyan);
   }
   .hari-tab-btn:active { transform: scale(0.93); }
 
@@ -692,11 +837,11 @@
   .kelas-filter-btn {
     padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 600;
     border: 1px solid var(--border); background: var(--slate2); color: var(--muted);
-    cursor: pointer; font-family: 'Orbitron', monospace; transition: all 0.15s;
+    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s;
     white-space: nowrap; flex-shrink: 0;
   }
   .kelas-filter-btn.active {
-    background: rgba(0,255,136,0.15); border-color: var(--green); color: var(--green);
+    background: rgba(0,168,107,0.15); border-color: var(--green); color: var(--green);
   }
   .kelas-filter-btn:active { transform: scale(0.93); }
 
@@ -713,11 +858,11 @@
     white-space: nowrap;
   }
   .rekap-table thead th {
-    background: var(--slate2); color: var(--cyan); font-family: 'Orbitron', monospace;
-    font-size: 8px; position: sticky; top: 0; z-index: 3;
+    background: var(--slate2); color: var(--cyan); font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 8px; position: sticky; top: 0; z-index: 3; border-bottom: 2px solid var(--border);
   }
   .rekap-table .rekap-hari-header {
-    background: rgba(0,212,255,0.15); color: var(--cyan); font-weight: 700;
+    background: rgba(0,144,199,0.15); color: var(--cyan); font-weight: 700;
     font-size: 8px; letter-spacing: 0.5px;
   }
   .rekap-table .rekap-no {
@@ -732,7 +877,7 @@
     position: sticky; left: 0; top: 0; z-index: 4; background: var(--slate2);
   }
   .rekap-cell-fill {
-    background: rgba(0,212,255,0.15); color: var(--cyan); font-weight: 700;
+    background: rgba(0,144,199,0.15); color: var(--cyan); font-weight: 700;
     cursor: pointer; min-width: 22px; font-size: 7px;
   }
   .rekap-cell-mgmp {
@@ -745,9 +890,9 @@
   .rekap-cell-empty:active, .rekap-cell-fill:active, .rekap-cell-mgmp:active { opacity: 0.6; }
   .jadwal-grid th {
     background: var(--slate2); color: var(--cyan);
-    font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 0.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; letter-spacing: 0.5px;
     padding: 7px 4px; text-align: center; border: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 2;
+    position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--border);
   }
   .jadwal-grid td {
     padding: 4px; border: 1px solid rgba(255,255,255,0.05);
@@ -755,12 +900,12 @@
   }
   .jadwal-grid .td-jam {
     background: var(--slate); color: var(--cyan);
-    font-family: 'Orbitron', monospace; font-size: 9px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px;
     text-align: center; font-weight: 700; min-width: 36px;
     letter-spacing: 0.5px;
   }
   .jadwal-cell {
-    background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2);
+    background: rgba(0,144,199,0.08); border: 1px solid rgba(0,144,199,0.2);
     border-radius: 6px; padding: 4px 5px; cursor: pointer;
     transition: all 0.15s; position: relative;
   }
@@ -769,12 +914,12 @@
   .jadwal-cell .jc-mapel { font-size: 9px; color: var(--cyan); }
   .jadwal-cell .jc-ruang { font-size: 8px; color: var(--muted); }
   .jadwal-cell.bentrok-cell {
-    background: rgba(255,59,92,0.12); border-color: rgba(255,59,92,0.5);
+    background: rgba(220,38,64,0.12); border-color: rgba(220,38,64,0.5);
     animation: blink-border 1.5s infinite;
   }
   @keyframes blink-border {
-    0%,100% { border-color: rgba(255,59,92,0.5); }
-    50% { border-color: rgba(255,59,92,1); }
+    0%,100% { border-color: rgba(220,38,64,0.5); }
+    50% { border-color: rgba(220,38,64,1); }
   }
   .jc-bentrok {
     position: absolute; top: 1px; left: 3px; font-size: 9px;
@@ -784,54 +929,60 @@
   }
   .jadwal-cell.mgmp-cell .jc-guru { color: var(--orange); }
   .jadwal-cell .jc-del {
-    position: absolute; top: 2px; right: 3px;
-    font-size: 9px; color: var(--red); cursor: pointer; opacity: 0.7;
+    position: absolute; top: 0; right: 0;
+    font-size: 11px; color: var(--red); cursor: pointer; opacity: 0.85;
+    background: rgba(220,38,64,0.15); width: 18px; height: 18px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 0 6px 0 6px; font-weight: 700; z-index: 5;
   }
-  .jadwal-cell .jc-del:active { opacity: 1; }
+  .jadwal-cell .jc-del:active { opacity: 1; background: rgba(220,38,64,0.4); transform: scale(1.1); }
   .td-empty {
     background: rgba(255,255,255,0.01);
     min-height: 38px; cursor: pointer; border-radius: 4px;
   }
-  .td-empty:active { background: rgba(0,212,255,0.05); }
+  .td-empty:active { background: rgba(0,144,199,0.05); }
 
   /* Jam label */
   .jam-label {
-    font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace;
+    font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif;
     margin-bottom: 1px; display: block;
   }
 
   /* MGMP card */
   .mgmp-card {
-    background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.3);
+    background: rgba(224,102,10,0.06); border: 1px solid rgba(224,102,10,0.25);
     border-radius: 12px; padding: 12px; margin-bottom: 8px;
     display: flex; gap: 10px; align-items: flex-start;
+    box-shadow: 0 1px 3px rgba(26,32,53,0.04);
   }
   .mgmp-icon { font-size: 20px; flex-shrink: 0; }
   .mgmp-info { flex: 1; }
   .mgmp-nama { font-size: 12px; font-weight: 700; color: var(--white); }
-  .mgmp-detail { font-size: 9px; color: var(--orange); font-family: 'Orbitron', monospace; margin-top: 2px; }
+  .mgmp-detail { font-size: 9px; color: var(--orange); font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 2px; }
   .mgmp-catatan { font-size: 10px; color: var(--muted); margin-top: 3px; }
 
   /* Jadwal form modal extra fields */
   .jam-badge {
     display: inline-block; padding: 4px 10px; border-radius: 20px;
-    background: rgba(0,212,255,0.1); border: 1px solid var(--cyan);
-    color: var(--cyan); font-size: 10px; font-family: 'Orbitron', monospace;
+    background: var(--slate2); border: 1px solid var(--border);
+    color: var(--muted); font-size: 10px; font-family: 'Plus Jakarta Sans', sans-serif;
     cursor: pointer; margin: 3px; transition: all 0.15s;
+    box-shadow: 0 1px 2px rgba(26,32,53,0.05);
   }
-  .jam-badge.selected { background: var(--cyan); color: var(--navy); font-weight: 700; }
+  .jam-badge.selected { background: var(--cyan); color: white; font-weight: 700; border-color: var(--cyan); }
 
   /* Tugas Tambahan section in Jam screen */
   .tugas-card {
     background: var(--card-bg); border: 1px solid var(--border);
     border-radius: 12px; padding: 12px; margin-bottom: 8px;
+    box-shadow: 0 1px 3px rgba(26,32,53,0.05);
   }
   .tugas-nama { font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
   .tugas-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
   .tugas-badge {
     font-size: 9px; padding: 3px 8px; border-radius: 10px;
     background: rgba(180,0,255,0.15); border: 1px solid rgba(180,0,255,0.3);
-    color: var(--purple); font-family: 'Orbitron', monospace;
+    color: var(--purple); font-family: 'Plus Jakarta Sans', sans-serif;
   }
   .setting-overlay {
     position: fixed; inset: 0; z-index: 600;
@@ -842,22 +993,24 @@
   .setting-sheet {
     width: 100%; max-width: 480px;
     background: var(--navy2); border-radius: 20px 20px 0 0;
-    border-top: 1px solid var(--border);
+    border-top: 2px solid var(--border);
     padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
     max-height: 88vh; overflow-y: auto;
     animation: slideUp 0.3s ease;
+    box-shadow: 0 -4px 24px rgba(26,32,53,0.08);
   }
   .setting-title {
-    font-family: 'Orbitron', monospace; font-size: 13px; font-weight: 700;
-    color: var(--cyan); letter-spacing: 1.5px; margin-bottom: 18px;
+    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800;
+    color: var(--cyan); letter-spacing: 0.2px; margin-bottom: 18px;
     display: flex; align-items: center; gap: 8px;
   }
   .setting-section {
-    background: var(--slate); border: 1px solid var(--border);
+    background: var(--slate2); border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(26,32,53,0.04);
   }
   .setting-section-label {
-    font-size: 9px; color: var(--muted); font-family: 'Orbitron', monospace;
+    font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif;
     letter-spacing: 1px; margin-bottom: 10px;
   }
   .logo-preview-wrap {
@@ -873,22 +1026,22 @@
   .logo-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
   .btn-upload-logo {
     flex: 1; padding: 10px; border: 1px dashed var(--cyan); border-radius: 10px;
-    background: rgba(0,212,255,0.05); color: var(--cyan);
+    background: rgba(0,144,199,0.05); color: var(--cyan);
     font-size: 11px; font-weight: 600; cursor: pointer; text-align: center;
-    font-family: 'Orbitron', monospace; letter-spacing: 0.5px;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
   }
   .setting-actions { display: flex; gap: 8px; margin-top: 14px; }
   .btn-setting-cancel {
     flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 12px;
     background: var(--slate2); color: var(--muted);
     font-size: 11px; font-weight: 600; cursor: pointer;
-    font-family: 'Orbitron', monospace;
+    font-family: 'Plus Jakarta Sans', sans-serif;
   }
   .btn-setting-save {
     flex: 2; padding: 11px; border: none; border-radius: 12px;
-    background: linear-gradient(135deg, #FFB800, #FF6B35);
+    background: linear-gradient(135deg, #D99000, var(--orange));
     color: white; font-size: 11px; font-weight: 700;
-    font-family: 'Orbitron', monospace; letter-spacing: 1px; cursor: pointer;
+    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; cursor: pointer;
   }
   .app-logo-img {
     width: 32px; height: 32px; border-radius: 8px; object-fit: cover;
@@ -1008,7 +1161,7 @@
     <!-- JANGKA PENDEK -->
     <div class="plan-content active" id="plan-pendek">
       <div class="card glow-cyan" style="margin-bottom:10px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">JANGKA PENDEK — 1–3 BULAN</div>
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">JANGKA PENDEK — 1–3 BULAN</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Fokus operasional harian & administrasi kurikulum</div>
       </div>
       <div class="card">
@@ -1070,7 +1223,7 @@
     <!-- JANGKA MENENGAH -->
     <div class="plan-content" id="plan-menengah">
       <div class="card glow-cyan" style="margin-bottom:10px;">
-        <div style="font-size:10px;color:var(--green);font-family:'Orbitron',monospace;letter-spacing:1px;">JANGKA MENENGAH — 3–12 BULAN</div>
+        <div style="font-size:10px;color:var(--green);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">JANGKA MENENGAH — 3–12 BULAN</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Pengembangan kapasitas guru & sistem kurikulum</div>
       </div>
       <div class="card">
@@ -1116,7 +1269,7 @@
     <!-- JANGKA PANJANG -->
     <div class="plan-content" id="plan-panjang">
       <div class="card glow-purple" style="margin-bottom:10px;">
-        <div style="font-size:10px;color:var(--purple);font-family:'Orbitron',monospace;letter-spacing:1px;">JANGKA PANJANG — 1–3 TAHUN</div>
+        <div style="font-size:10px;color:var(--purple);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">JANGKA PANJANG — 1–3 TAHUN</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Transformasi sistemik & budaya belajar sekolah</div>
       </div>
       <div class="card">
@@ -1175,18 +1328,18 @@
     <!-- TAB JAM -->
     <div id="jamcontent-jp" class="jadwal-tab-content active">
     <div class="card glow-cyan" style="margin-bottom:12px;">
-      <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;margin-bottom:8px;">📌 KETENTUAN KURIKULUM MERDEKA</div>
+      <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:8px;">📌 KETENTUAN KURIKULUM MERDEKA</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:120px;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-family:'Orbitron';font-size:18px;font-weight:700;color:var(--green);">24 JP</div>
+        <div style="flex:1;min-width:120px;background:var(--slate2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family:'Plus Jakarta Sans';font-size:18px;font-weight:700;color:var(--green);">24 JP</div>
           <div style="font-size:9px;color:var(--muted);">Minimal / Minggu</div>
         </div>
-        <div style="flex:1;min-width:120px;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-family:'Orbitron';font-size:18px;font-weight:700;color:var(--yellow);">40 JP</div>
+        <div style="flex:1;min-width:120px;background:var(--slate2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family:'Plus Jakarta Sans';font-size:18px;font-weight:700;color:var(--yellow);">40 JP</div>
           <div style="font-size:9px;color:var(--muted);">Maksimal / Minggu</div>
         </div>
-        <div style="flex:1;min-width:120px;background:rgba(0,0,0,0.3);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-family:'Orbitron';font-size:18px;font-weight:700;color:var(--cyan);">6 JP</div>
+        <div style="flex:1;min-width:120px;background:var(--slate2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family:'Plus Jakarta Sans';font-size:18px;font-weight:700;color:var(--cyan);">6 JP</div>
           <div style="font-size:9px;color:var(--muted);">Tambahan Tugas</div>
         </div>
       </div>
@@ -1207,7 +1360,7 @@
 
     <!-- TAB TUGAS TAMBAHAN -->
     <div id="jamcontent-tugas" class="jadwal-tab-content">
-      <div style="font-size:10px;color:var(--purple);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">🏷️ TUGAS TAMBAHAN GURU</div>
+      <div style="font-size:10px;color:var(--purple);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🏷️ TUGAS TAMBAHAN GURU</div>
       <div id="tugas-list"><!-- Generated by JS --></div>
     </div>
 
@@ -1228,7 +1381,7 @@
     <!-- FORM REKAM -->
     <div class="monitor-content active" id="monitor-rekam">
       <div class="late-form">
-        <div style="font-size:11px;color:var(--red);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:12px;">⚠️ CATAT KETERLAMBATAN GURU</div>
+        <div style="font-size:11px;color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:12px;">⚠️ CATAT KETERLAMBATAN GURU</div>
         <div class="form-group">
           <label class="form-label">NAMA GURU</label>
           <select class="form-select" id="rekam-guru">
@@ -1303,7 +1456,7 @@
   <div class="screen" id="screen-regulasi">
     <p class="section-title">📰 INFO & REGULASI PENDIDIKAN</p>
     <div class="card glow-purple" style="margin-bottom:12px;">
-      <div style="font-size:10px;color:var(--purple);font-family:'Orbitron',monospace;letter-spacing:1px;">🤖 DIPERBARUI OTOMATIS DENGAN AI</div>
+      <div style="font-size:10px;color:var(--purple);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">🤖 DIPERBARUI OTOMATIS DENGAN AI</div>
       <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5;">Info regulasi Kurikulum Merdeka & kebijakan pendidikan terkini</div>
     </div>
     <div id="regulasi-container">
@@ -1389,7 +1542,7 @@
     <!-- TAB REKAP -->
     <div id="jadwal-tab-rekap" class="jadwal-tab-content">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">📊 REKAPITULASI SEMUA GURU</div>
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📊 REKAPITULASI SEMUA GURU</div>
         <button class="btn-add" onclick="exportRekapPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
       </div>
       <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
@@ -1403,7 +1556,7 @@
     <!-- TAB MGMP -->
     <div id="jadwal-tab-mgmp" class="jadwal-tab-content">
       <div class="card" style="margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">🏫 TANDAI GURU MGMP</div>
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🏫 TANDAI GURU MGMP</div>
         <div class="form-group">
           <label class="form-label">GURU</label>
           <select class="form-select" id="mgmp-guru-sel"></select>
@@ -1446,7 +1599,7 @@
         </div>
         <button class="btn-primary" onclick="tambahMGMP()" style="font-size:11px;padding:10px;">💾 SIMPAN MGMP</button>
       </div>
-      <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:8px;">📋 DAFTAR MGMP TERSIMPAN</div>
+      <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">📋 DAFTAR MGMP TERSIMPAN</div>
       <div id="mgmp-list"></div>
     </div>
 
@@ -1469,7 +1622,7 @@
     <div class="notulen-content active" id="notulen-rekam-rapat">
       <!-- Form Info Rapat -->
       <div class="card glow-cyan" style="margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">📋 INFO RAPAT</div>
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📋 INFO RAPAT</div>
         <div class="form-group">
           <label class="form-label">JUDUL / AGENDA RAPAT</label>
           <input type="text" class="form-input" id="rapat-judul" placeholder="Contoh: Rapat Evaluasi Kurikulum Sem. 1">
@@ -1514,7 +1667,7 @@
 
         <!-- Playback -->
         <div class="audio-playback" id="audio-playback">
-          <div style="font-size:9px;color:var(--green);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px;">✅ REKAMAN SELESAI</div>
+          <div style="font-size:9px;color:var(--green);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:6px;">✅ REKAMAN SELESAI</div>
           <audio id="audio-player" controls></audio>
         </div>
 
@@ -1526,7 +1679,7 @@
           <div class="converted-text-label">📝 HASIL TRANSKRIPSI AI</div>
           <div id="convert-loading" style="display:none;text-align:center;padding:10px;">
             <div class="loading-spinner" style="margin:0 auto 6px;width:22px;height:22px;"></div>
-            <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;">MEMPROSES...</div>
+            <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;">MEMPROSES...</div>
           </div>
           <div class="converted-text-body" id="converted-text-content"></div>
         </div>
@@ -1538,7 +1691,7 @@
     <!-- TAB ARSIP -->
     <div class="notulen-content" id="notulen-arsip-rapat">
       <div id="notulen-list">
-        <div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:'Orbitron',monospace;">
+        <div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:'Plus Jakarta Sans',sans-serif;">
           Belum ada notulen tersimpan
         </div>
       </div>
@@ -1562,22 +1715,22 @@
     <!-- TAB DATA — Upload & List -->
     <div id="siswa-tab-data" class="jadwal-tab-content active">
       <div class="card glow-cyan" style="margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">📤 UPLOAD DATA SISWA</div>
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📤 UPLOAD DATA SISWA</div>
         <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
           Format file Excel/CSV — 3 kolom wajib: <b style="color:var(--white);">Nama, Kelas, NISN</b>
         </div>
-        <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,212,255,0.08);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin-bottom:8px;">
+        <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,144,199,0.08);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin-bottom:8px;">
           📁 PILIH FILE (.xlsx / .csv)
           <input type="file" id="siswa-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="uploadSiswaFile(this)">
         </label>
-        <button onclick="downloadTemplateSiswa()" style="width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--slate2);color:var(--muted);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">
+        <button onclick="downloadTemplateSiswa()" style="width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--slate2);color:var(--muted);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">
           📥 DOWNLOAD TEMPLATE EXCEL
         </button>
         <div id="siswa-upload-status" style="font-size:10px;margin-top:8px;text-align:center;display:none;"></div>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">📋 DAFTAR SISWA (<span id="siswa-total-count">0</span>)</div>
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📋 DAFTAR SISWA (<span id="siswa-total-count">0</span>)</div>
         <button class="btn-del" onclick="hapusSemuaSiswa()" style="font-size:10px;">🗑️ Hapus Semua</button>
       </div>
       <div class="teacher-search" style="margin-bottom:10px;">
@@ -1590,7 +1743,7 @@
     <!-- TAB NAIK KELAS -->
     <div id="siswa-tab-naik" class="jadwal-tab-content">
       <div class="card" style="margin-bottom:12px;border-color:rgba(255,140,0,0.3);">
-        <div style="font-size:10px;color:var(--orange);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:8px;">⬆️ TANDAI STATUS NAIK / TIDAK NAIK</div>
+        <div style="font-size:10px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">⬆️ TANDAI STATUS NAIK / TIDAK NAIK</div>
         <div style="font-size:10px;color:var(--muted);line-height:1.6;">
           Tandai setiap siswa: <b style="color:var(--green);">Naik Kelas</b> (akan diacak ke kelas baru) atau <b style="color:var(--red);">Tidak Naik</b> (tetap di kelas yang sama / mengulang). Siswa kelas 9 yang naik otomatis dianggap <b style="color:var(--cyan);">LULUS</b> dan tidak akan tampil di sistem.
         </div>
@@ -1608,13 +1761,13 @@
     <!-- TAB ACAK & HASIL -->
     <div id="siswa-tab-acak" class="jadwal-tab-content">
       <div class="card glow-cyan" style="margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">⚙️ KONFIGURASI KELAS TUJUAN</div>
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">⚙️ KONFIGURASI KELAS TUJUAN</div>
         <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
           Tentukan nama kelas baru & jumlah siswa per kelas. Total kuota harus sama/lebih dari jumlah siswa yang naik.
         </div>
         <div id="kelas-tujuan-list"></div>
         <button class="btn-add" onclick="tambahKelasTujuan()" style="width:100%;margin-top:8px;font-size:11px;">＋ Tambah Kelas Tujuan</button>
-        <div id="kuota-summary" style="margin-top:10px;font-size:10px;color:var(--muted);text-align:center;font-family:'Orbitron',monospace;"></div>
+        <div id="kuota-summary" style="margin-top:10px;font-size:10px;color:var(--muted);text-align:center;font-family:'Plus Jakarta Sans',sans-serif;"></div>
       </div>
 
       <button class="btn-primary" onclick="prosesAcakSiswa()" style="background:linear-gradient(135deg,var(--purple),var(--cyan));font-size:12px;padding:12px;margin-bottom:14px;">
@@ -1703,10 +1856,10 @@
     <div class="setting-section">
       <div class="setting-section-label">🎨 WARNA TEMA</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="setThemeColor('cyan')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--cyan);background:rgba(0,212,255,0.15);color:var(--cyan);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">● CYAN</button>
-        <button onclick="setThemeColor('green')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--green);background:rgba(0,255,136,0.15);color:var(--green);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">● GREEN</button>
-        <button onclick="setThemeColor('purple')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--purple);background:rgba(180,0,255,0.15);color:var(--purple);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">● PURPLE</button>
-        <button onclick="setThemeColor('orange')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--orange);background:rgba(255,140,0,0.15);color:var(--orange);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">● ORANGE</button>
+        <button onclick="setThemeColor('cyan')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--cyan);background:rgba(0,144,199,0.15);color:var(--cyan);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● CYAN</button>
+        <button onclick="setThemeColor('green')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--green);background:rgba(0,168,107,0.15);color:var(--green);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● GREEN</button>
+        <button onclick="setThemeColor('purple')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--purple);background:rgba(180,0,255,0.15);color:var(--purple);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● PURPLE</button>
+        <button onclick="setThemeColor('orange')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--orange);background:rgba(255,140,0,0.15);color:var(--orange);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● ORANGE</button>
       </div>
     </div>
 
@@ -1718,12 +1871,12 @@
       </div>
 
       <!-- Backup -->
-      <button onclick="backupData()" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,212,255,0.1);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <button onclick="backupData()" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,144,199,0.1);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
         📥 DOWNLOAD BACKUP (.json)
       </button>
 
       <!-- Restore -->
-      <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--green);background:rgba(0,255,136,0.08);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;">
+      <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--green);background:rgba(0,168,107,0.08);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;">
         📤 PILIH FILE RESTORE (.json)
         <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="restoreData(this)">
       </label>
@@ -1733,7 +1886,7 @@
     <!-- Reset -->
     <div class="setting-section">
       <div class="setting-section-label">⚠️ DATA</div>
-      <button onclick="resetSemuaData()" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--red);background:rgba(255,59,92,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:1px;">
+      <button onclick="resetSemuaData()" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--red);background:rgba(220,38,64,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">
         🗑️ RESET SEMUA DATA
       </button>
       <div style="font-size:9px;color:var(--muted);margin-top:6px;text-align:center;">Hapus semua data tersimpan & kembali ke awal</div>
@@ -1878,7 +2031,7 @@ function animParticles() {
     if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
     if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
     ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(0,212,255,${p.a})`; ctx.fill();
+    ctx.fillStyle = `rgba(0,144,199,${p.a})`; ctx.fill();
   });
   requestAnimationFrame(animParticles);
 }
@@ -2071,12 +2224,12 @@ function renderConflictAlert() {
   const conflicts = detectConflicts();
   if (!conflicts.length) { el.innerHTML = ''; return; }
   el.innerHTML = `
-    <div style="background:rgba(255,59,92,0.1);border:1px solid var(--red);border-radius:12px;padding:12px;margin-bottom:10px;">
-      <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--red);letter-spacing:1px;margin-bottom:8px;">
+    <div style="background:rgba(220,38,64,0.1);border:1px solid var(--red);border-radius:12px;padding:12px;margin-bottom:10px;">
+      <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--red);letter-spacing:1px;margin-bottom:8px;">
         ⚠️ TERDETEKSI ${conflicts.length} BENTROK JADWAL
       </div>
       ${conflicts.map(c => `
-        <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(255,59,92,0.15);">
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(220,38,64,0.15);">
           <span style="font-size:14px;">${c.type==='guru'?'👤':'🏫'}</span>
           <div style="font-size:10px;color:var(--white);line-height:1.5;flex:1;">${c.detail}</div>
         </div>`).join('')}
@@ -2216,8 +2369,8 @@ function renderAdviceBox() {
 
   if (!advices.length) { box.innerHTML = ''; return; }
 
-  box.innerHTML = `<div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:10px;margin-top:8px;">
-    <div style="font-size:9px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px;">💡 SARAN UNTUK ANDA</div>
+  box.innerHTML = `<div style="background:rgba(0,144,199,0.06);border:1px solid rgba(0,144,199,0.25);border-radius:10px;padding:10px;margin-top:8px;">
+    <div style="font-size:9px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:6px;">💡 SARAN UNTUK ANDA</div>
     ${advices.map(a => `<div style="display:flex;gap:6px;padding:3px 0;font-size:10px;color:var(--white);line-height:1.5;">
       <span>${a.ico}</span><span style="flex:1;">${a.msg}</span>
     </div>`).join('')}
@@ -2272,14 +2425,14 @@ function checkGuruConflictLive() {
 
   let html = '';
   if (bentrokList.length) {
-    html += `<div style="background:rgba(255,59,92,0.15);border:1px solid var(--red);border-radius:10px;padding:10px;font-size:10px;color:var(--red);margin-bottom:6px;">
-      <div style="font-family:'Orbitron',monospace;font-size:9px;letter-spacing:1px;margin-bottom:5px;">⚠️ TERDETEKSI BENTROK JAM!</div>
+    html += `<div style="background:rgba(220,38,64,0.15);border:1px solid var(--red);border-radius:10px;padding:10px;font-size:10px;color:var(--red);margin-bottom:6px;">
+      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;letter-spacing:1px;margin-bottom:5px;">⚠️ TERDETEKSI BENTROK JAM!</div>
       ${bentrokList.map(b => `<div style="padding:2px 0;">• ${b}</div>`).join('')}
     </div>`;
   }
   warnList.forEach(w => {
     const isOver = w.startsWith('📊');
-    html += `<div style="background:${isOver?'rgba(255,140,0,0.15)':'rgba(0,255,136,0.1)'};border:1px solid ${isOver?'var(--orange)':'var(--green)'};border-radius:10px;padding:10px;font-size:10px;color:${isOver?'var(--orange)':'var(--green)'};margin-bottom:6px;line-height:1.5;">
+    html += `<div style="background:${isOver?'rgba(255,140,0,0.15)':'rgba(0,168,107,0.1)'};border:1px solid ${isOver?'var(--orange)':'var(--green)'};border-radius:10px;padding:10px;font-size:10px;color:${isOver?'var(--orange)':'var(--green)'};margin-bottom:6px;line-height:1.5;">
       ${w}
     </div>`;
   });
@@ -2350,21 +2503,21 @@ function openJadwalFormCell(hari, kelas, jam) {
     </div>
 
     <div style="margin-bottom:10px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:6px;">HARI</div>
+      <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px;">HARI</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;">
         ${[1,2,3,4,5,6].map(h=>`<span class="jam-badge hari-badge ${h===hari?'selected':''}" data-hari="${h}" onclick="setFormHari(${h},this)">${HARI[h]}</span>`).join('')}
       </div>
     </div>
 
     <div style="margin-bottom:10px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:6px;">KELAS</div>
+      <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px;">KELAS</div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;">
         ${KELAS_LIST.map(k=>`<span class="jam-badge kelas-badge ${k===kelas?'selected':''}" data-kelas="${k}" onclick="setFormKelas('${k}',this)">${k}</span>`).join('')}
       </div>
     </div>
 
     <div style="margin-bottom:6px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;margin-bottom:4px;">JAM KE — <span style="color:var(--cyan);">Pilih lebih dari satu untuk blok jam</span></div>
+      <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:4px;">JAM KE — <span style="color:var(--cyan);">Pilih lebih dari satu untuk blok jam</span></div>
       <div id="jam-picker" style="display:flex;flex-wrap:wrap;gap:5px;">
         ${[1,2,3,4,5,6,7,8,9].map(j=>`
           <span class="jam-badge ${preSelected.includes(j)?'selected':''}"
@@ -2374,9 +2527,10 @@ function openJadwalFormCell(hari, kelas, jam) {
             JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span>
           </span>`).join('')}
       </div>
-      <div id="jam-range-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Orbitron',monospace;"></div>
+      <div id="jam-range-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;"></div>
     </div>
-    <div id="advice-box"></div>`;
+    <div id="advice-box"></div>
+    ${existing.guru ? `<button onclick="hapusJadwalCell(${hari},'${kelas}',${jam});closeModalForm();" style="width:100%;padding:11px;margin-top:10px;border-radius:11px;border:1px solid var(--red);background:rgba(220,38,64,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">🗑️ KOSONGKAN JADWAL INI</button>` : ''}`;
 
   currentModalType = 'jadwal-cell';
   document.getElementById('modal-form').classList.add('open');
@@ -2483,7 +2637,14 @@ function setFormKelas(k, el) {
 function editJadwalCell(hari, kelas, jam) { openJadwalFormCell(hari, kelas, jam); }
 function hapusJadwalCell(hari, kelas, jam) {
   if (!JADWAL_DATA2[hari]?.[kelas]) return;
-  delete JADWAL_DATA2[hari][kelas][jam];
+  const cell = JADWAL_DATA2[hari][kelas][jam];
+  if (!cell) return;
+  const jamsToDelete = (cell.jamRange && cell.jamRange.length > 1) ? cell.jamRange : [jam];
+  const rangeLabel = jamsToDelete.length > 1 ? `JP${jamsToDelete[0]}–JP${jamsToDelete[jamsToDelete.length-1]}` : `JP${jam}`;
+  if (!confirm(`Hapus jadwal ${cell.guru} (${rangeLabel}) di kelas ${kelas}?`)) return;
+  jamsToDelete.forEach(j => {
+    if (JADWAL_DATA2[hari][kelas][j]) delete JADWAL_DATA2[hari][kelas][j];
+  });
   renderGrid(); saveAll();
   if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
   showToast('🗑️ Jadwal dihapus');
@@ -2513,7 +2674,7 @@ function renderListGuru() {
         if (cell.guru === nama) {
           hasSesi = true;
           sesiHtml += `<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
-            <span style="font-family:'Orbitron',monospace;font-size:10px;color:var(--cyan);min-width:36px;">JP${jam}</span>
+            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--cyan);min-width:36px;">JP${jam}</span>
             <span style="font-size:9px;color:var(--muted);min-width:36px;">${JAM_LABELS[jam]}</span>
             <span style="font-weight:700;font-size:11px;color:var(--white);flex:1;">${kelas}</span>
             <span style="font-size:10px;color:var(--muted);">${cell.mapel||''}</span>
@@ -2524,14 +2685,14 @@ function renderListGuru() {
     });
     if (hasSesi) {
       html += `<div class="card" style="margin-bottom:8px;">
-        <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--cyan);margin-bottom:8px;">${HARI[hari].toUpperCase()}</div>
+        <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--cyan);margin-bottom:8px;">${HARI[hari].toUpperCase()}</div>
         ${sesiHtml}</div>`;
     }
   });
   // MGMP info
   if (mgmpG.length) {
     html += `<div class="card" style="border-color:rgba(255,140,0,0.3);margin-bottom:8px;">
-      <div style="font-size:10px;font-family:'Orbitron',monospace;color:var(--orange);margin-bottom:8px;">🏫 JADWAL MGMP</div>
+      <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--orange);margin-bottom:8px;">🏫 JADWAL MGMP</div>
       ${mgmpG.map(m => `<div style="font-size:11px;color:var(--white);padding:4px 0;">${m.mapel} — ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[m.hari]+' Minggu ke-'+m.minggu}</div>`).join('')}
     </div>`;
   }
@@ -2687,7 +2848,7 @@ function tambahMGMP() {
 function renderMGMPList() {
   const el = document.getElementById('mgmp-list');
   if (!el) return;
-  if (!mgmpData.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;font-family:\'Orbitron\',monospace;">Belum ada jadwal MGMP</div>'; return; }
+  if (!mgmpData.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;font-family:\'Plus Jakarta Sans\',sans-serif;">Belum ada jadwal MGMP</div>'; return; }
   el.innerHTML = mgmpData.map((m, i) => `
     <div class="mgmp-card">
       <div class="mgmp-icon">🏫</div>
@@ -2747,7 +2908,7 @@ function editKelasAmpu(i) {
   document.getElementById('modal-form-body').innerHTML = `
     <div style="font-size:11px;color:var(--white);margin-bottom:4px;font-weight:700;">${g.nama}</div>
     <div style="font-size:9px;color:var(--muted);margin-bottom:12px;">${g.mapel}</div>
-    <div style="font-size:9px;color:var(--cyan);font-family:'Orbitron',monospace;margin-bottom:8px;letter-spacing:0.5px;">PILIH SEMUA KELAS YANG DIAJAR GURU INI</div>
+    <div style="font-size:9px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:8px;letter-spacing:0.5px;">PILIH SEMUA KELAS YANG DIAJAR GURU INI</div>
     <div id="kelas-ampu-picker" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
       ${KELAS_LIST.map(k => `<span class="jam-badge ${currentKelas.includes(k)?'selected':''}" data-kelas-ampu="${k}" onclick="this.classList.toggle('selected')" style="min-width:44px;text-align:center;">${k}</span>`).join('')}
     </div>
@@ -2805,10 +2966,10 @@ function renderMiniSchedule() {
   el.innerHTML = items.map(s => {
     const [cls, ico] = statusMap[s.status] || ['status-belum','🕐'];
     return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
-      <div><span style="color:var(--muted);font-family:"Orbitron",monospace;font-size:9px;">${s.jam}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span></div>
+      <div><span style="color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;">${s.jam}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span></div>
       <span>${ico}</span>
     </div>`;
-  }).join('') + `<div style="text-align:right;margin-top:6px;"><span onclick="switchScreen('jadwal')" style="font-size:10px;color:var(--cyan);cursor:pointer;font-family:"Orbitron",monospace;">LIHAT SEMUA →</span></div>`;
+  }).join('') + `<div style="text-align:right;margin-top:6px;"><span onclick="switchScreen('jadwal')" style="font-size:10px;color:var(--cyan);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">LIHAT SEMUA →</span></div>`;
 }
 renderMiniSchedule();
 
@@ -2876,7 +3037,7 @@ function renderRiwayat() {
       ${r.photos.length ? `<div class="lli-photos">${r.photos.map(p => `<img src="${p}">`).join('')}</div>` : ''}
       <div class="lli-actions">
         <button class="btn-danger" onclick="cetakDokumen(${i})">🖨️ Cetak</button>
-        <button style="padding:7px 12px;border:1px solid var(--cyan);border-radius:8px;background:rgba(0,212,255,0.1);color:var(--cyan);font-size:10px;font-weight:600;cursor:pointer;" onclick="">📤 Bagikan</button>
+        <button style="padding:7px 12px;border:1px solid var(--cyan);border-radius:8px;background:rgba(0,144,199,0.1);color:var(--cyan);font-size:10px;font-weight:600;cursor:pointer;" onclick="">📤 Bagikan</button>
       </div>
     </div>`).join('');
 }
@@ -2920,7 +3081,7 @@ function renderStatistik() {
     return `<div style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;">
         <span style="color:var(--white)">${name}</span>
-        <span style="color:var(--red);font-family:"Orbitron",monospace;">${c}×</span>
+        <span style="color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;">${c}×</span>
       </div>
       <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;">
         <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--red),#FF8C00);border-radius:4px;"></div>
@@ -3056,7 +3217,7 @@ function showNotifModal() {
         + '<span style="font-size:18px;">' + n.ico + '</span>'
         + '<div style="flex:1;">'
         + '<div style="font-size:11px;color:var(--white);line-height:1.5;">' + n.msg + '</div>'
-        + '<div style="font-size:9px;color:' + (colorMap[n.type]||'var(--muted)') + ';margin-top:2px;font-family:"Orbitron",monospace;">' + n.time + '</div>'
+        + '<div style="font-size:9px;color:' + (colorMap[n.type]||'var(--muted)') + ';margin-top:2px;font-family:"Plus Jakarta Sans",sans-serif;">' + n.time + '</div>'
         + '</div></div>').join('')
     : '<div style="text-align:center;padding:20px;color:var(--muted);font-size:11px;">Tidak ada notifikasi</div>';
   document.getElementById('notif-modal').classList.add('open');
@@ -3067,7 +3228,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function showToast(msg, warn = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.background = warn ? 'rgba(255,59,92,0.15)' : 'rgba(0,255,136,0.15)';
+  t.style.background = warn ? 'rgba(220,38,64,0.15)' : 'rgba(0,168,107,0.15)';
   t.style.borderColor = warn ? 'var(--red)' : 'var(--green)';
   t.style.color = warn ? 'var(--red)' : 'var(--green)';
   t.classList.add('show');
@@ -3663,7 +3824,7 @@ function addNotulenToArsip(record) {
 function renderNotulenList() {
   const el = document.getElementById('notulen-list');
   if (!notulenRecords.length) {
-    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:\'Orbitron\',monospace;">Belum ada notulen tersimpan</div>';
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:\'Plus Jakarta Sans\',sans-serif;">Belum ada notulen tersimpan</div>';
     return;
   }
   el.innerHTML = notulenRecords.map((n, i) => `
@@ -3968,7 +4129,7 @@ function renderSiswaList(filter = '') {
   document.getElementById('siswa-total-count').textContent = SISWA_DATA.length;
 
   if (!data.length) {
-    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:'Orbitron',monospace;">
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:'Plus Jakarta Sans',sans-serif;">
       ${SISWA_DATA.length ? 'Tidak ditemukan' : 'Belum ada data siswa. Upload file untuk mulai.'}
     </div>`;
     return;
@@ -3980,13 +4141,13 @@ function renderSiswaList(filter = '') {
 
   let html = '';
   Object.keys(byKelas).sort().forEach(kelas => {
-    html += `<div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin:10px 0 6px;">KELAS ${kelas} (${byKelas[kelas].length})</div>`;
+    html += `<div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin:10px 0 6px;">KELAS ${kelas} (${byKelas[kelas].length})</div>`;
     byKelas[kelas].forEach(s => {
       html += `<div class="teacher-card" style="padding:10px 12px;margin-bottom:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--white);">${s.nama}</div>
-            <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;">NISN: ${s.nisn || '—'}</div>
+            <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;">NISN: ${s.nisn || '—'}</div>
           </div>
           <button class="btn-del" onclick="hapusSiswa('${s.id}')">🗑️</button>
         </div>
@@ -4038,7 +4199,7 @@ function renderNaikKelasList() {
     const naikCount = byKelas[kelas].filter(s => s.status === 'naik').length;
     const tidakCount = byKelas[kelas].filter(s => s.status === 'tidak').length;
     html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px;">
-      <span style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">KELAS ${kelas}</span>
+      <span style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">KELAS ${kelas}</span>
       <span style="font-size:9px;color:var(--muted);">✅${naikCount} · ❌${tidakCount} / ${byKelas[kelas].length}</span>
     </div>`;
     byKelas[kelas].forEach(s => {
@@ -4050,8 +4211,8 @@ function renderNaikKelasList() {
             <div style="font-size:8px;color:var(--muted);">NISN: ${s.nisn || '—'}</div>
           </div>
           <div style="display:flex;gap:4px;">
-            <button onclick="setSiswaStatus('${s.id}','naik')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='naik'?'var(--green)':'var(--border)'};background:${s.status==='naik'?'rgba(0,255,136,0.2)':'transparent'};color:${s.status==='naik'?'var(--green)':'var(--muted)'};font-size:9px;cursor:pointer;">✅ Naik</button>
-            <button onclick="setSiswaStatus('${s.id}','tidak')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='tidak'?'var(--red)':'var(--border)'};background:${s.status==='tidak'?'rgba(255,59,92,0.2)':'transparent'};color:${s.status==='tidak'?'var(--red)':'var(--muted)'};font-size:9px;cursor:pointer;">❌ Tidak</button>
+            <button onclick="setSiswaStatus('${s.id}','naik')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='naik'?'var(--green)':'var(--border)'};background:${s.status==='naik'?'rgba(0,168,107,0.2)':'transparent'};color:${s.status==='naik'?'var(--green)':'var(--muted)'};font-size:9px;cursor:pointer;">✅ Naik</button>
+            <button onclick="setSiswaStatus('${s.id}','tidak')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='tidak'?'var(--red)':'var(--border)'};background:${s.status==='tidak'?'rgba(220,38,64,0.2)':'transparent'};color:${s.status==='tidak'?'var(--red)':'var(--muted)'};font-size:9px;cursor:pointer;">❌ Tidak</button>
           </div>
         </div>
       </div>`;
@@ -4166,14 +4327,14 @@ function renderHasilAcak() {
   sudahDiacak.forEach(s => { if (!byKelasBaru[s.kelasBaru]) byKelasBaru[s.kelasBaru] = []; byKelasBaru[s.kelasBaru].push(s); });
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-    <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">📊 HASIL PEMBAGIAN KELAS</div>
+    <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📊 HASIL PEMBAGIAN KELAS</div>
     <button class="btn-add" onclick="downloadHasilAcakPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
   </div>`;
 
   Object.keys(byKelasBaru).sort().forEach(kelas => {
     html += `<div class="card" style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <span style="font-size:12px;font-weight:700;color:var(--cyan);font-family:'Orbitron',monospace;">KELAS ${kelas}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;">KELAS ${kelas}</span>
         <span style="font-size:10px;color:var(--muted);">${byKelasBaru[kelas].length} siswa</span>
       </div>
       ${byKelasBaru[kelas].map((s, i) => `
@@ -4256,8 +4417,8 @@ function applySetting() {
   if (schoolEl && currentSetting.schoolName) schoolEl.textContent = currentSetting.schoolName;
   // Theme color
   if (currentSetting.themeColor) {
-    const colorMap = { cyan: '#00D4FF', green: '#00FF88', purple: '#B400FF', orange: '#FF8C00' };
-    const c = colorMap[currentSetting.themeColor] || '#00D4FF';
+    const colorMap = { cyan: '#0090C7', green: '#00A86B', purple: '#6B46C1', orange: '#E0660A' };
+    const c = colorMap[currentSetting.themeColor] || '#0090C7';
     document.documentElement.style.setProperty('--cyan', c);
   }
 }

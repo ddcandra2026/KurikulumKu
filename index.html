@@ -930,15 +930,20 @@
         <div class="menu-label">Monitoring</div>
         <div class="menu-sub">Dokumen & Foto Telat</div>
       </div>
-      <div class="menu-item" onclick="switchScreen('regulasi')">
-        <span class="menu-icon">📰</span>
-        <div class="menu-label">Info Regulasi</div>
-        <div class="menu-sub">Update Otomatis</div>
-      </div>
       <div class="menu-item" onclick="switchScreen('notulen')">
         <span class="menu-icon">🎙️</span>
         <div class="menu-label">Notulen Rapat</div>
         <div class="menu-sub">Rekam & Konversi</div>
+      </div>
+      <div class="menu-item" onclick="switchScreen('siswa')">
+        <span class="menu-icon">🎓</span>
+        <div class="menu-label">Data Siswa</div>
+        <div class="menu-sub">Naik Kelas & Acak</div>
+      </div>
+      <div class="menu-item" onclick="switchScreen('regulasi')">
+        <span class="menu-icon">📰</span>
+        <div class="menu-label">Info Regulasi</div>
+        <div class="menu-sub">Update Otomatis</div>
       </div>
     </div>
 
@@ -1489,6 +1494,86 @@
     <div class="watermark">Developed by D.D Candra © 2026</div>
   </div>
 
+  <!-- ===== SCREEN: SISWA ===== -->
+  <div class="screen" id="screen-siswa">
+    <div class="section-header">
+      <p class="section-title">🎓 DATA SISWA & NAIK KELAS</p>
+    </div>
+
+    <div class="notulen-tabs" style="margin-bottom:12px;">
+      <div class="notulen-tab active" id="stab-data" onclick="switchSiswaTab('data',this)">📋 DATA</div>
+      <div class="notulen-tab" id="stab-naik" onclick="switchSiswaTab('naik',this)">⬆️ NAIK KELAS</div>
+      <div class="notulen-tab" id="stab-acak" onclick="switchSiswaTab('acak',this)">🎲 ACAK & HASIL</div>
+    </div>
+
+    <!-- TAB DATA — Upload & List -->
+    <div id="siswa-tab-data" class="jadwal-tab-content active">
+      <div class="card glow-cyan" style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">📤 UPLOAD DATA SISWA</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+          Format file Excel/CSV — 3 kolom wajib: <b style="color:var(--white);">Nama, Kelas, NISN</b>
+        </div>
+        <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,212,255,0.08);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Orbitron',monospace;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin-bottom:8px;">
+          📁 PILIH FILE (.xlsx / .csv)
+          <input type="file" id="siswa-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="uploadSiswaFile(this)">
+        </label>
+        <button onclick="downloadTemplateSiswa()" style="width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--slate2);color:var(--muted);font-size:10px;cursor:pointer;font-family:'Orbitron',monospace;">
+          📥 DOWNLOAD TEMPLATE EXCEL
+        </button>
+        <div id="siswa-upload-status" style="font-size:10px;margin-top:8px;text-align:center;display:none;"></div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">📋 DAFTAR SISWA (<span id="siswa-total-count">0</span>)</div>
+        <button class="btn-del" onclick="hapusSemuaSiswa()" style="font-size:10px;">🗑️ Hapus Semua</button>
+      </div>
+      <div class="teacher-search" style="margin-bottom:10px;">
+        <span>🔍</span>
+        <input type="text" id="search-siswa" placeholder="Cari nama / NISN / kelas..." oninput="filterSiswa(this.value)">
+      </div>
+      <div id="siswa-list-container"></div>
+    </div>
+
+    <!-- TAB NAIK KELAS -->
+    <div id="siswa-tab-naik" class="jadwal-tab-content">
+      <div class="card" style="margin-bottom:12px;border-color:rgba(255,140,0,0.3);">
+        <div style="font-size:10px;color:var(--orange);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:8px;">⬆️ TANDAI STATUS NAIK / TIDAK NAIK</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.6;">
+          Tandai setiap siswa: <b style="color:var(--green);">Naik Kelas</b> (akan diacak ke kelas baru) atau <b style="color:var(--red);">Tidak Naik</b> (tetap di kelas yang sama / mengulang). Siswa kelas 9 yang naik otomatis dianggap <b style="color:var(--cyan);">LULUS</b> dan tidak akan tampil di sistem.
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <button class="btn-add" style="flex:1;font-size:10px;" onclick="tandaiSemuaNaik(true)">✅ Tandai Semua Naik</button>
+        <button class="btn-del" style="flex:1;font-size:10px;" onclick="tandaiSemuaNaik(false)">❌ Tandai Semua Tidak</button>
+      </div>
+      <select class="form-select" id="naik-kelas-filter" onchange="renderNaikKelasList()" style="margin-bottom:10px;">
+        <option value="">Semua Kelas Asal</option>
+      </select>
+      <div id="naik-kelas-list"></div>
+    </div>
+
+    <!-- TAB ACAK & HASIL -->
+    <div id="siswa-tab-acak" class="jadwal-tab-content">
+      <div class="card glow-cyan" style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:10px;">⚙️ KONFIGURASI KELAS TUJUAN</div>
+        <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+          Tentukan nama kelas baru & jumlah siswa per kelas. Total kuota harus sama/lebih dari jumlah siswa yang naik.
+        </div>
+        <div id="kelas-tujuan-list"></div>
+        <button class="btn-add" onclick="tambahKelasTujuan()" style="width:100%;margin-top:8px;font-size:11px;">＋ Tambah Kelas Tujuan</button>
+        <div id="kuota-summary" style="margin-top:10px;font-size:10px;color:var(--muted);text-align:center;font-family:'Orbitron',monospace;"></div>
+      </div>
+
+      <button class="btn-primary" onclick="prosesAcakSiswa()" style="background:linear-gradient(135deg,var(--purple),var(--cyan));font-size:12px;padding:12px;margin-bottom:14px;">
+        🎲 ACAK & BAGI SISWA SEKARANG
+      </button>
+
+      <div id="hasil-acak-container"></div>
+    </div>
+
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
 </div><!-- end #app -->
 
 <!-- BOTTOM NAV -->
@@ -1635,6 +1720,7 @@
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // ===== DATA =====
 const GURU_DATA = [
@@ -1760,6 +1846,7 @@ function switchScreen(name) {
   if (name === 'regulasi') loadRegulasi();
   if (name === 'home') renderMiniSchedule();
   if (name === 'notulen') renderNotulenList();
+  if (name === 'siswa') renderSiswaList();
 }
 
 // ===== PLANNING TABS =====
@@ -3341,7 +3428,7 @@ function backupData() {
     });
 
     const backup = {
-      _version: 2,
+      _version: 3,
       _timestamp: new Date().toISOString(),
       _app: 'KurikulumKu',
       guru: GURU_DATA,
@@ -3351,6 +3438,8 @@ function backupData() {
       notulen: notulenRecords.map(n => ({ ...n, teks: n.teks?.substring(0, 2000) })), // trim large teks
       planning: planSnap,
       setting: currentSetting,
+      siswa: SISWA_DATA,
+      kelasTujuan: KELAS_TUJUAN,
     };
 
     const json = JSON.stringify(backup, null, 2);
@@ -3418,6 +3507,9 @@ function restoreData(input) {
           if (card) card.innerHTML = data.planning[j];
         });
       }
+      // Restore siswa
+      if (data.siswa) SISWA_DATA = data.siswa;
+      if (data.kelasTujuan) KELAS_TUJUAN = data.kelasTujuan;
 
       // Save all to localStorage
       saveAll();
@@ -3436,6 +3528,360 @@ function restoreData(input) {
   };
   reader.readAsText(file);
 }
+
+// ===== DATA SISWA & NAIK KELAS =====
+let SISWA_DATA = [];        // [{id, nama, kelas, nisn, status: 'naik'|'tidak'|null, kelasBaru: null}]
+let KELAS_TUJUAN = [];      // [{nama: '9A', kuota: 32}, ...]
+
+function switchSiswaTab(tab, el) {
+  document.querySelectorAll('.notulen-tab[id^="stab"]').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#screen-siswa .jadwal-tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('siswa-tab-' + tab).classList.add('active');
+  if (tab === 'data') renderSiswaList();
+  if (tab === 'naik') { populateNaikKelasFilter(); renderNaikKelasList(); }
+  if (tab === 'acak') { renderKelasTujuanList(); renderHasilAcak(); }
+  try { localStorage.setItem('kuriku_siswa_tab', tab); } catch(e) {}
+}
+
+// ===== UPLOAD FILE =====
+function uploadSiswaFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('siswa-upload-status');
+  statusEl.style.display = 'block';
+  statusEl.style.color = 'var(--muted)';
+  statusEl.textContent = '⏳ Memproses file...';
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+      if (!rows.length) {
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = '❌ File kosong atau tidak terbaca!';
+        return;
+      }
+
+      // Detect column names flexibly (case-insensitive)
+      const sample = rows[0];
+      const keys = Object.keys(sample);
+      const findKey = (patterns) => keys.find(k => patterns.some(p => k.toLowerCase().includes(p)));
+      const namaKey = findKey(['nama']);
+      const kelasKey = findKey(['kelas']);
+      const nisnKey = findKey(['nisn']);
+
+      if (!namaKey || !kelasKey || !nisnKey) {
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = `❌ Kolom tidak lengkap! Ditemukan: ${keys.join(', ')}. Wajib ada: Nama, Kelas, NISN`;
+        return;
+      }
+
+      let added = 0;
+      rows.forEach(row => {
+        const nama = String(row[namaKey] || '').trim();
+        const kelas = String(row[kelasKey] || '').trim().toUpperCase();
+        const nisn = String(row[nisnKey] || '').trim();
+        if (!nama || !kelas) return;
+        SISWA_DATA.push({
+          id: 'siswa_' + Date.now() + '_' + added,
+          nama, kelas, nisn,
+          status: null, kelasBaru: null
+        });
+        added++;
+      });
+
+      renderSiswaList();
+      saveAll();
+      statusEl.style.color = 'var(--green)';
+      statusEl.textContent = `✅ Berhasil! ${added} siswa ditambahkan dari file.`;
+      input.value = '';
+    } catch(err) {
+      statusEl.style.color = 'var(--red)';
+      statusEl.textContent = '❌ Gagal membaca file: ' + err.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function downloadTemplateSiswa() {
+  const wb = XLSX.utils.book_new();
+  const wsData = [
+    ['Nama', 'Kelas', 'NISN'],
+    ['Contoh Siswa Satu', '8A', '1234567890'],
+    ['Contoh Siswa Dua', '8A', '1234567891'],
+    ['Contoh Siswa Tiga', '8B', '1234567892'],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols'] = [{wch:25},{wch:10},{wch:15}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
+  XLSX.writeFile(wb, 'template-data-siswa.xlsx');
+  showToast('📥 Template berhasil diunduh!');
+}
+
+// ===== RENDER DATA LIST =====
+function renderSiswaList(filter = '') {
+  const container = document.getElementById('siswa-list-container');
+  if (!container) return;
+  const data = filter
+    ? SISWA_DATA.filter(s => s.nama.toLowerCase().includes(filter.toLowerCase()) || s.nisn.includes(filter) || s.kelas.toLowerCase().includes(filter.toLowerCase()))
+    : SISWA_DATA;
+
+  document.getElementById('siswa-total-count').textContent = SISWA_DATA.length;
+
+  if (!data.length) {
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:'Orbitron',monospace;">
+      ${SISWA_DATA.length ? 'Tidak ditemukan' : 'Belum ada data siswa. Upload file untuk mulai.'}
+    </div>`;
+    return;
+  }
+
+  // Group by kelas
+  const byKelas = {};
+  data.forEach(s => { if (!byKelas[s.kelas]) byKelas[s.kelas] = []; byKelas[s.kelas].push(s); });
+
+  let html = '';
+  Object.keys(byKelas).sort().forEach(kelas => {
+    html += `<div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin:10px 0 6px;">KELAS ${kelas} (${byKelas[kelas].length})</div>`;
+    byKelas[kelas].forEach(s => {
+      html += `<div class="teacher-card" style="padding:10px 12px;margin-bottom:6px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--white);">${s.nama}</div>
+            <div style="font-size:9px;color:var(--muted);font-family:'Orbitron',monospace;">NISN: ${s.nisn || '—'}</div>
+          </div>
+          <button class="btn-del" onclick="hapusSiswa('${s.id}')">🗑️</button>
+        </div>
+      </div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+function filterSiswa(v) { renderSiswaList(v); }
+
+function hapusSiswa(id) {
+  SISWA_DATA = SISWA_DATA.filter(s => s.id !== id);
+  renderSiswaList(); saveAll();
+  showToast('🗑️ Siswa dihapus');
+}
+
+function hapusSemuaSiswa() {
+  if (!confirm('Hapus SEMUA data siswa? Tindakan ini tidak bisa dibatalkan!')) return;
+  SISWA_DATA = [];
+  KELAS_TUJUAN = [];
+  renderSiswaList(); saveAll();
+  showToast('🗑️ Semua data siswa dihapus');
+}
+
+// ===== TAB NAIK KELAS =====
+function populateNaikKelasFilter() {
+  const sel = document.getElementById('naik-kelas-filter');
+  if (!sel) return;
+  const kelasUnik = [...new Set(SISWA_DATA.map(s => s.kelas))].sort();
+  sel.innerHTML = '<option value="">Semua Kelas Asal</option>' + kelasUnik.map(k => `<option value="${k}">${k}</option>`).join('');
+}
+
+function renderNaikKelasList() {
+  const container = document.getElementById('naik-kelas-list');
+  if (!container) return;
+  const filterKelas = document.getElementById('naik-kelas-filter')?.value || '';
+  const data = filterKelas ? SISWA_DATA.filter(s => s.kelas === filterKelas) : SISWA_DATA;
+
+  if (!data.length) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:11px;">Belum ada data siswa</div>`;
+    return;
+  }
+
+  const byKelas = {};
+  data.forEach(s => { if (!byKelas[s.kelas]) byKelas[s.kelas] = []; byKelas[s.kelas].push(s); });
+
+  let html = '';
+  Object.keys(byKelas).sort().forEach(kelas => {
+    const naikCount = byKelas[kelas].filter(s => s.status === 'naik').length;
+    const tidakCount = byKelas[kelas].filter(s => s.status === 'tidak').length;
+    html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px;">
+      <span style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">KELAS ${kelas}</span>
+      <span style="font-size:9px;color:var(--muted);">✅${naikCount} · ❌${tidakCount} / ${byKelas[kelas].length}</span>
+    </div>`;
+    byKelas[kelas].forEach(s => {
+      const statusColor = s.status === 'naik' ? 'var(--green)' : s.status === 'tidak' ? 'var(--red)' : 'var(--muted)';
+      html += `<div class="teacher-card" style="padding:8px 12px;margin-bottom:5px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div style="flex:1;">
+            <div style="font-size:11px;font-weight:700;color:var(--white);">${s.nama}</div>
+            <div style="font-size:8px;color:var(--muted);">NISN: ${s.nisn || '—'}</div>
+          </div>
+          <div style="display:flex;gap:4px;">
+            <button onclick="setSiswaStatus('${s.id}','naik')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='naik'?'var(--green)':'var(--border)'};background:${s.status==='naik'?'rgba(0,255,136,0.2)':'transparent'};color:${s.status==='naik'?'var(--green)':'var(--muted)'};font-size:9px;cursor:pointer;">✅ Naik</button>
+            <button onclick="setSiswaStatus('${s.id}','tidak')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='tidak'?'var(--red)':'var(--border)'};background:${s.status==='tidak'?'rgba(255,59,92,0.2)':'transparent'};color:${s.status==='tidak'?'var(--red)':'var(--muted)'};font-size:9px;cursor:pointer;">❌ Tidak</button>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+  container.innerHTML = html;
+}
+
+function setSiswaStatus(id, status) {
+  const s = SISWA_DATA.find(x => x.id === id);
+  if (!s) return;
+  s.status = s.status === status ? null : status; // toggle off if clicked again
+  renderNaikKelasList(); saveAll();
+}
+
+function tandaiSemuaNaik(naik) {
+  const filterKelas = document.getElementById('naik-kelas-filter')?.value || '';
+  const target = filterKelas ? SISWA_DATA.filter(s => s.kelas === filterKelas) : SISWA_DATA;
+  target.forEach(s => { s.status = naik ? 'naik' : 'tidak'; });
+  renderNaikKelasList(); saveAll();
+  showToast(naik ? '✅ Semua ditandai Naik Kelas' : '❌ Semua ditandai Tidak Naik');
+}
+
+// ===== TAB ACAK & HASIL — KELAS TUJUAN =====
+function renderKelasTujuanList() {
+  const container = document.getElementById('kelas-tujuan-list');
+  if (!container) return;
+  if (!KELAS_TUJUAN.length) {
+    container.innerHTML = `<div style="text-align:center;padding:14px;color:var(--muted);font-size:10px;">Belum ada kelas tujuan. Tambahkan di bawah.</div>`;
+  } else {
+    container.innerHTML = KELAS_TUJUAN.map((kt, i) => `
+      <div style="display:flex;gap:6px;align-items:center;margin-bottom:6px;">
+        <input type="text" class="form-input" style="flex:2;padding:8px 10px;font-size:11px;" value="${kt.nama}" onchange="updateKelasTujuan(${i},'nama',this.value)" placeholder="Nama kelas (cth: 9A)">
+        <input type="number" class="form-input" style="flex:1;padding:8px 10px;font-size:11px;" value="${kt.kuota}" onchange="updateKelasTujuan(${i},'kuota',this.value)" placeholder="Kuota" min="1">
+        <button class="btn-del" onclick="hapusKelasTujuan(${i})">🗑️</button>
+      </div>`).join('');
+  }
+  updateKuotaSummary();
+}
+
+function tambahKelasTujuan() {
+  KELAS_TUJUAN.push({ nama: '', kuota: 32 });
+  renderKelasTujuanList(); saveAll();
+}
+function updateKelasTujuan(i, field, val) {
+  KELAS_TUJUAN[i][field] = field === 'kuota' ? parseInt(val) || 0 : val.toUpperCase();
+  updateKuotaSummary(); saveAll();
+}
+function hapusKelasTujuan(i) {
+  KELAS_TUJUAN.splice(i, 1);
+  renderKelasTujuanList(); saveAll();
+}
+function updateKuotaSummary() {
+  const el = document.getElementById('kuota-summary');
+  if (!el) return;
+  const totalKuota = KELAS_TUJUAN.reduce((sum, kt) => sum + (kt.kuota || 0), 0);
+  const totalNaik = SISWA_DATA.filter(s => s.status === 'naik').length;
+  const ok = totalKuota >= totalNaik;
+  el.innerHTML = `Total Kuota: <b style="color:${ok?'var(--green)':'var(--red)'};">${totalKuota}</b> · Siswa Naik: <b style="color:var(--cyan);">${totalNaik}</b> ${!ok && totalNaik>0 ? '<br><span style="color:var(--red);">⚠️ Kuota kurang dari jumlah siswa naik!</span>' : ''}`;
+}
+
+// ===== PROSES ACAK =====
+function prosesAcakSiswa() {
+  const siswaNaik = SISWA_DATA.filter(s => s.status === 'naik');
+  if (!siswaNaik.length) { showToast('⚠️ Belum ada siswa yang ditandai Naik Kelas!', true); return; }
+  if (!KELAS_TUJUAN.length) { showToast('⚠️ Tambahkan kelas tujuan dulu!', true); return; }
+
+  const validKelas = KELAS_TUJUAN.filter(kt => kt.nama && kt.kuota > 0);
+  if (!validKelas.length) { showToast('⚠️ Isi nama & kuota kelas tujuan!', true); return; }
+
+  const totalKuota = validKelas.reduce((sum, kt) => sum + kt.kuota, 0);
+  if (totalKuota < siswaNaik.length) {
+    if (!confirm(`Kuota (${totalKuota}) lebih sedikit dari siswa naik (${siswaNaik.length}). ${siswaNaik.length - totalKuota} siswa tidak akan terbagi. Lanjutkan?`)) return;
+  }
+
+  // Acak murni (Fisher-Yates shuffle)
+  const shuffled = [...siswaNaik];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  // Distribusikan sesuai kuota
+  let idx = 0;
+  validKelas.forEach(kt => {
+    for (let i = 0; i < kt.kuota && idx < shuffled.length; i++) {
+      shuffled[idx].kelasBaru = kt.nama;
+      idx++;
+    }
+  });
+  // Sisa yang tidak terbagi (jika kuota kurang)
+  while (idx < shuffled.length) {
+    shuffled[idx].kelasBaru = 'BELUM TERBAGI';
+    idx++;
+  }
+
+  renderHasilAcak();
+  saveAll();
+  showToast(`🎲 Berhasil mengacak ${shuffled.length} siswa ke ${validKelas.length} kelas!`);
+}
+
+function renderHasilAcak() {
+  const container = document.getElementById('hasil-acak-container');
+  if (!container) return;
+  const sudahDiacak = SISWA_DATA.filter(s => s.status === 'naik' && s.kelasBaru);
+  if (!sudahDiacak.length) {
+    container.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted);font-size:11px;">Belum ada hasil pengacakan</div>`;
+    return;
+  }
+
+  const byKelasBaru = {};
+  sudahDiacak.forEach(s => { if (!byKelasBaru[s.kelasBaru]) byKelasBaru[s.kelasBaru] = []; byKelasBaru[s.kelasBaru].push(s); });
+
+  let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+    <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">📊 HASIL PEMBAGIAN KELAS</div>
+    <button class="btn-add" onclick="downloadHasilAcakPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
+  </div>`;
+
+  Object.keys(byKelasBaru).sort().forEach(kelas => {
+    html += `<div class="card" style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:12px;font-weight:700;color:var(--cyan);font-family:'Orbitron',monospace;">KELAS ${kelas}</span>
+        <span style="font-size:10px;color:var(--muted);">${byKelasBaru[kelas].length} siswa</span>
+      </div>
+      ${byKelasBaru[kelas].map((s, i) => `
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;">
+          <span style="color:var(--white);">${i+1}. ${s.nama}</span>
+          <span style="color:var(--muted);font-size:9px;">${s.nisn || '—'} · asal ${s.kelas}</span>
+        </div>`).join('')}
+    </div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function downloadHasilAcakPDF() {
+  const sudahDiacak = SISWA_DATA.filter(s => s.status === 'naik' && s.kelasBaru);
+  if (!sudahDiacak.length) { showToast('⚠️ Belum ada hasil untuk diunduh!', true); return; }
+
+  const byKelasBaru = {};
+  sudahDiacak.forEach(s => { if (!byKelasBaru[s.kelasBaru]) byKelasBaru[s.kelasBaru] = []; byKelasBaru[s.kelasBaru].push(s); });
+
+  const win = window.open('', '_blank');
+  let sections = '';
+  Object.keys(byKelasBaru).sort().forEach(kelas => {
+    sections += `<h3 style="background:#003366;color:white;padding:8px 12px;margin-top:18px;">KELAS ${kelas} (${byKelasBaru[kelas].length} siswa)</h3>
+    <table><thead><tr><th>No</th><th>Nama</th><th>NISN</th><th>Kelas Asal</th></tr></thead><tbody>
+    ${byKelasBaru[kelas].map((s,i) => `<tr><td style="text-align:center;">${i+1}</td><td>${s.nama}</td><td>${s.nisn||'-'}</td><td style="text-align:center;">${s.kelas}</td></tr>`).join('')}
+    </tbody></table>`;
+  });
+
+  win.document.write(`<!DOCTYPE html><html><head><title>Pembagian Kelas Baru</title>
+  <style>body{font-family:Arial,sans-serif;padding:24px;font-size:11px;}
+  h2{text-align:center;color:#003366;}table{width:100%;border-collapse:collapse;margin-top:4px;}
+  th,td{border:1px solid #ccc;padding:6px 8px;}th{background:#eef;}</style></head><body>
+  <h2>${currentSetting.schoolName||'SMP — Kurikulum Merdeka'}</h2>
+  <h3 style="text-align:center;">HASIL PEMBAGIAN KELAS TAHUN PELAJARAN BARU</h3>
+  ${sections}
+  <div style="margin-top:20px;font-size:10px;text-align:right;">Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
+
 
 // ===== SETTING =====
 const LS_SETTING = 'kuriku_setting';
@@ -3566,6 +4012,8 @@ const LS_KEYS = {
   late:      'kuriku_late',
   notulen:   'kuriku_notulen',
   planning:  'kuriku_planning',
+  siswa:     'kuriku_siswa',
+  kelasTujuan: 'kuriku_kelas_tujuan',
 };
 
 function saveAll() {
@@ -3577,6 +4025,8 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
     localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
     localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
+    localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
+    localStorage.setItem(LS_KEYS.kelasTujuan, JSON.stringify(KELAS_TUJUAN));
     // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
     const planSnap = {};
     ['pendek','menengah','panjang'].forEach(j => {
@@ -3607,6 +4057,11 @@ function loadAll() {
     // Notulen
     const n = localStorage.getItem(LS_KEYS.notulen);
     if (n) notulenRecords = JSON.parse(n);
+    // Siswa
+    const sw = localStorage.getItem(LS_KEYS.siswa);
+    if (sw) SISWA_DATA = JSON.parse(sw);
+    const kt = localStorage.getItem(LS_KEYS.kelasTujuan);
+    if (kt) KELAS_TUJUAN = JSON.parse(kt);
     // Planning DOM
     const pl = localStorage.getItem(LS_KEYS.planning);
     if (pl) {

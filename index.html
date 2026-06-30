@@ -705,6 +705,44 @@
   .jadwal-tab-content.active { display: block; }
 
   .jadwal-grid { width: 100%; border-collapse: collapse; font-size: 10px; min-width: 420px; }
+
+  /* ===== REKAP TABLE (per-guru x semua hari/jam) ===== */
+  .rekap-table { border-collapse: collapse; font-size: 8px; min-width: 900px; }
+  .rekap-table th, .rekap-table td {
+    border: 1px solid rgba(255,255,255,0.08); padding: 2px 3px; text-align: center;
+    white-space: nowrap;
+  }
+  .rekap-table thead th {
+    background: var(--slate2); color: var(--cyan); font-family: 'Orbitron', monospace;
+    font-size: 8px; position: sticky; top: 0; z-index: 3;
+  }
+  .rekap-table .rekap-hari-header {
+    background: rgba(0,212,255,0.15); color: var(--cyan); font-weight: 700;
+    font-size: 8px; letter-spacing: 0.5px;
+  }
+  .rekap-table .rekap-no {
+    width: 22px; background: var(--slate); color: var(--muted);
+  }
+  .rekap-table .rekap-nama {
+    text-align: left; min-width: 110px; max-width: 110px; white-space: normal;
+    background: var(--slate); color: var(--white); font-weight: 600; font-size: 9px;
+    position: sticky; left: 0; z-index: 2; padding: 4px 6px;
+  }
+  .rekap-table thead .rekap-nama-header {
+    position: sticky; left: 0; top: 0; z-index: 4; background: var(--slate2);
+  }
+  .rekap-cell-fill {
+    background: rgba(0,212,255,0.15); color: var(--cyan); font-weight: 700;
+    cursor: pointer; min-width: 22px; font-size: 7px;
+  }
+  .rekap-cell-mgmp {
+    background: rgba(255,140,0,0.2); color: var(--orange); font-weight: 700;
+    cursor: pointer; min-width: 22px; font-size: 7px;
+  }
+  .rekap-cell-empty {
+    cursor: pointer; min-width: 22px; color: transparent;
+  }
+  .rekap-cell-empty:active, .rekap-cell-fill:active, .rekap-cell-mgmp:active { opacity: 0.6; }
   .jadwal-grid th {
     background: var(--slate2); color: var(--cyan);
     font-family: 'Orbitron', monospace; font-size: 9px; letter-spacing: 0.5px;
@@ -1287,6 +1325,7 @@
     <div class="notulen-tabs" style="margin-bottom:12px;">
       <div class="notulen-tab active" id="jtab-grid" onclick="switchJadwalTab('grid',this)">🗂️ GRID</div>
       <div class="notulen-tab" id="jtab-list" onclick="switchJadwalTab('list',this)">📋 LIST</div>
+      <div class="notulen-tab" id="jtab-rekap" onclick="switchJadwalTab('rekap',this)">📊 REKAP</div>
       <div class="notulen-tab" id="jtab-mgmp" onclick="switchJadwalTab('mgmp',this)">🏫 MGMP</div>
     </div>
 
@@ -1345,6 +1384,20 @@
         </select>
       </div>
       <div id="jadwal-list-guru"></div>
+    </div>
+
+    <!-- TAB REKAP -->
+    <div id="jadwal-tab-rekap" class="jadwal-tab-content">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;">📊 REKAPITULASI SEMUA GURU</div>
+        <button class="btn-add" onclick="exportRekapPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
+      </div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+        Tap sel kosong untuk isi jadwal guru. Data otomatis sinkron dengan tab Grid.
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <div id="rekap-table-container"></div>
+      </div>
     </div>
 
     <!-- TAB MGMP -->
@@ -1725,36 +1778,36 @@
 // ===== DATA =====
 const GURU_DATA = [
   // MTK
-  { nama: 'Siti Fauziyah', mapel: 'MTK', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'9A', tugas:['Guru Wali','Wali Kelas 9A'] },
-  { nama: 'Nurlaily', mapel: 'MTK', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'9B', tugas:['Guru Wali','Wali Kelas 9B'] },
+  { nama: 'Siti Fauziyah', mapel: 'MTK', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'9A', tugas:['Guru Wali','Wali Kelas 9A'], kelasAmpu: [] },
+  { nama: 'Nurlaily', mapel: 'MTK', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'9B', tugas:['Guru Wali','Wali Kelas 9B'], kelasAmpu: [] },
   // IPA
-  { nama: 'Etty Fauziyah', mapel: 'IPA', jp: 26, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'] },
-  { nama: 'Mulyadi', mapel: 'IPA', jp: 28, wali: true, kepala: true, max: 40, kelas_wali:'', tugas:['Ka. Lab IPA','Guru Wali'] },
+  { nama: 'Etty Fauziyah', mapel: 'IPA', jp: 26, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'], kelasAmpu: [] },
+  { nama: 'Mulyadi', mapel: 'IPA', jp: 28, wali: true, kepala: true, max: 40, kelas_wali:'', tugas:['Ka. Lab IPA','Guru Wali'], kelasAmpu: [] },
   // IPS
-  { nama: 'Rohman Hidayat', mapel: 'IPS', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','CO Kurikuler(9)'] },
-  { nama: 'Christiana Tiwi', mapel: 'IPS', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Ka. Perpus','Guru Wali'] },
+  { nama: 'Rohman Hidayat', mapel: 'IPS', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','CO Kurikuler(9)'], kelasAmpu: [] },
+  { nama: 'Christiana Tiwi', mapel: 'IPS', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Ka. Perpus','Guru Wali'], kelasAmpu: [] },
   // BIG
-  { nama: 'Zaimmatur Rohmah', mapel: 'B. Inggris', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul'] },
-  { nama: 'Dwi Denia Candra', mapel: 'B. Inggris', jp: 25, wali: false, kepala: false, max: 40, kelas_wali:'', tugas:['Waka Kur','Guru Wali'] },
+  { nama: 'Zaimmatur Rohmah', mapel: 'B. Inggris', jp: 24, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul'], kelasAmpu: [] },
+  { nama: 'Dwi Denia Candra', mapel: 'B. Inggris', jp: 25, wali: false, kepala: false, max: 40, kelas_wali:'', tugas:['Waka Kur','Guru Wali'], kelasAmpu: [] },
   // BIN
-  { nama: 'Hidayatun Nisak', mapel: 'B. Indonesia', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'] },
-  { nama: 'Dian Sapto', mapel: 'B. Indonesia', jp: 28, wali: true, kepala: false, max: 40, kelas_wali:'7B', tugas:['Guru Wali','Wali Kelas 7B'] },
+  { nama: 'Hidayatun Nisak', mapel: 'B. Indonesia', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'], kelasAmpu: [] },
+  { nama: 'Dian Sapto', mapel: 'B. Indonesia', jp: 28, wali: true, kepala: false, max: 40, kelas_wali:'7B', tugas:['Guru Wali','Wali Kelas 7B'], kelasAmpu: [] },
   // PAI
-  { nama: 'Siti Zubaidah', mapel: 'PAI', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'7A', tugas:['Guru Wali','Wali Kelas 7A','TbTq'] },
-  { nama: 'Zulailiyah', mapel: 'PAI', jp: 26, wali: true, kepala: false, max: 40, kelas_wali:'8C', tugas:['Guru Wali','Wali Kelas 8C','TbTq','Pemb. Ekskul','CO Kurikuler(8)','Guru Piket'] },
+  { nama: 'Siti Zubaidah', mapel: 'PAI', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'7A', tugas:['Guru Wali','Wali Kelas 7A','TbTq'], kelasAmpu: [] },
+  { nama: 'Zulailiyah', mapel: 'PAI', jp: 26, wali: true, kepala: false, max: 40, kelas_wali:'8C', tugas:['Guru Wali','Wali Kelas 8C','TbTq','Pemb. Ekskul','CO Kurikuler(8)','Guru Piket'], kelasAmpu: [] },
   // BK
-  { nama: 'Elisabeth', mapel: 'BK', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul'] },
-  { nama: 'Yusro', mapel: 'BK', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul','Waka Sarpras'] },
+  { nama: 'Elisabeth', mapel: 'BK', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul'], kelasAmpu: [] },
+  { nama: 'Yusro', mapel: 'BK', jp: 25, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali','Pemb. Ekskul','Waka Sarpras'], kelasAmpu: [] },
   // PKN
-  { nama: 'Atik Jatmika', mapel: 'PKN', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'8B', tugas:['Guru Wali','Wali Kelas 8B'] },
+  { nama: 'Atik Jatmika', mapel: 'PKN', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'8B', tugas:['Guru Wali','Wali Kelas 8B'], kelasAmpu: [] },
   // TIK & B.Madura
-  { nama: 'Nurul Jamila', mapel: 'TIK & B.Madura', jp: 28, wali: true, kepala: false, max: 40, kelas_wali:'9C', tugas:['Guru Wali','Wali Kelas 9C','CO Kurikuler(7)'] },
+  { nama: 'Nurul Jamila', mapel: 'TIK & B.Madura', jp: 28, wali: true, kepala: false, max: 40, kelas_wali:'9C', tugas:['Guru Wali','Wali Kelas 9C','CO Kurikuler(7)'], kelasAmpu: [] },
   // PJOK
-  { nama: 'Herman Wahyudi', mapel: 'PJOK', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'8C', tugas:['Guru Wali','Wali Kelas 8C'] },
+  { nama: 'Herman Wahyudi', mapel: 'PJOK', jp: 27, wali: true, kepala: false, max: 40, kelas_wali:'8C', tugas:['Guru Wali','Wali Kelas 8C'], kelasAmpu: [] },
   // SENI RUPA
-  { nama: 'Wuly Handoko', mapel: 'Seni Rupa', jp: 31, wali: false, kepala: false, max: 40, kelas_wali:'', tugas:['Waka Kesiswaan','Guru Wali'] },
+  { nama: 'Wuly Handoko', mapel: 'Seni Rupa', jp: 31, wali: false, kepala: false, max: 40, kelas_wali:'', tugas:['Waka Kesiswaan','Guru Wali'], kelasAmpu: [] },
   // Prakarya & TIK & B.Madura
-  { nama: 'Endang Mukti', mapel: 'Prakarya & TIK & B.Madura', jp: 32, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'] },
+  { nama: 'Endang Mukti', mapel: 'Prakarya & TIK & B.Madura', jp: 32, wali: true, kepala: false, max: 40, kelas_wali:'', tugas:['Guru Wali'], kelasAmpu: [] },
 ];
 
 const JADWAL_DATA = {
@@ -1933,6 +1986,7 @@ function switchJadwalTab(tab, el) {
   try { localStorage.setItem('kuriku_jadwal_tab', tab); } catch(e) {}
   if (tab === 'grid') renderGrid();
   if (tab === 'list') { populateListGuruSel(); renderListGuru(); }
+  if (tab === 'rekap') renderRekapTable();
   if (tab === 'mgmp') { populateMGMPGuruSel(); renderMGMPList(); }
 }
 
@@ -2104,6 +2158,72 @@ function hitungTotalJJMMapel(kelas, mapel, excludeHari = null, excludeJams = [])
   return total;
 }
 
+// ===== ADVICE / SARAN SISTEM =====
+function renderAdviceBox() {
+  const box = document.getElementById('advice-box');
+  if (!box || !_jadwalFormCtx) return;
+  const { hari, kelas } = _jadwalFormCtx;
+  const advices = [];
+
+  // 1. Cek apakah kelas ini sudah penuh (semua 9 jam terisi)
+  const kelasData = JADWAL_DATA2[hari]?.[kelas] || {};
+  const jamTerisi = Object.keys(kelasData).length;
+  if (jamTerisi >= 9) {
+    advices.push({ ico:'📅', msg: `Kelas ${kelas} di hari ${HARI[hari]} sudah penuh (9/9 jam terisi). Pertimbangkan pindah ke hari lain yang masih kosong.` });
+  }
+
+  // 2. Cek guru yang available (tidak bentrok) di jam yang sedang dipilih
+  const jamDipilih = getSelectedJams();
+  if (jamDipilih.length) {
+    const guruTersedia = GURU_DATA.filter(g => {
+      return !jamDipilih.some(jam => {
+        const hariData = JADWAL_DATA2[hari] || {};
+        return Object.entries(hariData).some(([k, jo]) => k !== kelas && jo[jam]?.guru === g.nama);
+      });
+    });
+    const guruKelasIni = GURU_DATA.filter(g => getKelasAmpuGuru(g).includes(kelas));
+    const guruKelasTersedia = guruKelasIni.filter(g => guruTersedia.includes(g));
+
+    if (guruKelasIni.length && !guruKelasTersedia.length) {
+      // Semua guru yang biasa mengajar di kelas ini sedang bentrok
+      advices.push({ ico:'🔍', msg: `Semua guru yang biasa mengajar di ${kelas} sedang bentrok di JP${jamDipilih.join(',')}. Coba aktifkan "Tampilkan semua guru" atau pindahkan ke jam lain.` });
+    }
+
+    // Cek guru dengan JJM mendekati/melebihi max
+    const guruHampirPenuh = guruTersedia.filter(g => {
+      const { jjmTugas } = hitungJJMTugas(g);
+      return g.jp >= g.max - 2;
+    });
+    if (guruHampirPenuh.length && guruHampirPenuh.length <= 3) {
+      advices.push({ ico:'⚖️', msg: `Hati-hati: ${guruHampirPenuh.map(g=>g.nama).join(', ')} sudah mendekati batas maksimal JJM (${guruHampirPenuh[0]?.max} JJM).` });
+    }
+  }
+
+  // 3. Cek MGMP — beri tahu jika hari ini banyak guru MGMP
+  const mgmpHariIni = getMGMPForDay(hari);
+  if (mgmpHariIni.length) {
+    const mapelTerdampak = [...new Set(mgmpHariIni.map(m => m.mapel.replace('MGMP ','')))];
+    advices.push({ ico:'🏫', msg: `Hari ${HARI[hari]} ada ${mgmpHariIni.length} guru sedang MGMP (${mapelTerdampak.join(', ')}). Pastikan tidak menjadwalkan mereka di hari ini.` });
+  }
+
+  // 4. Saran umum jika user sepertinya kosongkan banyak field
+  const mapelVal = document.getElementById('mf-mapel')?.value || '';
+  const guruVal = document.getElementById('mf-guru')?.value || '';
+  if (guruVal && !mapelVal.trim()) {
+    const g = GURU_DATA.find(x => x.nama === guruVal);
+    if (g) advices.push({ ico:'💡', msg: `Mapel belum diisi. ${g.nama} biasanya mengajar ${g.mapel} — klik kolom mapel untuk auto-isi.` });
+  }
+
+  if (!advices.length) { box.innerHTML = ''; return; }
+
+  box.innerHTML = `<div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:10px;margin-top:8px;">
+    <div style="font-size:9px;color:var(--cyan);font-family:'Orbitron',monospace;letter-spacing:1px;margin-bottom:6px;">💡 SARAN UNTUK ANDA</div>
+    ${advices.map(a => `<div style="display:flex;gap:6px;padding:3px 0;font-size:10px;color:var(--white);line-height:1.5;">
+      <span>${a.ico}</span><span style="flex:1;">${a.msg}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
 function checkGuruConflictLive() {
   const guru = document.getElementById('mf-guru')?.value;
   const mapelInput = document.getElementById('mf-mapel')?.value || '';
@@ -2208,15 +2328,17 @@ function openJadwalFormCell(hari, kelas, jam) {
     if (!preSelected.includes(jam)) preSelected = [jam];
   }
 
-  const guruOptions = GURU_DATA.map(g =>
-    `<option value="${g.nama}" ${existing.guru===g.nama?'selected':''}>${g.nama} (${g.mapel})</option>`
-  ).join('');
-
   document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[hari]} [${kelas}]`;
   document.getElementById('modal-form-body').innerHTML = `
     <div class="form-group">
-      <label class="form-label">GURU</label>
-      <select class="form-select" id="mf-guru" onchange="onGuruChange()">${guruOptions}</select>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <label class="form-label" style="margin-bottom:0;">GURU</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted);cursor:pointer;">
+          <input type="checkbox" id="mf-tampil-semua" onchange="rebuildGuruOptions()"> Tampilkan semua guru
+        </label>
+      </div>
+      <select class="form-select" id="mf-guru" onchange="onGuruChange()"></select>
+      <div id="guru-filter-info" style="font-size:9px;color:var(--cyan);margin-top:4px;"></div>
     </div>
     <div class="form-group">
       <label class="form-label">MATA PELAJARAN</label>
@@ -2253,13 +2375,65 @@ function openJadwalFormCell(hari, kelas, jam) {
           </span>`).join('')}
       </div>
       <div id="jam-range-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Orbitron',monospace;"></div>
-    </div>`;
+    </div>
+    <div id="advice-box"></div>`;
 
   currentModalType = 'jadwal-cell';
   document.getElementById('modal-form').classList.add('open');
+  rebuildGuruOptions(existing.guru);
   updateJamRangeLabel();
   // Run conflict check on open
   setTimeout(checkGuruConflictLive, 100);
+}
+
+// ===== FILTER GURU PER KELAS AMPU =====
+function getKelasAmpuGuru(g) {
+  // Jika kelasAmpu sudah diisi manual, pakai itu
+  if (g.kelasAmpu && g.kelasAmpu.length) return g.kelasAmpu;
+  // Fallback: deteksi otomatis dari jadwal yang sudah pernah diisi
+  const detected = new Set();
+  [1,2,3,4,5,6].forEach(hari => {
+    const hariData = JADWAL_DATA2[hari] || {};
+    Object.entries(hariData).forEach(([kelas, jamObj]) => {
+      Object.values(jamObj).forEach(cell => {
+        if (cell.guru === g.nama) detected.add(kelas);
+      });
+    });
+  });
+  return [...detected];
+}
+
+function rebuildGuruOptions(selectedGuru = null) {
+  const ctx = _jadwalFormCtx;
+  if (!ctx) return;
+  const tampilSemua = document.getElementById('mf-tampil-semua')?.checked || false;
+  const sel = document.getElementById('mf-guru');
+  if (!sel) return;
+  const prevVal = selectedGuru || sel.value;
+
+  let guruList = GURU_DATA;
+  let isFiltered = false;
+  if (!tampilSemua) {
+    const filtered = GURU_DATA.filter(g => getKelasAmpuGuru(g).includes(ctx.kelas));
+    if (filtered.length) { guruList = filtered; isFiltered = true; }
+  }
+
+  sel.innerHTML = guruList.map(g =>
+    `<option value="${g.nama}" ${prevVal===g.nama?'selected':''}>${g.nama} (${g.mapel})</option>`
+  ).join('');
+
+  const infoEl = document.getElementById('guru-filter-info');
+  if (infoEl) {
+    if (isFiltered) {
+      infoEl.innerHTML = `📌 Menampilkan ${guruList.length} guru yang mengajar di kelas ${ctx.kelas}`;
+    } else if (!tampilSemua) {
+      infoEl.innerHTML = `⚠️ Belum ada guru terdaftar mengajar di ${ctx.kelas}. Menampilkan semua guru — atur "Kelas Ampu" di Jam Mengajar agar lebih akurat.`;
+    } else {
+      infoEl.innerHTML = `Menampilkan semua ${guruList.length} guru`;
+    }
+  }
+  onGuruChange();
+  renderAdviceBox();
 }
 
 function onGuruChange() {
@@ -2270,12 +2444,14 @@ function onGuruChange() {
     document.getElementById('mf-mapel').value = g.mapel;
   }
   checkGuruConflictLive();
+  renderAdviceBox();
 }
 
 function toggleFormJam(j, el) {
   el.classList.toggle('selected');
   updateJamRangeLabel();
   checkGuruConflictLive();
+  renderAdviceBox();
 }
 
 function updateJamRangeLabel() {
@@ -2301,6 +2477,7 @@ function setFormKelas(k, el) {
   document.querySelectorAll('.kelas-badge').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   _jadwalFormCtx.kelas = k;
+  rebuildGuruOptions();
   checkGuruConflictLive();
 }
 function editJadwalCell(hari, kelas, jam) { openJadwalFormCell(hari, kelas, jam); }
@@ -2308,6 +2485,7 @@ function hapusJadwalCell(hari, kelas, jam) {
   if (!JADWAL_DATA2[hari]?.[kelas]) return;
   delete JADWAL_DATA2[hari][kelas][jam];
   renderGrid(); saveAll();
+  if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
   showToast('🗑️ Jadwal dihapus');
 }
 
@@ -2359,6 +2537,124 @@ function renderListGuru() {
   }
   if (!html) html = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:20px;">Belum ada jadwal tersimpan untuk guru ini</div>';
   el.innerHTML = html;
+}
+
+// ===== TAB REKAP — semua guru x semua hari/jam =====
+function renderRekapTable() {
+  const container = document.getElementById('rekap-table-container');
+  if (!container) return;
+
+  let html = '<table class="rekap-table"><thead>';
+  // Row 1: Hari headers (colspan 9 per hari)
+  html += '<tr><th class="rekap-no rekap-nama-header">NO</th><th class="rekap-nama rekap-nama-header">NAMA</th>';
+  [1,2,3,4,5,6].forEach(h => {
+    html += `<th colspan="9" class="rekap-hari-header">${HARI[h].toUpperCase()}</th>`;
+  });
+  html += '</tr>';
+  // Row 2: Jam ke- headers
+  html += '<tr><th class="rekap-no rekap-nama-header"></th><th class="rekap-nama rekap-nama-header"></th>';
+  [1,2,3,4,5,6].forEach(h => {
+    for (let j = 1; j <= 9; j++) html += `<th>${j}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  GURU_DATA.forEach((g, gi) => {
+    html += `<tr><td class="rekap-no">${gi+1}</td><td class="rekap-nama">${g.nama}</td>`;
+    [1,2,3,4,5,6].forEach(hari => {
+      const mgmpToday = getMGMPForDay(hari);
+      const isMGMPGuru = mgmpToday.some(m => m.guru === g.nama);
+      for (let jam = 1; jam <= 9; jam++) {
+        // Find if this guru teaches at this hari+jam (search all kelas)
+        let foundKelas = null;
+        const hariData = JADWAL_DATA2[hari] || {};
+        Object.entries(hariData).forEach(([kelas, jamObj]) => {
+          if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
+        });
+        if (foundKelas) {
+          html += `<td class="rekap-cell-fill" onclick="openRekapCell('${g.nama}',${hari},${jam},'${foundKelas}')" title="${HARI[hari]} JP${jam} — Kelas ${foundKelas}">${foundKelas}</td>`;
+        } else if (isMGMPGuru) {
+          html += `<td class="rekap-cell-mgmp" title="MGMP">M</td>`;
+        } else {
+          html += `<td class="rekap-cell-empty" onclick="openRekapCell('${g.nama}',${hari},${jam},null)" title="Tap untuk isi">·</td>`;
+        }
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  container.innerHTML = html;
+}
+
+// Klik sel di rekap table -> buka form isi jadwal, guru & jam sudah pre-filled
+function openRekapCell(guruNama, hari, jam, existingKelas) {
+  const kelas = existingKelas || KELAS_LIST[0];
+  openJadwalFormCell(hari, kelas, jam);
+  // Override guru selection setelah form terbuka
+  setTimeout(() => {
+    const sel = document.getElementById('mf-guru');
+    if (sel) {
+      // Pastikan guru ini ada di opsi (force tampilkan semua jika tidak ketemu)
+      let found = [...sel.options].some(o => o.value === guruNama);
+      if (!found) {
+        document.getElementById('mf-tampil-semua').checked = true;
+        rebuildGuruOptions(guruNama);
+      } else {
+        sel.value = guruNama;
+      }
+      onGuruChange();
+    }
+  }, 60);
+}
+
+function exportRekapPDF() {
+  const win = window.open('', '_blank');
+  let rows = '';
+  GURU_DATA.forEach((g, gi) => {
+    rows += `<tr><td style="text-align:center;">${gi+1}</td><td style="text-align:left;white-space:nowrap;">${g.nama}</td>`;
+    [1,2,3,4,5,6].forEach(hari => {
+      const mgmpToday = getMGMPForDay(hari);
+      const isMGMPGuru = mgmpToday.some(m => m.guru === g.nama);
+      for (let jam = 1; jam <= 9; jam++) {
+        let foundKelas = null;
+        const hariData = JADWAL_DATA2[hari] || {};
+        Object.entries(hariData).forEach(([kelas, jamObj]) => {
+          if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
+        });
+        if (foundKelas) rows += `<td style="background:#eef;font-weight:bold;">${foundKelas}</td>`;
+        else if (isMGMPGuru) rows += `<td style="background:#fde;color:#e67e22;">M</td>`;
+        else rows += `<td></td>`;
+      }
+    });
+    rows += '</tr>';
+  });
+
+  let hariHeaders = '';
+  [1,2,3,4,5,6].forEach(h => { hariHeaders += `<th colspan="9">${HARI[h].toUpperCase()}</th>`; });
+  let jamHeaders = '';
+  [1,2,3,4,5,6].forEach(h => { for (let j=1;j<=9;j++) jamHeaders += `<th>${j}</th>`; });
+
+  win.document.write(`<!DOCTYPE html><html><head><title>Rekap Jadwal</title>
+  <style>
+    body{font-family:Arial,sans-serif;padding:16px;font-size:8px;}
+    h2,h3{text-align:center;margin:2px 0;}
+    table{border-collapse:collapse;width:100%;}
+    th,td{border:1px solid #999;padding:2px 3px;text-align:center;}
+    th{background:#003366;color:white;font-size:8px;}
+    td:nth-child(2){text-align:left;font-weight:600;}
+  </style></head><body>
+  <h2>REKAPITULASI JADWAL PELAJARAN</h2>
+  <h3>${currentSetting.schoolName || 'SMP — Kurikulum Merdeka'}</h3>
+  <table>
+    <thead>
+      <tr><th rowspan="2">NO</th><th rowspan="2">NAMA</th>${hariHeaders}</tr>
+      <tr>${jamHeaders}</tr>
+    </thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div style="margin-top:14px;font-size:9px;text-align:right;">Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
 }
 
 // ===== MGMP =====
@@ -2439,6 +2735,26 @@ function editTugasGuru(i) {
       <textarea class="form-input" id="mf-tugas" rows="4" placeholder="Wali Kelas 8A, Ka. Lab IPA, Pemb. Ekskul">${tugasCurrent}</textarea></div>
     <div style="font-size:9px;color:var(--muted);margin-top:4px;">Contoh: Wali Kelas 8A, Guru Piket, Ka. Perpus, CO Kurikuler(7)</div>`;
   currentModalType = '__tugas-edit__';
+  currentModalData = { idx: i };
+  document.getElementById('modal-form').classList.add('open');
+}
+
+function editKelasAmpu(i) {
+  const g = GURU_DATA[i];
+  const currentKelas = g.kelasAmpu || [];
+  const autoDetected = getKelasAmpuGuru(g).filter(k => !currentKelas.includes(k));
+  document.getElementById('modal-form-title').textContent = '🏫 KELAS YANG DIAJAR';
+  document.getElementById('modal-form-body').innerHTML = `
+    <div style="font-size:11px;color:var(--white);margin-bottom:4px;font-weight:700;">${g.nama}</div>
+    <div style="font-size:9px;color:var(--muted);margin-bottom:12px;">${g.mapel}</div>
+    <div style="font-size:9px;color:var(--cyan);font-family:'Orbitron',monospace;margin-bottom:8px;letter-spacing:0.5px;">PILIH SEMUA KELAS YANG DIAJAR GURU INI</div>
+    <div id="kelas-ampu-picker" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
+      ${KELAS_LIST.map(k => `<span class="jam-badge ${currentKelas.includes(k)?'selected':''}" data-kelas-ampu="${k}" onclick="this.classList.toggle('selected')" style="min-width:44px;text-align:center;">${k}</span>`).join('')}
+    </div>
+    ${autoDetected.length ? `<div style="font-size:9px;color:var(--orange);background:rgba(255,140,0,0.1);border:1px solid rgba(255,140,0,0.3);border-radius:8px;padding:8px;line-height:1.6;">
+      💡 Terdeteksi otomatis dari jadwal yang sudah diisi tapi belum tercentang: <b>${autoDetected.join(', ')}</b>. Tap untuk menambahkan.
+    </div>` : ''}`;
+  currentModalType = '__kelasampu-edit__';
   currentModalData = { idx: i };
   document.getElementById('modal-form').classList.add('open');
 }
@@ -2985,6 +3301,7 @@ function saveModalForm() {
       JADWAL_DATA2[ctx.hari][ctx.kelas][jam] = { guru, mapel, ruang, jamRange: jams };
     });
     renderGrid(); saveAll();
+    if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
   } else if (type === '__tugas-edit__') {
     const idx = currentModalData?.idx;
     if (idx === undefined) return;
@@ -2992,6 +3309,16 @@ function saveModalForm() {
     GURU_DATA[idx].tugas = raw ? raw.split(',').map(s => s.trim()).filter(Boolean) : [];
     renderTugasList(); saveAll();
     showToast('✅ Tugas tambahan diperbarui!');
+  } else if (type === '__kelasampu-edit__') {
+    const idx = currentModalData?.idx;
+    if (idx === undefined) return;
+    const selected = [];
+    document.querySelectorAll('#kelas-ampu-picker .jam-badge.selected').forEach(el => {
+      selected.push(el.dataset.kelasAmpu);
+    });
+    GURU_DATA[idx].kelasAmpu = selected;
+    renderGuruList(); saveAll();
+    showToast(`✅ Kelas ampu diperbarui: ${selected.length ? selected.join(', ') : 'kosong'}`);
   } else if (type === 'jadwal-add') {
     const hari = parseInt(document.getElementById('mf-hari')?.value);
     const jam = document.getElementById('mf-jam')?.value;
@@ -3102,6 +3429,13 @@ function renderGuruList(filter = '') {
         <div class="tc-row"><span class="tc-row-label">JJM Tugas Tambahan</span><span class="tc-row-val">${jjmTugas > 0 ? jjmTugas + ' JJM' : '—'}</span></div>
         <div class="tc-row"><span class="tc-row-label">Rincian Tugas</span><span class="tc-row-val" style="font-size:9px;">${tugasDetail.length ? tugasDetail.join(' · ') : '—'}</span></div>
         <div class="tc-row"><span class="tc-row-label">Sertifikasi (≥24)</span><span class="tc-row-val">${jpTotal >= 24 ? '✅ Terpenuhi' : '❌ Belum'}</span></div>
+        <div class="tc-row" style="align-items:flex-start;">
+          <span class="tc-row-label">Kelas Ampu</span>
+          <span class="tc-row-val" style="text-align:right;">
+            ${(g.kelasAmpu && g.kelasAmpu.length) ? g.kelasAmpu.join(', ') : '<span style="color:var(--muted);">Belum diatur (auto-deteksi dari jadwal)</span>'}
+          </span>
+        </div>
+        <button class="btn-edit" style="width:100%;margin-top:8px;font-size:10px;" onclick="event.stopPropagation();editKelasAmpu(${realIdx})">🏫 Atur Kelas yang Diajar</button>
       </div>
     </div>`;
   }).join('');

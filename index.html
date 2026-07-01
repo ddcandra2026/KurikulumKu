@@ -2,30 +2,33 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>KURIKU — Dashboard Waka Kurikulum</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #F4F6FA;
-    --navy2: #FFFFFF;
-    --slate: #FFFFFF;
-    --slate2: #ECEFF5;
-    --cyan: #0090C7;
-    --cyan2: #0077A8;
-    --green: #00A86B;
-    --green2: #008F5B;
-    --purple: #6B46C1;
-    --orange: #E0660A;
-    --red: #DC2640;
-    --yellow: #B8860B;
-    --white: #1A2035;
+    /* ===== TEMA TERANG — SOFT & PROFESIONAL ===== */
+    --navy: #F4F7FC;        /* base background — biru sangat muda, lembut di mata */
+    --navy2: #FFFFFF;       /* sheet / modal background */
+    --slate: #EDF1F9;       /* panel sekunder */
+    --slate2: #E4EAF5;      /* tab inactive / input bg */
+    --cyan: #0B84C9;        /* aksen utama — biru lebih gelap agar kontras di latar terang */
+    --cyan2: #0A6FA8;
+    --green: #16A56A;       /* aksen sukses, lebih gelap dari neon agar terbaca di terang */
+    --green2: #0E8C57;
+    --purple: #6D4FD1;
+    --orange: #E0701A;
+    --red: #E0314B;
+    --yellow: #C99200;
+    --white: #1B2538;       /* dipakai sebagai warna teks utama (nama variabel dipertahankan agar kompatibel) */
     --muted: #6B7488;
-    --border: rgba(0,144,199,0.18);
-    --card-bg: rgba(255,255,255,0.95);
-    --glow-cyan: 0 2px 12px rgba(0,144,199,0.15);
-    --glow-green: 0 2px 12px rgba(0,168,107,0.15);
-    --glow-purple: 0 2px 12px rgba(107,70,193,0.15);
+    --border: rgba(11,132,201,0.18);
+    --card-bg: #FFFFFF;
+    --glow-cyan: 0 4px 16px rgba(11,132,201,0.12);
+    --glow-green: 0 4px 16px rgba(22,165,106,0.12);
+    --glow-purple: 0 4px 16px rgba(109,79,209,0.12);
+    --shadow-soft: 0 2px 10px rgba(27,37,56,0.06);
+    --app-max-width: 480px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,53 +44,53 @@
   /* ===== CANVAS BG ===== */
   #particles-canvas {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 0; opacity: 0.15;
+    pointer-events: none; z-index: 0; opacity: 0.5;
   }
 
   /* ===== LAYOUT ===== */
   #app {
     position: relative; z-index: 1;
-    max-width: 480px; margin: 0 auto;
+    max-width: var(--app-max-width, 480px); margin: 0 auto;
     min-height: 100vh;
     padding-bottom: 80px;
   }
 
   /* ===== HEADER ===== */
   .app-header {
-    background: linear-gradient(135deg, rgba(0,144,199,0.08), rgba(107,70,193,0.08));
+    background: rgba(255,255,255,0.92);
     border-bottom: 1px solid var(--border);
     padding: 16px 20px 14px;
     position: sticky; top: 0; z-index: 100;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    box-shadow: var(--shadow-soft);
   }
   .header-top {
     display: flex; align-items: center; justify-content: space-between;
   }
   .app-logo {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Orbitron', monospace;
     font-weight: 900; font-size: 22px;
     background: linear-gradient(90deg, var(--cyan), var(--green));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     letter-spacing: 2px;
   }
-  .app-logo span { font-size: 10px; display: block; color: var(--muted); font-family: 'Inter', sans-serif; letter-spacing: 1px; margin-top: -3px; -webkit-text-fill-color: var(--muted); }
+  .app-logo span { font-size: 10px; display: block; color: var(--muted); font-family: 'Inter', sans-serif; letter-spacing: 0.2px; margin-top: -3px; -webkit-text-fill-color: var(--muted); }
   .header-right { display: flex; align-items: center; gap: 8px; }
   .hdr-notif {
     width: 36px; height: 36px; border-radius: 10px;
     background: var(--slate2); border: 1px solid var(--border);
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; cursor: pointer; position: relative;
-    box-shadow: 0 1px 4px rgba(26,32,53,0.08);
   }
   .hdr-notulen {
     width: 36px; height: 36px; border-radius: 10px;
-    background: rgba(0,144,199,0.1); border: 1px solid rgba(0,144,199,0.3);
+    background: rgba(11,132,201,0.09); border: 1px solid rgba(11,132,201,0.25);
     display: flex; align-items: center; justify-content: center;
     font-size: 16px; cursor: pointer; position: relative;
     transition: all 0.2s;
   }
-  .hdr-notulen:active { transform: scale(0.92); background: rgba(0,144,199,0.2); }
+  .hdr-notulen:active { transform: scale(0.92); background: rgba(11,132,201,0.18); }
   .notif-dot {
     width: 8px; height: 8px; background: var(--red);
     border-radius: 50%; position: absolute; top: 6px; right: 6px;
@@ -95,7 +98,7 @@
   }
   .header-date {
     font-size: 10px; color: var(--muted); margin-top: 6px;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.2px;
   }
   .header-date span { color: var(--cyan); }
 
@@ -106,7 +109,7 @@
 
   /* ===== SECTION TITLE ===== */
   .section-title {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 11px; font-weight: 700;
     color: var(--cyan); letter-spacing: 2px; text-transform: uppercase;
     margin-bottom: 12px; display: flex; align-items: center; gap: 8px;
@@ -122,37 +125,37 @@
     border: 1px solid var(--border);
     border-radius: 16px; padding: 16px;
     margin-bottom: 12px;
-    backdrop-filter: blur(10px);
     position: relative; overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
-    box-shadow: 0 1px 3px rgba(236,239,245,0.06), 0 1px 2px rgba(236,239,245,0.04);
+    box-shadow: var(--shadow-soft);
   }
   .card::before {
     content: ''; position: absolute;
-    top: 0; left: 0; right: 0; height: 1px;
-    background: linear-gradient(90deg, transparent, var(--cyan), transparent);
-    opacity: 0.5;
+    top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(11,132,201,0.35), transparent);
+    opacity: 0.8;
   }
   .card:active { transform: scale(0.98); }
-  .card.glow-cyan { box-shadow: var(--glow-cyan); border-color: rgba(0,144,199,0.3); }
-  .card.glow-green { box-shadow: var(--glow-green); border-color: rgba(0,168,107,0.3); }
-  .card.glow-purple { box-shadow: var(--glow-purple); border-color: rgba(107,70,193,0.3); }
+  .card.glow-cyan { box-shadow: var(--glow-cyan); border-color: rgba(11,132,201,0.3); }
+  .card.glow-green { box-shadow: var(--glow-green); border-color: rgba(22,165,106,0.3); }
+  .card.glow-purple { box-shadow: var(--glow-purple); border-color: rgba(109,79,209,0.3); }
 
   /* ===== DASHBOARD HOME ===== */
   .welcome-block {
-    background: linear-gradient(135deg, rgba(0,144,199,0.1), rgba(107,70,193,0.15));
-    border: 1px solid rgba(0,144,199,0.2);
+    background: linear-gradient(135deg, rgba(11,132,201,0.07), rgba(109,79,209,0.07));
+    border: 1px solid rgba(11,132,201,0.18);
     border-radius: 18px; padding: 18px; margin-bottom: 16px;
     position: relative; overflow: hidden;
+    box-shadow: var(--shadow-soft);
   }
   .welcome-block::after {
     content: 'KURIKULUM'; position: absolute;
     right: -20px; top: 50%; transform: translateY(-50%);
-    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 40px; font-weight: 900;
-    color: rgba(0,144,199,0.05); white-space: nowrap;
+    font-family: 'Inter', sans-serif; font-size: 40px; font-weight: 900;
+    color: rgba(11,132,201,0.06); white-space: nowrap;
   }
   .welcome-name { font-size: 18px; font-weight: 700; color: var(--white); }
-  .welcome-role { font-size: 12px; color: var(--cyan); margin-top: 2px; letter-spacing: 1px; }
+  .welcome-role { font-size: 12px; color: var(--cyan); margin-top: 2px; letter-spacing: 0.2px; }
   .welcome-school { font-size: 11px; color: var(--muted); margin-top: 4px; }
 
   /* Stats Grid */
@@ -165,17 +168,17 @@
   }
   .stat-icon { font-size: 22px; margin-bottom: 4px; }
   .stat-value {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 22px; font-weight: 700;
   }
   .stat-label { font-size: 10px; color: var(--muted); margin-top: 2px; letter-spacing: 0.5px; }
-  .stat-card.cyan { border-color: rgba(0,144,199,0.3); }
+  .stat-card.cyan { border-color: rgba(11,132,201,0.3); }
   .stat-card.cyan .stat-value { color: var(--cyan); }
-  .stat-card.green { border-color: rgba(0,168,107,0.3); }
+  .stat-card.green { border-color: rgba(22,165,106,0.3); }
   .stat-card.green .stat-value { color: var(--green); }
-  .stat-card.purple { border-color: rgba(107,70,193,0.3); }
+  .stat-card.purple { border-color: rgba(109,79,209,0.3); }
   .stat-card.purple .stat-value { color: var(--purple); }
-  .stat-card.orange { border-color: rgba(224,102,10,0.3); }
+  .stat-card.orange { border-color: rgba(224,112,26,0.3); }
   .stat-card.orange .stat-value { color: var(--orange); }
 
   /* Menu Grid */
@@ -190,7 +193,7 @@
   .menu-item:active { transform: scale(0.95); }
   .menu-item.active-menu, .menu-item:hover {
     border-color: var(--cyan);
-    background: rgba(0,144,199,0.08);
+    background: rgba(0,212,255,0.08);
     box-shadow: var(--glow-cyan);
   }
   .menu-icon { font-size: 28px; margin-bottom: 6px; display: block; }
@@ -204,10 +207,10 @@
     background: var(--slate2); border: 1px solid var(--border);
     border-radius: 10px; font-size: 10px; font-weight: 600;
     cursor: pointer; transition: all 0.2s; color: var(--muted);
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
   }
   .plan-tab.active {
-    background: rgba(0,144,199,0.15); border-color: var(--cyan);
+    background: rgba(0,212,255,0.15); border-color: var(--cyan);
     color: var(--cyan); box-shadow: var(--glow-cyan);
   }
   .plan-content { display: none; }
@@ -215,7 +218,7 @@
   
   .timeline-item {
     display: flex; gap: 12px; padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    border-bottom: 1px solid var(--border);
     position: relative;
   }
   .timeline-item:last-child { border-bottom: none; }
@@ -227,16 +230,16 @@
   .tl-dot.cyan { background: var(--cyan); color: var(--cyan); }
   .tl-dot.green { background: var(--green); color: var(--green); }
   .tl-dot.purple { background: var(--purple); color: var(--purple); }
-  .tl-time { font-size: 10px; color: var(--cyan); font-family: 'Plus Jakarta Sans', sans-serif; margin-bottom: 2px; font-weight: 700; letter-spacing: 0.2px; }
+  .tl-time { font-size: 9px; color: var(--cyan); font-family: 'Inter', sans-serif; margin-bottom: 2px; }
   .tl-title { font-size: 12px; font-weight: 600; color: var(--white); }
   .tl-desc { font-size: 10px; color: var(--muted); margin-top: 2px; line-height: 1.5; }
   .tl-badge {
     display: inline-block; padding: 2px 6px; border-radius: 4px;
     font-size: 9px; font-weight: 600; margin-top: 4px; letter-spacing: 0.5px;
   }
-  .badge-todo { background: rgba(224,102,10,0.2); color: var(--orange); }
-  .badge-progress { background: rgba(0,144,199,0.2); color: var(--cyan); }
-  .badge-done { background: rgba(0,168,107,0.2); color: var(--green); }
+  .badge-todo { background: rgba(255,107,53,0.2); color: var(--orange); }
+  .badge-progress { background: rgba(0,212,255,0.2); color: var(--cyan); }
+  .badge-done { background: rgba(0,255,136,0.2); color: var(--green); }
 
   /* ===== JAM MENGAJAR ===== */
   .teacher-search {
@@ -255,14 +258,13 @@
     background: var(--card-bg); border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 10px;
     cursor: pointer; transition: all 0.2s;
-    box-shadow: 0 1px 3px rgba(236,239,245,0.06);
   }
   .teacher-card:active { transform: scale(0.98); }
   .tc-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .tc-name { font-size: 13px; font-weight: 700; color: var(--white); }
   .tc-mapel { font-size: 10px; color: var(--cyan); margin-top: 2px; }
   .tc-hours {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
     font-size: 18px; font-weight: 700;
   }
   .tc-hours.ok { color: var(--green); }
@@ -270,14 +272,14 @@
   .tc-hours.over { color: var(--red); }
   .tc-hours span { font-size: 9px; color: var(--muted); display: block; text-align: right; }
   .tc-bar-wrap { margin-top: 10px; }
-  .tc-bar-bg { height: 4px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+  .tc-bar-bg { height: 4px; background: var(--slate2); border-radius: 4px; overflow: hidden; }
   .tc-bar-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease; }
   .tc-bar-fill.ok { background: linear-gradient(90deg, var(--green2), var(--green)); }
   .tc-bar-fill.warn { background: linear-gradient(90deg, #CC9900, var(--yellow)); }
   .tc-bar-fill.over { background: linear-gradient(90deg, #CC0033, var(--red)); }
   .tc-detail { margin-top: 8px; display: none; }
   .tc-detail.open { display: block; }
-  .tc-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 10px; }
+  .tc-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid var(--border); font-size: 10px; }
   .tc-row:last-child { border: none; }
   .tc-row-label { color: var(--muted); }
   .tc-row-val { color: var(--white); font-weight: 600; }
@@ -291,7 +293,7 @@
     cursor: pointer; transition: all 0.2s; color: var(--muted);
   }
   .monitor-tab.active {
-    background: rgba(220,38,64,0.15); border-color: var(--red);
+    background: rgba(255,59,92,0.15); border-color: var(--red);
     color: var(--red);
   }
   .monitor-content { display: none; }
@@ -302,16 +304,16 @@
     border-radius: 14px; padding: 14px; margin-bottom: 12px;
   }
   .form-group { margin-bottom: 10px; }
-  .form-label { font-size: 10px; color: var(--muted); margin-bottom: 5px; display: block; letter-spacing: 0.5px; font-family: 'Plus Jakarta Sans', sans-serif; }
+  .form-label { font-size: 11px; color: #374151; margin-bottom: 5px; display: block; letter-spacing: 0.1px; font-family: 'Inter', sans-serif; font-weight: 600; }
   .form-input {
-    width: 100%; background: var(--slate2); border: 1px solid var(--border);
+    width: 100%; background: #FFFFFF; border: 1.5px solid var(--border);
     border-radius: 10px; padding: 9px 12px; color: var(--white);
     font-size: 12px; outline: none; font-family: 'Inter', sans-serif;
     transition: border-color 0.2s;
   }
-  .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 8px rgba(0,144,199,0.25); }
+  .form-input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(11,132,201,0.12); }
   .form-select {
-    width: 100%; background: var(--slate2); border: 1px solid var(--border);
+    width: 100%; background: #FFFFFF; border: 1.5px solid var(--border);
     border-radius: 10px; padding: 9px 12px; color: var(--white);
     font-size: 12px; outline: none; font-family: 'Inter', sans-serif;
     -webkit-appearance: none;
@@ -320,13 +322,13 @@
     width: 100%; padding: 12px; border: none; border-radius: 12px;
     background: linear-gradient(135deg, var(--cyan), var(--purple));
     color: white; font-size: 13px; font-weight: 700;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.2px;
     cursor: pointer; transition: all 0.2s;
   }
   .btn-primary:active { transform: scale(0.97); opacity: 0.9; }
   .btn-danger {
     padding: 7px 12px; border: 1px solid var(--red); border-radius: 8px;
-    background: rgba(220,38,64,0.1); color: var(--red);
+    background: rgba(255,59,92,0.1); color: var(--red);
     font-size: 10px; font-weight: 600; cursor: pointer;
     font-family: 'Inter', sans-serif;
   }
@@ -337,7 +339,7 @@
     padding: 20px; text-align: center; cursor: pointer;
     transition: all 0.2s; position: relative; overflow: hidden;
   }
-  .photo-upload:hover { border-color: var(--cyan); background: rgba(0,144,199,0.03); }
+  .photo-upload:hover { border-color: var(--cyan); background: rgba(0,212,255,0.03); }
   .photo-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .photo-upload-icon { font-size: 28px; margin-bottom: 6px; }
   .photo-upload-text { font-size: 11px; color: var(--muted); }
@@ -351,11 +353,11 @@
   }
   .lli-top { display: flex; justify-content: space-between; align-items: flex-start; }
   .lli-name { font-size: 12px; font-weight: 700; }
-  .lli-date { font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .lli-date { font-size: 9px; color: var(--muted); font-family: 'Inter', sans-serif; }
   .lli-meta { font-size: 10px; color: var(--muted); margin-top: 4px; }
   .lli-late { font-size: 11px; color: var(--red); font-weight: 700; margin-top: 2px; }
   .lli-photos { display: flex; gap: 5px; margin-top: 8px; }
-  .lli-photos img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(220,38,64,0.3); }
+  .lli-photos img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(255,59,92,0.3); }
   .lli-actions { display: flex; gap: 6px; margin-top: 8px; }
 
   /* ===== REGULASI / BERITA ===== */
@@ -373,19 +375,19 @@
   .news-meta { display: flex; justify-content: space-between; margin-bottom: 6px; }
   .news-tag {
     font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
   }
-  .tag-regulasi { background: rgba(107,70,193,0.2); color: var(--purple); }
-  .tag-info { background: rgba(0,144,199,0.2); color: var(--cyan); }
-  .tag-kebijakan { background: rgba(224,102,10,0.2); color: var(--orange); }
-  .news-date { font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .tag-regulasi { background: rgba(123,92,234,0.2); color: var(--purple); }
+  .tag-info { background: rgba(0,212,255,0.2); color: var(--cyan); }
+  .tag-kebijakan { background: rgba(255,107,53,0.2); color: var(--orange); }
+  .news-date { font-size: 9px; color: var(--muted); font-family: 'Inter', sans-serif; }
   .news-title { font-size: 13px; font-weight: 700; color: var(--white); line-height: 1.4; margin-bottom: 5px; }
   .news-excerpt { font-size: 10px; color: var(--muted); line-height: 1.5; }
   .news-source { font-size: 9px; color: var(--cyan); margin-top: 6px; }
   
   .loading-news {
     text-align: center; padding: 30px;
-    font-size: 11px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
+    font-size: 11px; color: var(--muted); font-family: 'Inter', sans-serif; letter-spacing: 0.2px;
   }
   .loading-spinner {
     width: 30px; height: 30px; border: 2px solid var(--border);
@@ -404,46 +406,46 @@
     cursor: pointer; transition: all 0.2s; text-align: center; min-width: 52px;
   }
   .day-btn.active {
-    background: rgba(0,144,199,0.15); border-color: var(--cyan);
+    background: rgba(0,212,255,0.15); border-color: var(--cyan);
     color: var(--cyan); box-shadow: var(--glow-cyan);
   }
-  .day-num { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 700; }
+  .day-num { font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700; }
   
   .schedule-item {
     display: flex; gap: 12px; padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.04);
+    border-bottom: 1px solid var(--border);
     align-items: flex-start;
   }
   .sch-time {
     width: 48px; flex-shrink: 0; text-align: center;
-    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; color: var(--muted);
+    font-family: 'Inter', sans-serif; font-size: 9px; color: var(--muted);
     padding-top: 3px;
   }
   .sch-line {
     width: 2px; flex-shrink: 0; border-radius: 2px; align-self: stretch; min-height: 40px;
   }
   .sch-body { flex: 1; }
-  .sch-name { font-size: 13px; font-weight: 700; color: var(--white); }
+  .sch-name { font-size: 12px; font-weight: 700; color: var(--white); }
   .sch-class { font-size: 10px; color: var(--cyan); margin-top: 1px; }
   .sch-room { font-size: 9px; color: var(--muted); margin-top: 2px; }
   .sch-status {
     padding: 3px 8px; border-radius: 5px; font-size: 9px; font-weight: 700;
-    white-space: nowrap; align-self: center; font-family: 'Plus Jakarta Sans', sans-serif;
+    white-space: nowrap; align-self: center; font-family: 'Inter', sans-serif;
   }
-  .status-hadir { background: rgba(0,168,107,0.15); color: var(--green); }
+  .status-hadir { background: rgba(0,255,136,0.15); color: var(--green); }
   .status-belum { background: rgba(255,215,0,0.15); color: var(--yellow); }
-  .status-telat { background: rgba(220,38,64,0.15); color: var(--red); }
-  .status-ijin { background: rgba(107,70,193,0.15); color: var(--purple); }
+  .status-telat { background: rgba(255,59,92,0.15); color: var(--red); }
+  .status-ijin { background: rgba(123,92,234,0.15); color: var(--purple); }
 
   /* ===== BOTTOM NAV ===== */
   .bottom-nav {
     position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
-    width: 100%; max-width: 480px; z-index: 200;
-    background: rgba(255,255,255,0.92); border-top: 1px solid var(--border);
+    width: 100%; max-width: var(--app-max-width, 480px); z-index: 200;
+    background: rgba(255,255,255,0.95); border-top: 1px solid var(--border);
     backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
     padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
     display: flex;
-    box-shadow: 0 -2px 12px rgba(236,239,245,0.06);
+    box-shadow: 0 -2px 12px rgba(27,37,56,0.06);
   }
   .nav-btn {
     flex: 1; display: flex; flex-direction: column; align-items: center;
@@ -476,16 +478,16 @@
     animation: slideUp 0.3s ease;
   }
   @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-  .modal-handle { width: 36px; height: 3px; background: rgba(255,255,255,0.2); border-radius: 3px; margin: 0 auto 16px; }
-  .modal-title { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 14px; letter-spacing: 1px; }
+  .modal-handle { width: 36px; height: 3px; background: var(--border); border-radius: 3px; margin: 0 auto 16px; }
+  .modal-title { font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700; color: var(--cyan); margin-bottom: 14px; letter-spacing: 0.2px; }
 
   /* ===== TOAST ===== */
   .toast {
     position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%);
-    background: rgba(0,168,107,0.15); border: 1px solid var(--green);
+    background: rgba(0,255,136,0.15); border: 1px solid var(--green);
     color: var(--green); padding: 10px 20px; border-radius: 30px;
     font-size: 11px; font-weight: 700; z-index: 400;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.2px;
     opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
   }
   .toast.show { opacity: 1; }
@@ -494,7 +496,7 @@
   .watermark {
     text-align: center; padding: 16px 0 4px;
     font-size: 9px; color: rgba(136,146,176,0.4);
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.2px;
   }
 
   /* ===== ANIMATIONS ===== */
@@ -503,224 +505,14 @@
     50% { opacity: 0.6; transform: scale(1.3); }
   }
   @keyframes glow-pulse {
-    0%, 100% { box-shadow: 0 0 8px rgba(0,144,199,0.3); }
-    50% { box-shadow: 0 0 20px rgba(0,144,199,0.7); }
+    0%, 100% { box-shadow: 0 0 8px rgba(0,212,255,0.3); }
+    50% { box-shadow: 0 0 20px rgba(0,212,255,0.7); }
   }
 
-  /* ===== TYPOGRAPHY IMPROVEMENTS ===== */
-  body { letter-spacing: 0; -webkit-font-smoothing: antialiased; }
-
-  /* Section titles use Plus Jakarta Sans properly */
-  .section-title { font-size: 14px; font-weight: 800; letter-spacing: 0.3px; }
-  .modal-title, .modal-form-title, .setting-title, .notulen-tab {
-    letter-spacing: 0.2px;
-  }
-  /* Label text less spaced for readability */
-  .form-label { letter-spacing: 0.3px; font-size: 11px; font-weight: 700; }
-  .app-logo { letter-spacing: 1px; }
-
-  /* ===== TABLET / IPAD AIR 4 RESPONSIVE ===== */
-  /* iPad Air 4: 820×1180 (portrait) | 1180×820 (landscape) */
-
-  @media (min-width: 600px) {
-    /* Base tablet — larger padding, wider layout */
-    #app {
-      max-width: 100%;
-      padding: 0;
-    }
-    .screen { padding: 24px 32px 100px; }
-    .app-header { padding: 20px 32px 16px; }
-    .bottom-nav { max-width: 100%; }
-    .nav-btn { font-size: 13px; }
-    .nav-label { font-size: 11px; }
-
-    /* Cards larger on tablet */
-    .card { padding: 20px; border-radius: 18px; }
-    .teacher-card { padding: 16px 18px; }
-
-    /* Typography scale up on tablet */
-    .section-title { font-size: 16px; }
-    .tc-name { font-size: 15px; }
-    .app-logo { font-size: 26px; }
-    .app-logo span { font-size: 11px; }
-    .header-date { font-size: 11px; }
-    .form-input, .form-select { font-size: 14px; padding: 12px 14px; }
-    .form-label { font-size: 12px; }
-    .btn-primary { font-size: 14px; padding: 14px; }
-    .btn-add { font-size: 13px; padding: 8px 14px; }
-
-    /* Menu grid: 3 columns on tablet portrait */
-    .menu-grid { grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-    .menu-item { padding: 20px 16px; }
-    .menu-icon { font-size: 28px; }
-    .menu-label { font-size: 13px; }
-    .menu-sub { font-size: 10px; }
-
-    /* Jadwal grid larger cells */
-    .jadwal-grid { font-size: 12px; }
-    .jadwal-grid th { padding: 9px 6px; font-size: 10px; }
-    .jadwal-cell .jc-guru { font-size: 11px; }
-    .jadwal-cell .jc-mapel { font-size: 10px; }
-
-    /* Bigger touch targets */
-    .hari-tab-btn { padding: 9px 16px; font-size: 13px; }
-    .kelas-filter-btn { padding: 7px 14px; font-size: 11px; }
-    .jam-badge { padding: 6px 14px; font-size: 11px; }
-    .notulen-tab { padding: 10px 8px; font-size: 11px; }
-
-    /* Modal wider on tablet */
-    .modal-form-sheet, .setting-sheet, .notif-sheet {
-      max-width: 640px; border-radius: 20px; margin: 32px auto 0;
-    }
-    .modal-form-overlay, .setting-overlay, .notif-overlay {
-      align-items: center; justify-content: center;
-    }
-    .modal-form-sheet, .setting-sheet, .notif-sheet {
-      max-height: 85vh;
-    }
-
-    /* Bottom nav items larger */
-    .nav-icon { font-size: 22px; }
-  }
-
-  @media (min-width: 820px) {
-    /* iPad Air 4 Portrait (820px) */
-    #app { max-width: 100%; }
-    .screen { padding: 28px 40px 110px; }
-    .app-header { padding: 22px 40px 18px; max-width: 100%; }
-    .bottom-nav { max-width: 100%; padding: 10px 0 calc(10px + env(safe-area-inset-bottom)); }
-
-    /* 2-column layout for content on iPad portrait */
-    .menu-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
-
-    /* Teacher list in 2 columns */
-    #guru-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    #guru-list .teacher-card { margin-bottom: 0; }
-
-    /* Planning tabs wider */
-    .plan-tabs { gap: 10px; }
-
-    /* Bigger stats */
-    .section-title { font-size: 17px; }
-    .tc-name { font-size: 15px; }
-    .app-logo { font-size: 28px; }
-
-    /* Form modal centered and wider */
-    .modal-form-sheet, .setting-sheet, .notif-sheet {
-      max-width: 700px;
-    }
-  }
-
-  @media (min-width: 820px) and (orientation: landscape),
-         (min-width: 1024px) {
-    /* iPad Air 4 Landscape (1180px) */
-    .screen { padding: 24px 48px 90px; }
-    .app-header { padding: 18px 48px 14px; }
-    .bottom-nav { padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
-
-    /* 3-col menu */
-    .menu-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; }
-
-    /* 3-col guru list */
-    #guru-list { grid-template-columns: 1fr 1fr 1fr; }
-
-    /* Jadwal grid: show ALL kelas comfortably */
-    .jadwal-grid { font-size: 11px; }
-    .jadwal-grid td { padding: 5px; }
-    .jadwal-cell { padding: 5px 6px; }
-    .jadwal-cell .jc-guru { font-size: 10px; }
-
-    /* Rekap table larger font on landscape */
-    .rekap-table { font-size: 9px; }
-    .rekap-table .rekap-nama { min-width: 140px; max-width: 140px; font-size: 10px; }
-
-    /* Split layout for some screens */
-    #screen-jam .jadwal-tab-content { max-height: calc(100vh - 180px); overflow-y: auto; }
-    #screen-jadwal .jadwal-tab-content { max-height: calc(100vh - 160px); overflow-y: auto; }
-  }
-
-  @media (min-width: 1100px) {
-    /* iPad Air 4 Landscape full width */
-    .menu-grid { grid-template-columns: repeat(4, 1fr); }
-    #guru-list { grid-template-columns: 1fr 1fr 1fr; }
-    .section-title { font-size: 18px; }
-    .modal-form-sheet, .setting-sheet, .notif-sheet { max-width: 760px; }
-  }
-
-  /* ===== WARNA PER KELAS ===== */
-  .kelas-7A { --kc-bg:#FEF3C7; --kc-border:rgba(245,158,11,0.5); --kc-text:#92400E; }
-  .kelas-7B { --kc-bg:#F1F5F9; --kc-border:rgba(100,116,139,0.45); --kc-text:#1E293B; }
-  .kelas-7C { --kc-bg:#CCFBF1; --kc-border:rgba(20,184,166,0.5); --kc-text:#134E4A; }
-  .kelas-8A { --kc-bg:#DBEAFE; --kc-border:rgba(59,130,246,0.5); --kc-text:#1E3A8A; }
-  .kelas-8B { --kc-bg:#EDE9FE; --kc-border:rgba(139,92,246,0.5); --kc-text:#4C1D95; }
-  .kelas-8C { --kc-bg:#FFE4E6; --kc-border:rgba(244,63,94,0.45); --kc-text:#881337; }
-  .kelas-9A { --kc-bg:#D1FAE5; --kc-border:rgba(16,185,129,0.5); --kc-text:#064E3B; }
-  .kelas-9B { --kc-bg:#FFEDD5; --kc-border:rgba(249,115,22,0.5); --kc-text:#7C2D12; }
-  .kelas-9C { --kc-bg:#E0E7FF; --kc-border:rgba(99,102,241,0.5); --kc-text:#312E81; }
-
-  /* Apply to jadwal cells */
-  .jadwal-cell[class*="kelas-"] {
-    background: var(--kc-bg);
-    border-color: var(--kc-border);
-  }
-  .jadwal-cell[class*="kelas-"] .jc-guru { color: var(--kc-text); font-weight: 800; }
-  .jadwal-cell[class*="kelas-"] .jc-mapel { color: var(--kc-text); opacity: 0.75; }
-  .jadwal-cell[class*="kelas-"] .jc-ruang { color: var(--kc-text); opacity: 0.55; }
-  .jadwal-cell[class*="kelas-"] .jc-del { color: var(--kc-text); background: var(--kc-bg); }
-
-  /* Rekap table colored cells */
-  .rekap-cell-fill.kelas-7A { background:#FEF3C7; color:#92400E; border-color:rgba(245,158,11,0.55); font-weight:800; }
-  .rekap-cell-fill.kelas-7B { background:#F1F5F9; color:#1E293B; border-color:rgba(100,116,139,0.45); font-weight:800; }
-  .rekap-cell-fill.kelas-7C { background:#CCFBF1; color:#134E4A; border-color:rgba(20,184,166,0.55); font-weight:800; }
-  .rekap-cell-fill.kelas-8A { background:#DBEAFE; color:#1E3A8A; border-color:rgba(59,130,246,0.55); font-weight:800; }
-  .rekap-cell-fill.kelas-8B { background:#EDE9FE; color:#4C1D95; border-color:rgba(139,92,246,0.55); font-weight:800; }
-  .rekap-cell-fill.kelas-8C { background:#FFE4E6; color:#881337; border-color:rgba(244,63,94,0.5); font-weight:800; }
-  .rekap-cell-fill.kelas-9A { background:#D1FAE5; color:#064E3B; border-color:rgba(16,185,129,0.5); font-weight:800; }
-  .rekap-cell-fill.kelas-9B { background:#FFEDD5; color:#7C2D12; border-color:rgba(249,115,22,0.5); font-weight:800; }
-  .rekap-cell-fill.kelas-9C { background:#E0E7FF; color:#312E81; border-color:rgba(99,102,241,0.5); font-weight:800; }
-
-  /* Kelas filter buttons — colored when active */
-  .kelas-filter-btn[data-kelas="7A"].active { background:#FEF3C7; border-color:rgba(245,158,11,0.7); color:#92400E; font-weight:700; }
-  .kelas-filter-btn[data-kelas="7B"].active { background:#F1F5F9; border-color:rgba(100,116,139,0.6); color:#1E293B; font-weight:700; }
-  .kelas-filter-btn[data-kelas="7C"].active { background:#CCFBF1; border-color:rgba(20,184,166,0.7); color:#134E4A; font-weight:700; }
-  .kelas-filter-btn[data-kelas="8A"].active { background:#DBEAFE; border-color:rgba(59,130,246,0.7); color:#1E3A8A; font-weight:700; }
-  .kelas-filter-btn[data-kelas="8B"].active { background:#EDE9FE; border-color:rgba(139,92,246,0.7); color:#4C1D95; font-weight:700; }
-  .kelas-filter-btn[data-kelas="8C"].active { background:#FFE4E6; border-color:rgba(244,63,94,0.65); color:#881337; font-weight:700; }
-  .kelas-filter-btn[data-kelas="9A"].active { background:#D1FAE5; border-color:rgba(16,185,129,0.65); color:#064E3B; font-weight:700; }
-  .kelas-filter-btn[data-kelas="9B"].active { background:#FFEDD5; border-color:rgba(249,115,22,0.65); color:#7C2D12; font-weight:700; }
-  .kelas-filter-btn[data-kelas="9C"].active { background:#E0E7FF; border-color:rgba(99,102,241,0.65); color:#312E81; font-weight:700; }
-
-  /* Kelas badge in form picker */
-  .kelas-badge[data-kelas="7A"].selected { background:#FEF3C7; border-color:rgba(245,158,11,0.8); color:#92400E; }
-  .kelas-badge[data-kelas="7B"].selected { background:#F1F5F9; border-color:rgba(100,116,139,0.7); color:#1E293B; }
-  .kelas-badge[data-kelas="7C"].selected { background:#CCFBF1; border-color:rgba(20,184,166,0.8); color:#134E4A; }
-  .kelas-badge[data-kelas="8A"].selected { background:#DBEAFE; border-color:rgba(59,130,246,0.8); color:#1E3A8A; }
-  .kelas-badge[data-kelas="8B"].selected { background:#EDE9FE; border-color:rgba(139,92,246,0.8); color:#4C1D95; }
-  .kelas-badge[data-kelas="8C"].selected { background:#FFE4E6; border-color:rgba(244,63,94,0.75); color:#881337; }
-  .kelas-badge[data-kelas="9A"].selected { background:#D1FAE5; border-color:rgba(16,185,129,0.75); color:#064E3B; }
-  .kelas-badge[data-kelas="9B"].selected { background:#FFEDD5; border-color:rgba(249,115,22,0.75); color:#7C2D12; }
-  .kelas-badge[data-kelas="9C"].selected { background:#E0E7FF; border-color:rgba(99,102,241,0.75); color:#312E81; }
-
-  /* Legend */
-  .kelas-legend { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
-  .kelas-legend-item {
-    display:flex; align-items:center; gap:4px; font-size:10px; font-weight:700;
-    padding:3px 9px; border-radius:10px; cursor:default; border:1px solid transparent;
-  }
-  .kelas-legend-item .leg-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
-  .leg-7A { background:#FEF3C7; color:#92400E; border-color:rgba(245,158,11,0.5); }
-  .leg-7B { background:#F1F5F9; color:#1E293B; border-color:rgba(100,116,139,0.4); }
-  .leg-7C { background:#CCFBF1; color:#134E4A; border-color:rgba(20,184,166,0.5); }
-  .leg-8A { background:#DBEAFE; color:#1E3A8A; border-color:rgba(59,130,246,0.5); }
-  .leg-8B { background:#EDE9FE; color:#4C1D95; border-color:rgba(139,92,246,0.5); }
-  .leg-8C { background:#FFE4E6; color:#881337; border-color:rgba(244,63,94,0.45); }
-  .leg-9A { background:#D1FAE5; color:#064E3B; border-color:rgba(16,185,129,0.5); }
-  .leg-9B { background:#FFEDD5; color:#7C2D12; border-color:rgba(249,115,22,0.5); }
-  .leg-9C { background:#E0E7FF; color:#312E81; border-color:rgba(99,102,241,0.5); }
-
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: rgba(26,32,53,0.04); border-radius: 4px; }
-  ::-webkit-scrollbar-thumb { background: rgba(0,144,199,0.25); border-radius: 4px; }
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,212,255,0.2); border-radius: 3px; }
 
   /* ===== CRUD ACTION BUTTONS ===== */
   .crud-actions {
@@ -728,7 +520,7 @@
   }
   .btn-add {
     padding: 6px 10px; border: 1px solid var(--green); border-radius: 8px;
-    background: rgba(0,168,107,0.1); color: var(--green);
+    background: rgba(22,165,106,0.1); color: var(--green);
     font-size: 14px; font-weight: 700; cursor: pointer;
     display: flex; align-items: center; gap: 4px; transition: all 0.2s;
     font-family: 'Inter', sans-serif;
@@ -736,14 +528,14 @@
   .btn-add:active { transform: scale(0.93); }
   .btn-edit {
     padding: 5px 8px; border: 1px solid var(--cyan); border-radius: 7px;
-    background: rgba(0,144,199,0.1); color: var(--cyan);
+    background: rgba(11,132,201,0.1); color: var(--cyan);
     font-size: 12px; cursor: pointer; transition: all 0.2s;
     font-family: 'Inter', sans-serif;
   }
   .btn-edit:active { transform: scale(0.93); }
   .btn-del {
     padding: 5px 8px; border: 1px solid var(--red); border-radius: 7px;
-    background: rgba(220,38,64,0.1); color: var(--red);
+    background: rgba(224,49,75,0.1); color: var(--red);
     font-size: 12px; cursor: pointer; transition: all 0.2s;
     font-family: 'Inter', sans-serif;
   }
@@ -764,13 +556,12 @@
   .modal-form-sheet {
     width: 100%; max-width: 480px;
     background: var(--navy2); border-radius: 20px 20px 0 0;
-    border-top: 2px solid var(--border); padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border); padding: 20px 20px calc(20px + env(safe-area-inset-bottom));
     max-height: 90vh; overflow-y: auto;
     animation: slideUp 0.3s ease;
-    box-shadow: 0 -4px 24px rgba(26,32,53,0.08);
   }
   .modal-form-title {
-    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 800;
+    font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 700;
     color: var(--cyan); margin-bottom: 14px; letter-spacing: 0.2px;
   }
   .modal-form-actions {
@@ -780,13 +571,13 @@
     flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 12px;
     background: var(--slate2); color: var(--muted);
     font-size: 12px; font-weight: 600; cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
   }
   .btn-save {
     flex: 2; padding: 11px; border: none; border-radius: 12px;
     background: linear-gradient(135deg, var(--cyan), var(--purple));
     color: white; font-size: 12px; font-weight: 700;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; cursor: pointer;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.2px; cursor: pointer;
   }
 
   /* ===== REGULASI DETAIL ===== */
@@ -797,30 +588,28 @@
   .notulen-card {
     background: var(--card-bg); border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 10px;
-    box-shadow: 0 1px 3px rgba(26,32,53,0.05);
   }
   .notulen-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
   .notulen-title { font-size: 13px; font-weight: 700; color: var(--white); }
-  .notulen-meta { font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 2px; }
+  .notulen-meta { font-size: 9px; color: var(--muted); font-family: 'Inter', sans-serif; margin-top: 2px; }
   .notulen-preview { font-size: 10px; color: var(--muted); line-height: 1.5; margin-top: 6px; }
   .notulen-footer { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 
   /* Voice Recorder */
   .voice-recorder {
-    background: var(--slate2); border: 1px solid var(--border);
+    background: var(--slate); border: 1px solid var(--border);
     border-radius: 14px; padding: 16px; margin-bottom: 12px; text-align: center;
-    box-shadow: 0 1px 3px rgba(26,32,53,0.06);
   }
   .voice-recorder-label {
-    font-size: 10px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif;
-    letter-spacing: 1px; margin-bottom: 12px;
+    font-size: 10px; color: var(--muted); font-family: 'Inter', sans-serif;
+    letter-spacing: 0.2px; margin-bottom: 12px;
   }
   .voice-btn-row { display: flex; gap: 10px; justify-content: center; align-items: center; margin-bottom: 12px; }
   .btn-record {
     width: 62px; height: 62px; border-radius: 50%; border: none;
-    background: linear-gradient(135deg, var(--red), var(--orange));
+    background: linear-gradient(135deg, var(--red), #FF6B35);
     font-size: 24px; cursor: pointer; transition: all 0.2s;
-    box-shadow: 0 0 20px rgba(220,38,64,0.4);
+    box-shadow: 0 0 20px rgba(255,59,92,0.4);
     display: flex; align-items: center; justify-content: center;
   }
   .btn-record.recording {
@@ -828,8 +617,8 @@
     background: linear-gradient(135deg, #CC002A, var(--red));
   }
   @keyframes glow-pulse-red {
-    0%,100% { box-shadow: 0 0 12px rgba(220,38,64,0.5); }
-    50% { box-shadow: 0 0 30px rgba(220,38,64,0.9); }
+    0%,100% { box-shadow: 0 0 12px rgba(255,59,92,0.5); }
+    50% { box-shadow: 0 0 30px rgba(255,59,92,0.9); }
   }
   .btn-stop-record {
     width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--muted);
@@ -837,7 +626,7 @@
     display: flex; align-items: center; justify-content: center;
   }
   .voice-timer {
-    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 20px; font-weight: 700;
+    font-family: 'Inter', sans-serif; font-size: 20px; font-weight: 700;
     color: var(--red); letter-spacing: 2px; margin-bottom: 8px;
   }
   .voice-wave {
@@ -857,14 +646,14 @@
     width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 10px;
     background: linear-gradient(135deg, var(--green2), var(--cyan2));
     color: white; font-size: 11px; font-weight: 700;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; cursor: pointer;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.2px; cursor: pointer;
   }
   .converted-text {
-    background: var(--slate2); border: 1px solid var(--border);
+    background: var(--slate); border: 1px solid var(--border);
     border-radius: 10px; padding: 12px; margin-top: 10px; display: none;
   }
   .converted-text.show { display: block; }
-  .converted-text-label { font-size: 9px; color: var(--green); font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; margin-bottom: 6px; }
+  .converted-text-label { font-size: 9px; color: var(--green); font-family: 'Inter', sans-serif; letter-spacing: 0.2px; margin-bottom: 6px; }
   .converted-text-body { font-size: 11px; color: var(--white); line-height: 1.6; }
 
   /* Notulen tabs */
@@ -874,10 +663,10 @@
     background: var(--slate2); border: 1px solid var(--border);
     border-radius: 10px; font-size: 10px; font-weight: 600;
     cursor: pointer; transition: all 0.2s; color: var(--muted);
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
   }
   .notulen-tab.active {
-    background: rgba(0,144,199,0.15); border-color: var(--cyan);
+    background: rgba(0,212,255,0.15); border-color: var(--cyan);
     color: var(--cyan);
   }
   .notulen-content { display: none; }
@@ -887,21 +676,22 @@
   .rec-status {
     font-size: 10px; font-weight: 600; padding: 5px 12px;
     border-radius: 20px; display: inline-block; margin: 0 auto 8px;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
   }
   .rec-status.idle { background: rgba(136,146,176,0.1); color: var(--muted); }
-  .rec-status.recording { background: rgba(220,38,64,0.15); color: var(--red); }
-  .rec-status.done { background: rgba(0,168,107,0.15); color: var(--green); }
+  .rec-status.recording { background: rgba(255,59,92,0.15); color: var(--red); }
+  .rec-status.done { background: rgba(0,255,136,0.15); color: var(--green); }
 
   /* Hari tab buttons in grid */
   .hari-tab-btn {
-    padding: 7px 12px; border-radius: 10px; font-size: 11px; font-weight: 700;
-    border: 1px solid var(--border); background: var(--slate2); color: var(--muted);
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
+    padding: 7px 11px; border-radius: 10px; font-size: 11px; font-weight: 600;
+    border: 1.5px solid #CBD5E1; background: #F1F5F9; color: #334155;
+    cursor: pointer; font-family: 'Inter', sans-serif; letter-spacing: 0.1px;
     transition: all 0.15s; white-space: nowrap; flex-shrink: 0;
   }
   .hari-tab-btn.active {
-    background: rgba(0,144,199,0.2); border-color: var(--cyan); color: var(--cyan);
+    background: var(--cyan); border-color: var(--cyan); color: #FFFFFF;
+    font-weight: 700; box-shadow: 0 2px 8px rgba(11,132,201,0.25);
   }
   .hari-tab-btn:active { transform: scale(0.93); }
 
@@ -909,11 +699,11 @@
   .kelas-filter-btn {
     padding: 5px 10px; border-radius: 8px; font-size: 10px; font-weight: 600;
     border: 1px solid var(--border); background: var(--slate2); color: var(--muted);
-    cursor: pointer; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.15s;
+    cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s;
     white-space: nowrap; flex-shrink: 0;
   }
   .kelas-filter-btn.active {
-    background: rgba(0,168,107,0.15); border-color: var(--green); color: var(--green);
+    background: rgba(0,255,136,0.15); border-color: var(--green); color: var(--green);
   }
   .kelas-filter-btn:active { transform: scale(0.93); }
 
@@ -926,16 +716,22 @@
   /* ===== REKAP TABLE (per-guru x semua hari/jam) ===== */
   .rekap-table { border-collapse: collapse; font-size: 8px; min-width: 900px; }
   .rekap-table th, .rekap-table td {
-    border: 1px solid rgba(255,255,255,0.08); padding: 2px 3px; text-align: center;
+    border: 1px solid #C5D0E0; padding: 2px 3px; text-align: center;
     white-space: nowrap;
   }
   .rekap-table thead th {
-    background: var(--slate2); color: var(--cyan); font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 8px; position: sticky; top: 0; z-index: 3; border-bottom: 2px solid var(--border);
+    background: #1A3A6E; color: #FFFFFF; font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 700; position: sticky; top: 0; z-index: 3;
   }
   .rekap-table .rekap-hari-header {
-    background: rgba(0,144,199,0.15); color: var(--cyan); font-weight: 700;
-    font-size: 8px; letter-spacing: 0.5px;
+    background: #1E40AF; color: #FFFFFF; font-weight: 700;
+    font-size: 9px; letter-spacing: 0.3px; border-top: 3px solid #0F2A5E;
+    border-bottom: 2px solid #0F2A5E;
+  }
+  /* Garis pemisah putih bold antar hari */
+  .rekap-table th.hari-border-left,
+  .rekap-table td.hari-border-left {
+    border-left: 3px solid #FFFFFF !important;
   }
   .rekap-table .rekap-no {
     width: 22px; background: var(--slate); color: var(--muted);
@@ -949,112 +745,196 @@
     position: sticky; left: 0; top: 0; z-index: 4; background: var(--slate2);
   }
   .rekap-cell-fill {
-    background: rgba(0,144,199,0.15); color: var(--cyan); font-weight: 700;
+    background: rgba(11,132,201,0.15); color: #0B5FA6; font-weight: 700;
     cursor: pointer; min-width: 22px; font-size: 7px;
   }
   .rekap-cell-mgmp {
-    background: rgba(255,140,0,0.2); color: var(--orange); font-weight: 700;
+    background: rgba(224,112,26,0.2); color: var(--orange); font-weight: 700;
     cursor: pointer; min-width: 22px; font-size: 7px;
   }
   .rekap-cell-empty {
     cursor: pointer; min-width: 22px; color: transparent;
   }
+  /* Sel terblokir di rekap — diagonal stripe abu */
+  .rekap-cell-blocked {
+    background: repeating-linear-gradient(
+      45deg, #E5E7EB, #E5E7EB 2px, #F3F4F6 2px, #F3F4F6 5px
+    );
+    cursor: pointer; min-width: 22px; font-size: 7px;
+    color: #9CA3AF; font-weight: 600; position: relative;
+  }
+  /* Kolom di luar maxJam (Jumat JP6-9, Sabtu JP8-9) */
+  .rekap-cell-na {
+    background: #E9ECF0; color: #C0C8D4; min-width: 22px; font-size: 7px;
+    cursor: default;
+  }
   .rekap-cell-empty:active, .rekap-cell-fill:active, .rekap-cell-mgmp:active { opacity: 0.6; }
   .jadwal-grid th {
-    background: var(--slate2); color: var(--cyan);
-    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; letter-spacing: 0.5px;
-    padding: 7px 4px; text-align: center; border: 1px solid var(--border);
-    position: sticky; top: 0; z-index: 2; border-bottom: 2px solid var(--border);
+    background: linear-gradient(180deg, #E8F0FB 0%, #DAE6F6 100%);
+    color: #1A4A8A;
+    font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.3px;
+    padding: 8px 4px; text-align: center; border: 1px solid var(--border);
+    position: sticky; top: 0; z-index: 2;
+    border-bottom: 2px solid rgba(26,74,138,0.2);
   }
   .jadwal-grid td {
-    padding: 4px; border: 1px solid rgba(255,255,255,0.05);
-    vertical-align: top; min-width: 70px; min-height: 40px;
+    padding: 4px; border: 1px solid #D1D5DB;
+    vertical-align: top; min-width: 70px; min-height: 44px;
   }
+  /* Garis pemisah antar baris jam — lebih tebal dan terlihat */
+  .jadwal-grid tr { border-bottom: 2px solid #C5D0E0; }
+  .jadwal-grid tr:nth-child(odd) td { background-color: rgba(244,247,252,0.5); }
+  .jadwal-grid tr:nth-child(even) td { background-color: rgba(255,255,255,0.8); }
+  /* Garis tebal setelah setiap 2 jam (opsional untuk keterbacaan) */
+  .jadwal-grid tr:nth-child(2n) { border-bottom: 2px solid #B0BCCE; }
   .jadwal-grid .td-jam {
-    background: var(--slate); color: var(--cyan);
-    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px;
-    text-align: center; font-weight: 700; min-width: 36px;
-    letter-spacing: 0.5px;
+    background: linear-gradient(180deg, #D8E6F8 0%, #C8D8F0 100%);
+    font-family: 'Inter', sans-serif; font-size: 9px;
+    text-align: center; min-width: 48px;
+    border-right: 2px solid #9AB0CC;
+    padding: 6px 4px;
   }
   .jadwal-cell {
-    background: rgba(0,144,199,0.08); border: 1px solid rgba(0,144,199,0.2);
-    border-radius: 6px; padding: 4px 5px; cursor: pointer;
+    background: linear-gradient(135deg, rgba(11,132,201,0.06) 0%, rgba(109,79,209,0.04) 100%);
+    border: 1px solid rgba(11,132,201,0.20);
+    border-radius: 7px; padding: 5px 6px; cursor: pointer;
     transition: all 0.15s; position: relative;
+    box-shadow: 0 1px 3px rgba(11,132,201,0.06);
   }
+  .jadwal-cell:hover { background: rgba(11,132,201,0.10); border-color: rgba(11,132,201,0.38); }
   .jadwal-cell:active { transform: scale(0.96); }
-  .jadwal-cell .jc-guru { font-size: 10px; font-weight: 700; color: var(--white); line-height: 1.3; }
-  .jadwal-cell .jc-mapel { font-size: 9px; color: var(--cyan); }
-  .jadwal-cell .jc-ruang { font-size: 8px; color: var(--muted); }
+  .jadwal-cell .jc-guru { font-size: 10px; font-weight: 700; color: #1B2538; line-height: 1.3; font-family: 'Inter', sans-serif; }
+  .jadwal-cell .jc-mapel { font-size: 9px; color: #0B72B0; font-weight: 600; font-family: 'Inter', sans-serif; }
+  .jadwal-cell .jc-ruang { font-size: 8px; color: var(--muted); font-family: 'Inter', sans-serif; }
   .jadwal-cell.bentrok-cell {
-    background: rgba(220,38,64,0.12); border-color: rgba(220,38,64,0.5);
+    background: rgba(224,49,75,0.10); border-color: rgba(224,49,75,0.45);
     animation: blink-border 1.5s infinite;
   }
   @keyframes blink-border {
-    0%,100% { border-color: rgba(220,38,64,0.5); }
-    50% { border-color: rgba(220,38,64,1); }
+    0%,100% { border-color: rgba(224,49,75,0.45); }
+    50% { border-color: rgba(224,49,75,0.9); }
   }
   .jc-bentrok {
     position: absolute; top: 1px; left: 3px; font-size: 9px;
   }
   .jadwal-cell.mgmp-cell {
-    background: rgba(255,140,0,0.12); border-color: rgba(255,140,0,0.4);
+    background: rgba(224,112,26,0.10); border-color: rgba(224,112,26,0.35);
   }
   .jadwal-cell.mgmp-cell .jc-guru { color: var(--orange); }
   .jadwal-cell .jc-del {
-    position: absolute; top: 0; right: 0;
-    font-size: 11px; color: var(--red); cursor: pointer; opacity: 0.85;
-    background: rgba(220,38,64,0.15); width: 18px; height: 18px;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 0 6px 0 6px; font-weight: 700; z-index: 5;
+    position: absolute; top: 2px; right: 3px;
+    font-size: 9px; color: var(--red); cursor: pointer; opacity: 0.65;
+    font-weight: 700;
   }
-  .jadwal-cell .jc-del:active { opacity: 1; background: rgba(220,38,64,0.4); transform: scale(1.1); }
+  .jadwal-cell .jc-del:hover { opacity: 1; }
+  .jadwal-cell .jc-del:active { opacity: 1; }
   .td-empty {
-    background: rgba(255,255,255,0.01);
+    background: transparent;
     min-height: 38px; cursor: pointer; border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    color: rgba(11,132,201,0.25); font-size: 16px;
+    transition: all 0.15s;
   }
-  .td-empty:active { background: rgba(0,144,199,0.05); }
+  .td-empty:hover { background: rgba(11,132,201,0.05); color: rgba(11,132,201,0.5); }
+  .td-empty:active { background: rgba(11,132,201,0.08); }
 
-  /* Jam label */
+  /* Sel yang diblokir — mirip MGMP tapi lebih ringan */
+  .blocked-cell {
+    background: repeating-linear-gradient(
+      45deg,
+      rgba(107,116,136,0.06),
+      rgba(107,116,136,0.06) 4px,
+      rgba(107,116,136,0.02) 4px,
+      rgba(107,116,136,0.02) 8px
+    );
+    border: 1px dashed rgba(107,116,136,0.4);
+    border-radius: 7px; padding: 5px 6px; cursor: pointer;
+    min-height: 38px; position: relative;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .blocked-cell:hover { background: rgba(107,116,136,0.08); border-color: rgba(107,116,136,0.6); }
+  .blocked-cell .jc-del {
+    position: absolute; top: 2px; right: 3px;
+    font-size: 9px; color: var(--red); cursor: pointer; opacity: 0.6;
+    font-weight: 700;
+  }
+  .blocked-cell .jc-del:hover { opacity: 1; }
+
+  /* Jam label — lebih gelap & elegan */
   .jam-label {
-    font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif;
-    margin-bottom: 1px; display: block;
+    display: block;
+    font-size: 13px; color: #0F2A5E;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800; margin-bottom: 1px;
+    letter-spacing: -0.3px;
+  }
+  .td-jam-time {
+    display: block;
+    font-size: 8px; color: #3B5A8A;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
   }
 
   /* MGMP card */
   .mgmp-card {
-    background: rgba(224,102,10,0.06); border: 1px solid rgba(224,102,10,0.25);
+    background: rgba(255,140,0,0.08); border: 1px solid rgba(255,140,0,0.3);
     border-radius: 12px; padding: 12px; margin-bottom: 8px;
     display: flex; gap: 10px; align-items: flex-start;
-    box-shadow: 0 1px 3px rgba(26,32,53,0.04);
   }
   .mgmp-icon { font-size: 20px; flex-shrink: 0; }
   .mgmp-info { flex: 1; }
   .mgmp-nama { font-size: 12px; font-weight: 700; color: var(--white); }
-  .mgmp-detail { font-size: 9px; color: var(--orange); font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 2px; }
+  .mgmp-detail { font-size: 9px; color: var(--orange); font-family: 'Inter', sans-serif; margin-top: 2px; }
   .mgmp-catatan { font-size: 10px; color: var(--muted); margin-top: 3px; }
 
   /* Jadwal form modal extra fields */
   .jam-badge {
-    display: inline-block; padding: 4px 10px; border-radius: 20px;
-    background: var(--slate2); border: 1px solid var(--border);
-    color: var(--muted); font-size: 10px; font-family: 'Plus Jakarta Sans', sans-serif;
-    cursor: pointer; margin: 3px; transition: all 0.15s;
-    box-shadow: 0 1px 2px rgba(26,32,53,0.05);
+    display: inline-block; padding: 5px 10px; border-radius: 20px;
+    background: #EEF2FF; border: 1.5px solid #93C5FD;
+    color: #1E40AF; font-size: 10px; font-family: 'Inter', sans-serif;
+    font-weight: 600; cursor: pointer; margin: 3px; transition: all 0.15s;
   }
-  .jam-badge.selected { background: var(--cyan); color: white; font-weight: 700; border-color: var(--cyan); }
+  .jam-badge.selected { background: var(--cyan); color: #FFFFFF; font-weight: 700; border-color: var(--cyan); }
+  .jam-badge.blocked-jam {
+    background: repeating-linear-gradient(45deg,#f3f4f6,#f3f4f6 3px,#e5e7eb 3px,#e5e7eb 6px);
+    border: 1.5px dashed #9CA3AF; color: #6B7280; cursor: not-allowed; opacity: 0.75;
+    position: relative;
+  }
+  .jam-badge.blocked-jam::after { content: '🔒'; font-size: 8px; margin-left: 3px; }
+
+  /* Kelas badge warna — setiap kelas punya warna sendiri */
+  .kelas-badge[data-kelas="7A"] { background:#FEFCE8; border-color:#EAB308; color:#854D0E; }
+  .kelas-badge[data-kelas="7A"].selected { background:#EAB308; color:#fff; border-color:#EAB308; }
+  .kelas-badge[data-kelas="7B"] { background:#EFF6FF; border-color:#3B82F6; color:#1D4ED8; }
+  .kelas-badge[data-kelas="7B"].selected { background:#3B82F6; color:#fff; border-color:#3B82F6; }
+  .kelas-badge[data-kelas="7C"] { background:#F0FDF4; border-color:#22C55E; color:#166534; }
+  .kelas-badge[data-kelas="7C"].selected { background:#22C55E; color:#fff; border-color:#22C55E; }
+  .kelas-badge[data-kelas="8A"] { background:#FFF7ED; border-color:#F97316; color:#9A3412; }
+  .kelas-badge[data-kelas="8A"].selected { background:#F97316; color:#fff; border-color:#F97316; }
+  .kelas-badge[data-kelas="8B"] { background:#FDF4FF; border-color:#D946EF; color:#86198F; }
+  .kelas-badge[data-kelas="8B"].selected { background:#D946EF; color:#fff; border-color:#D946EF; }
+  .kelas-badge[data-kelas="8C"] { background:#FFF1F2; border-color:#FB7185; color:#BE123C; }
+  .kelas-badge[data-kelas="8C"].selected { background:#FB7185; color:#fff; border-color:#FB7185; }
+  .kelas-badge[data-kelas="9A"] { background:#F0FDFA; border-color:#14B8A6; color:#115E59; }
+  .kelas-badge[data-kelas="9A"].selected { background:#14B8A6; color:#fff; border-color:#14B8A6; }
+  .kelas-badge[data-kelas="9B"] { background:#EDE9FE; border-color:#8B5CF6; color:#5B21B6; }
+  .kelas-badge[data-kelas="9B"].selected { background:#8B5CF6; color:#fff; border-color:#8B5CF6; }
+  .kelas-badge[data-kelas="9C"] { background:#FFF5F0; border-color:#EF4444; color:#991B1B; }
+  .kelas-badge[data-kelas="9C"].selected { background:#EF4444; color:#fff; border-color:#EF4444; }
 
   /* Tugas Tambahan section in Jam screen */
   .tugas-card {
     background: var(--card-bg); border: 1px solid var(--border);
     border-radius: 12px; padding: 12px; margin-bottom: 8px;
-    box-shadow: 0 1px 3px rgba(26,32,53,0.05);
   }
   .tugas-nama { font-size: 12px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
   .tugas-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
   .tugas-badge {
     font-size: 9px; padding: 3px 8px; border-radius: 10px;
     background: rgba(180,0,255,0.15); border: 1px solid rgba(180,0,255,0.3);
-    color: var(--purple); font-family: 'Plus Jakarta Sans', sans-serif;
+    color: var(--purple); font-family: 'Inter', sans-serif;
   }
   .setting-overlay {
     position: fixed; inset: 0; z-index: 600;
@@ -1065,25 +945,23 @@
   .setting-sheet {
     width: 100%; max-width: 480px;
     background: var(--navy2); border-radius: 20px 20px 0 0;
-    border-top: 2px solid var(--border);
+    border-top: 1px solid var(--border);
     padding: 20px 20px calc(24px + env(safe-area-inset-bottom));
     max-height: 88vh; overflow-y: auto;
     animation: slideUp 0.3s ease;
-    box-shadow: 0 -4px 24px rgba(26,32,53,0.08);
   }
   .setting-title {
-    font-family: 'Plus Jakarta Sans', sans-serif; font-size: 14px; font-weight: 800;
-    color: var(--cyan); letter-spacing: 0.2px; margin-bottom: 18px;
+    font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--cyan); letter-spacing: 1.5px; margin-bottom: 18px;
     display: flex; align-items: center; gap: 8px;
   }
   .setting-section {
-    background: var(--slate2); border: 1px solid var(--border);
+    background: var(--slate); border: 1px solid var(--border);
     border-radius: 14px; padding: 14px; margin-bottom: 12px;
-    box-shadow: 0 1px 3px rgba(26,32,53,0.04);
   }
   .setting-section-label {
-    font-size: 9px; color: var(--muted); font-family: 'Plus Jakarta Sans', sans-serif;
-    letter-spacing: 1px; margin-bottom: 10px;
+    font-size: 9px; color: var(--muted); font-family: 'Inter', sans-serif;
+    letter-spacing: 0.2px; margin-bottom: 10px;
   }
   .logo-preview-wrap {
     display: flex; align-items: center; gap: 12px; margin-bottom: 10px;
@@ -1098,26 +976,89 @@
   .logo-preview img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; }
   .btn-upload-logo {
     flex: 1; padding: 10px; border: 1px dashed var(--cyan); border-radius: 10px;
-    background: rgba(0,144,199,0.05); color: var(--cyan);
+    background: rgba(11,132,201,0.07); color: var(--cyan);
     font-size: 11px; font-weight: 600; cursor: pointer; text-align: center;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 0.5px;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.5px;
   }
   .setting-actions { display: flex; gap: 8px; margin-top: 14px; }
   .btn-setting-cancel {
     flex: 1; padding: 11px; border: 1px solid var(--border); border-radius: 12px;
     background: var(--slate2); color: var(--muted);
     font-size: 11px; font-weight: 600; cursor: pointer;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Inter', sans-serif;
   }
   .btn-setting-save {
     flex: 2; padding: 11px; border: none; border-radius: 12px;
-    background: linear-gradient(135deg, #D99000, var(--orange));
+    background: linear-gradient(135deg, #FFB800, #FF6B35);
     color: white; font-size: 11px; font-weight: 700;
-    font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: 1px; cursor: pointer;
+    font-family: 'Inter', sans-serif; letter-spacing: 0.2px; cursor: pointer;
   }
   .app-logo-img {
     width: 32px; height: 32px; border-radius: 8px; object-fit: cover;
     display: none; margin-right: 4px; vertical-align: middle;
+  }
+
+  /* ====================================================================
+     RESPONSIVE — TABLET / iPad (termasuk iPad Air 4: 820×1180 pt)
+     Berlaku otomatis di portrait maupun landscape karena berbasis lebar
+     viewport (orientasi ditangani natural oleh browser saat device diputar)
+     ==================================================================== */
+
+  /* Tablet umum ke atas (termasuk iPad Air 4 portrait 820px) */
+  @media (min-width: 768px) {
+    #app { --app-max-width: 760px; }
+    .bottom-nav { max-width: 760px; }
+
+    .app-header { padding: 20px 28px 16px; }
+    .screen { padding: 22px 28px 12px; }
+
+    .app-logo { font-size: 26px; }
+    .welcome-name { font-size: 22px; }
+    .welcome-role { font-size: 13px; }
+
+    .stats-grid { grid-template-columns: repeat(4, 1fr); gap: 14px; }
+    .menu-grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+
+    .card { padding: 20px; border-radius: 18px; }
+    .section-title { font-size: 12px; }
+
+    .nav-btn { padding: 8px 4px; }
+    .nav-icon { font-size: 22px; }
+    .nav-label { font-size: 10px; }
+
+    .modal-form-sheet, .modal-sheet, .setting-sheet {
+      max-width: 640px; border-radius: 24px;
+      padding-left: 28px; padding-right: 28px;
+    }
+
+    .jadwal-grid { font-size: 12px; }
+    .jadwal-grid th { font-size: 10px; padding: 9px 6px; }
+    .jadwal-cell .jc-guru { font-size: 11px; }
+    .jadwal-cell .jc-mapel { font-size: 10px; }
+  }
+
+  /* iPad Air 4 landscape & tablet lebar (1180px / desktop kecil) */
+  @media (min-width: 1024px) {
+    #app { --app-max-width: 980px; }
+    .bottom-nav { max-width: 980px; }
+
+    .stats-grid { grid-template-columns: repeat(4, 1fr); }
+    .menu-grid { grid-template-columns: repeat(4, 1fr); }
+
+    .screen { padding: 24px 36px 12px; }
+    .app-header { padding: 22px 36px 18px; }
+  }
+
+  /* Penyesuaian khusus orientasi landscape di layar tablet:
+     beri sedikit ruang lebih agar bottom-nav tidak menutupi konten
+     dan header tidak terlalu tinggi (safe-area utamanya untuk notch) */
+  @media (min-width: 768px) and (orientation: landscape) {
+    #app { padding-bottom: 70px; }
+    .bottom-nav { padding: 6px 0 calc(6px + env(safe-area-inset-bottom)); }
+  }
+
+  @media (min-width: 768px) and (orientation: portrait) {
+    #app { padding-bottom: 88px; }
   }
 </style>
 </head>
@@ -1132,7 +1073,7 @@
       <div style="display:flex;align-items:center;gap:8px;">
         <img id="header-logo-img" class="app-logo-img" src="" alt="Logo">
         <div>
-          <div class="app-logo" id="header-app-name">KURIKU<span id="header-app-sub">WAKA KURIKULUM DASHBOARD</span></div>
+          <div class="app-logo" id="header-app-name">KURIKU<span id="header-app-sub">Dashboard Waka Kurikulum</span></div>
         </div>
       </div>
       <div class="header-right">
@@ -1148,7 +1089,7 @@
   <div class="screen active" id="screen-home">
     <div class="welcome-block">
       <div class="welcome-name">Selamat Datang 👋</div>
-      <div class="welcome-role">WAKIL KEPALA SEKOLAH — KURIKULUM</div>
+      <div class="welcome-role">Wakil Kepala Sekolah — Bidang Kurikulum</div>
       <div class="welcome-school">SMP / MTs — Kurikulum Merdeka</div>
     </div>
 
@@ -1233,7 +1174,7 @@
     <!-- JANGKA PENDEK -->
     <div class="plan-content active" id="plan-pendek">
       <div class="card glow-cyan" style="margin-bottom:10px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">JANGKA PENDEK — 1–3 BULAN</div>
+        <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;">JANGKA PENDEK — 1–3 BULAN</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Fokus operasional harian & administrasi kurikulum</div>
       </div>
       <div class="card">
@@ -1295,7 +1236,7 @@
     <!-- JANGKA MENENGAH -->
     <div class="plan-content" id="plan-menengah">
       <div class="card glow-cyan" style="margin-bottom:10px;">
-        <div style="font-size:10px;color:var(--green);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">JANGKA MENENGAH — 3–12 BULAN</div>
+        <div style="font-size:10px;color:var(--green);font-family: 'Inter', sans-serif;letter-spacing:0.2px;">JANGKA MENENGAH — 3–12 BULAN</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Pengembangan kapasitas guru & sistem kurikulum</div>
       </div>
       <div class="card">
@@ -1341,7 +1282,7 @@
     <!-- JANGKA PANJANG -->
     <div class="plan-content" id="plan-panjang">
       <div class="card glow-purple" style="margin-bottom:10px;">
-        <div style="font-size:10px;color:var(--purple);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">JANGKA PANJANG — 1–3 TAHUN</div>
+        <div style="font-size:10px;color:var(--purple);font-family: 'Inter', sans-serif;letter-spacing:0.2px;">JANGKA PANJANG — 1–3 TAHUN</div>
         <div style="font-size:11px;color:var(--muted);margin-top:4px;line-height:1.6;">Transformasi sistemik & budaya belajar sekolah</div>
       </div>
       <div class="card">
@@ -1400,18 +1341,18 @@
     <!-- TAB JAM -->
     <div id="jamcontent-jp" class="jadwal-tab-content active">
     <div class="card glow-cyan" style="margin-bottom:12px;">
-      <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:8px;">📌 KETENTUAN KURIKULUM MERDEKA</div>
+      <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;margin-bottom:8px;">📌 Ketentuan Kurikulum Merdeka</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <div style="flex:1;min-width:120px;background:var(--slate2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-family:'Plus Jakarta Sans';font-size:18px;font-weight:700;color:var(--green);">24 JP</div>
+        <div style="flex:1;min-width:120px;background:var(--slate);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family: 'Inter', sans-serif;font-size:18px;font-weight:700;color:var(--green);">24 JP</div>
           <div style="font-size:9px;color:var(--muted);">Minimal / Minggu</div>
         </div>
-        <div style="flex:1;min-width:120px;background:var(--slate2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-family:'Plus Jakarta Sans';font-size:18px;font-weight:700;color:var(--yellow);">40 JP</div>
+        <div style="flex:1;min-width:120px;background:var(--slate);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family: 'Inter', sans-serif;font-size:18px;font-weight:700;color:var(--yellow);">40 JP</div>
           <div style="font-size:9px;color:var(--muted);">Maksimal / Minggu</div>
         </div>
-        <div style="flex:1;min-width:120px;background:var(--slate2);border:1px solid var(--border);border-radius:10px;padding:10px;text-align:center;">
-          <div style="font-family:'Plus Jakarta Sans';font-size:18px;font-weight:700;color:var(--cyan);">6 JP</div>
+        <div style="flex:1;min-width:120px;background:var(--slate);border-radius:10px;padding:10px;text-align:center;">
+          <div style="font-family: 'Inter', sans-serif;font-size:18px;font-weight:700;color:var(--cyan);">6 JP</div>
           <div style="font-size:9px;color:var(--muted);">Tambahan Tugas</div>
         </div>
       </div>
@@ -1432,7 +1373,7 @@
 
     <!-- TAB TUGAS TAMBAHAN -->
     <div id="jamcontent-tugas" class="jadwal-tab-content">
-      <div style="font-size:10px;color:var(--purple);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🏷️ TUGAS TAMBAHAN GURU</div>
+      <div style="font-size:10px;color:var(--purple);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:10px;">🏷️ TUGAS TAMBAHAN GURU</div>
       <div id="tugas-list"><!-- Generated by JS --></div>
     </div>
 
@@ -1453,7 +1394,7 @@
     <!-- FORM REKAM -->
     <div class="monitor-content active" id="monitor-rekam">
       <div class="late-form">
-        <div style="font-size:11px;color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:12px;">⚠️ CATAT KETERLAMBATAN GURU</div>
+        <div style="font-size:11px;color:var(--red);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:12px;">⚠️ CATAT KETERLAMBATAN GURU</div>
         <div class="form-group">
           <label class="form-label">NAMA GURU</label>
           <select class="form-select" id="rekam-guru">
@@ -1528,7 +1469,7 @@
   <div class="screen" id="screen-regulasi">
     <p class="section-title">📰 INFO & REGULASI PENDIDIKAN</p>
     <div class="card glow-purple" style="margin-bottom:12px;">
-      <div style="font-size:10px;color:var(--purple);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">🤖 DIPERBARUI OTOMATIS DENGAN AI</div>
+      <div style="font-size:10px;color:var(--purple);font-family: 'Inter', sans-serif;letter-spacing:0.2px;">🤖 DIPERBARUI OTOMATIS DENGAN AI</div>
       <div style="font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5;">Info regulasi Kurikulum Merdeka & kebijakan pendidikan terkini</div>
     </div>
     <div id="regulasi-container">
@@ -1551,37 +1492,51 @@
       <div class="notulen-tab active" id="jtab-grid" onclick="switchJadwalTab('grid',this)">🗂️ GRID</div>
       <div class="notulen-tab" id="jtab-list" onclick="switchJadwalTab('list',this)">📋 LIST</div>
       <div class="notulen-tab" id="jtab-rekap" onclick="switchJadwalTab('rekap',this)">📊 REKAP</div>
-      <div class="notulen-tab" id="jtab-mgmp" onclick="switchJadwalTab('mgmp',this)">🚫 BLOKIR</div>
+      <div class="notulen-tab" id="jtab-mgmp" onclick="switchJadwalTab('mgmp',this)">🏫 MGMP</div>
     </div>
 
     <!-- TAB GRID -->
     <div id="jadwal-tab-grid" class="jadwal-tab-content active">
       <div id="conflict-alert-box"></div>
 
-      <!-- Hari Tabs — langsung klik tanpa dropdown -->
-      <div style="display:flex;gap:4px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px;">
-        <button class="hari-tab-btn active" id="htab-1" onclick="setGridHari(1,this)">Sen</button>
-        <button class="hari-tab-btn" id="htab-2" onclick="setGridHari(2,this)">Sel</button>
-        <button class="hari-tab-btn" id="htab-3" onclick="setGridHari(3,this)">Rab</button>
-        <button class="hari-tab-btn" id="htab-4" onclick="setGridHari(4,this)">Kam</button>
-        <button class="hari-tab-btn" id="htab-5" onclick="setGridHari(5,this)">Jum</button>
-        <button class="hari-tab-btn" id="htab-6" onclick="setGridHari(6,this)">Sab</button>
+      <!-- Hari Tabs -->
+      <div style="display:flex;gap:4px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px;align-items:center;">
+        <button class="hari-tab-btn active" id="htab-1" onclick="setGridHari(1,this)">Senin</button>
+        <button class="hari-tab-btn" id="htab-2" onclick="setGridHari(2,this)">Selasa</button>
+        <button class="hari-tab-btn" id="htab-3" onclick="setGridHari(3,this)">Rabu</button>
+        <button class="hari-tab-btn" id="htab-4" onclick="setGridHari(4,this)">Kamis</button>
+        <button class="hari-tab-btn" id="htab-5" onclick="setGridHari(5,this)" title="Jumat — maks. 5 JP">Jumat</button>
+        <button class="hari-tab-btn" id="htab-6" onclick="setGridHari(6,this)" title="Sabtu — maks. 7 JP">Sabtu</button>
         <div style="flex:1;"></div>
+        <button onclick="clearJadwalHari()" title="Kosongkan semua jadwal hari ini"
+          style="padding:6px 12px;border-radius:8px;border:1px solid var(--red);
+                 background:rgba(224,49,75,0.08);color:var(--red);font-size:11px;
+                 font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;
+                 letter-spacing:0.2px;">
+          🧹 Kosongkan Hari Ini
+        </button>
+        <button onclick="openBlockForm(_gridHari||1, 1)" title="Blokir jam tertentu"
+          style="padding:6px 12px;border-radius:8px;border:1px solid #7C3AED;
+                 background:rgba(124,58,237,0.08);color:#7C3AED;font-size:11px;
+                 font-weight:600;cursor:pointer;white-space:nowrap;font-family:'Inter',sans-serif;
+                 letter-spacing:0.2px;">
+          🔒 Blokir Jam
+        </button>
         <button class="btn-add" onclick="openJadwalForm()" style="padding:6px 12px;font-size:12px;white-space:nowrap;">＋ Tambah</button>
       </div>
 
       <!-- Filter Kelas -->
       <div style="display:flex;gap:6px;margin-bottom:8px;overflow-x:auto;padding-bottom:2px;">
         <button class="kelas-filter-btn active" onclick="setGridKelas('',this)">Semua</button>
-        <button class="kelas-filter-btn" data-kelas="7A" onclick="setGridKelas('7A',this)">7A</button>
-        <button class="kelas-filter-btn" data-kelas="7B" onclick="setGridKelas('7B',this)">7B</button>
-        <button class="kelas-filter-btn" data-kelas="7C" onclick="setGridKelas('7C',this)">7C</button>
-        <button class="kelas-filter-btn" data-kelas="8A" onclick="setGridKelas('8A',this)">8A</button>
-        <button class="kelas-filter-btn" data-kelas="8B" onclick="setGridKelas('8B',this)">8B</button>
-        <button class="kelas-filter-btn" data-kelas="8C" onclick="setGridKelas('8C',this)">8C</button>
-        <button class="kelas-filter-btn" data-kelas="9A" onclick="setGridKelas('9A',this)">9A</button>
-        <button class="kelas-filter-btn" data-kelas="9B" onclick="setGridKelas('9B',this)">9B</button>
-        <button class="kelas-filter-btn" data-kelas="9C" onclick="setGridKelas('9C',this)">9C</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('7A',this)">7A</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('7B',this)">7B</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('7C',this)">7C</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('8A',this)">8A</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('8B',this)">8B</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('8C',this)">8C</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('9A',this)">9A</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('9B',this)">9B</button>
+        <button class="kelas-filter-btn" onclick="setGridKelas('9C',this)">9C</button>
       </div>
 
       <!-- Hidden select for JS compatibility -->
@@ -1596,8 +1551,16 @@
       <div style="overflow-x:auto;">
         <div id="jadwal-grid-container"></div>
       </div>
-      <div style="margin-top:10px;">
-        <button class="btn-primary" onclick="exportJadwalPDF()" style="background:linear-gradient(135deg,var(--green2),var(--cyan2));font-size:11px;padding:10px;">📄 EXPORT PDF</button>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn-primary" onclick="exportJadwalPDF()" style="flex:2;background:linear-gradient(135deg,var(--green2),var(--cyan2));font-size:11px;padding:10px;font-family:'Inter',sans-serif;letter-spacing:0.3px;">📄 Export PDF</button>
+        <button onclick="clearJadwalSemua()"
+          style="flex:1;padding:10px;border-radius:12px;border:1px solid var(--red);
+                 background:rgba(224,49,75,0.07);color:var(--red);font-size:11px;
+                 font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;
+                 white-space:nowrap;">
+          🗑️ Hapus Semua
+        </button>
+      </div>
       </div>
     </div>
 
@@ -1614,7 +1577,7 @@
     <!-- TAB REKAP -->
     <div id="jadwal-tab-rekap" class="jadwal-tab-content">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📊 REKAPITULASI SEMUA GURU</div>
+        <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;">📊 REKAPITULASI SEMUA GURU</div>
         <button class="btn-add" onclick="exportRekapPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
       </div>
       <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
@@ -1626,49 +1589,24 @@
     </div>
 
     <!-- TAB MGMP -->
-    <!-- TAB BLOKIR / BLOCK JAM -->
     <div id="jadwal-tab-mgmp" class="jadwal-tab-content">
-
-      <!-- Form Tambah Blokir -->
       <div class="card" style="margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:800;color:var(--cyan);margin-bottom:12px;">🚫 TAMBAH BLOKIR JAM</div>
-
+        <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:10px;">🏫 TANDAI GURU MGMP</div>
         <div class="form-group">
-          <label class="form-label">JENIS KEGIATAN</label>
-          <select class="form-select" id="blok-jenis" onchange="updateBlokForm()">
-            <option value="mgmp">MGMP (per guru)</option>
-            <option value="ummi">UMMI / Kegiatan Rutin (per guru)</option>
-            <option value="custom">Kegiatan Lain / Custom (per guru)</option>
-            <option value="global">Blokir Hari Penuh (semua guru)</option>
-          </select>
-        </div>
-
-        <div id="blok-guru-wrap" class="form-group">
           <label class="form-label">GURU</label>
           <select class="form-select" id="mgmp-guru-sel"></select>
         </div>
-
         <div class="form-group">
-          <label class="form-label">NAMA KEGIATAN</label>
-          <input type="text" class="form-input" id="blok-nama" placeholder="Contoh: MGMP Matematika / UMMI / Rapat Dinas">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">POLA BLOKIR</label>
-          <select class="form-select" id="mgmp-jenis" onchange="updateBlokDateField()">
+          <label class="form-label">JENIS MGMP</label>
+          <select class="form-select" id="mgmp-jenis">
             <option value="tanggal">Tanggal Spesifik</option>
-            <option value="rutin">Rutin Bulanan (Hari ke-N tiap bulan)</option>
-            <option value="setiap">Setiap Minggu (hari tertentu rutin)</option>
+            <option value="rutin">Rutin Bulanan (Hari ke-N per Bulan)</option>
           </select>
         </div>
-
-        <!-- Tanggal spesifik -->
         <div id="mgmp-field-tanggal" class="form-group">
           <label class="form-label">TANGGAL</label>
           <input type="date" class="form-input" id="mgmp-tanggal">
         </div>
-
-        <!-- Rutin bulanan -->
         <div id="mgmp-field-rutin" style="display:none;">
           <div class="form-group">
             <label class="form-label">HARI</label>
@@ -1686,44 +1624,17 @@
             </select>
           </div>
         </div>
-
-        <!-- Setiap minggu -->
-        <div id="blok-field-setiap" style="display:none;">
-          <div class="form-group">
-            <label class="form-label">HARI (setiap minggu)</label>
-            <select class="form-select" id="blok-hari-setiap">
-              <option value="1">Senin</option><option value="2">Selasa</option>
-              <option value="3">Rabu</option><option value="4">Kamis</option>
-              <option value="5">Jumat</option><option value="6">Sabtu</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Custom jam range (opsional) -->
         <div class="form-group">
-          <label class="form-label">BLOKIR JAM KE (kosongkan = blokir seluruh hari)</label>
-          <div id="blok-jam-picker" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;">
-            ${[1,2,3,4,5,6,7,8,9].map(j=>`
-              <span class="jam-badge" data-jam="${j}" onclick="this.classList.toggle('selected')"
-                    style="text-align:center;min-width:42px;font-size:10px;">
-                JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span>
-              </span>`).join('')}
-          </div>
-          <div style="font-size:9px;color:var(--muted);margin-top:5px;">Tap untuk pilih/batal. Tidak ada yang dipilih = blokir seluruh hari</div>
+          <label class="form-label">MATA PELAJARAN MGMP</label>
+          <input type="text" class="form-input" id="mgmp-mapel" placeholder="Contoh: MGMP Matematika">
         </div>
-
         <div class="form-group">
           <label class="form-label">CATATAN (opsional)</label>
-          <input type="text" class="form-input" id="mgmp-catatan" placeholder="Lokasi, keterangan tambahan...">
+          <input type="text" class="form-input" id="mgmp-catatan" placeholder="Lokasi, jam, dll.">
         </div>
-
-        <button class="btn-primary" onclick="tambahMGMP()" style="font-size:12px;padding:12px;">
-          🚫 SIMPAN BLOKIR JAM
-        </button>
+        <button class="btn-primary" onclick="tambahMGMP()" style="font-size:11px;padding:10px;">💾 SIMPAN MGMP</button>
       </div>
-
-      <!-- Daftar Blokir -->
-      <div style="font-size:12px;font-weight:800;color:var(--cyan);margin-bottom:8px;">📋 DAFTAR BLOKIR TERSIMPAN</div>
+      <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:8px;">📋 DAFTAR MGMP TERSIMPAN</div>
       <div id="mgmp-list"></div>
     </div>
 
@@ -1746,7 +1657,7 @@
     <div class="notulen-content active" id="notulen-rekam-rapat">
       <!-- Form Info Rapat -->
       <div class="card glow-cyan" style="margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📋 INFO RAPAT</div>
+        <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:10px;">📋 INFO RAPAT</div>
         <div class="form-group">
           <label class="form-label">JUDUL / AGENDA RAPAT</label>
           <input type="text" class="form-input" id="rapat-judul" placeholder="Contoh: Rapat Evaluasi Kurikulum Sem. 1">
@@ -1791,7 +1702,7 @@
 
         <!-- Playback -->
         <div class="audio-playback" id="audio-playback">
-          <div style="font-size:9px;color:var(--green);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:6px;">✅ REKAMAN SELESAI</div>
+          <div style="font-size:9px;color:var(--green);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:6px;">✅ REKAMAN SELESAI</div>
           <audio id="audio-player" controls></audio>
         </div>
 
@@ -1803,7 +1714,7 @@
           <div class="converted-text-label">📝 HASIL TRANSKRIPSI AI</div>
           <div id="convert-loading" style="display:none;text-align:center;padding:10px;">
             <div class="loading-spinner" style="margin:0 auto 6px;width:22px;height:22px;"></div>
-            <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;">MEMPROSES...</div>
+            <div style="font-size:9px;color:var(--muted);font-family: 'Inter', sans-serif;">MEMPROSES...</div>
           </div>
           <div class="converted-text-body" id="converted-text-content"></div>
         </div>
@@ -1815,7 +1726,7 @@
     <!-- TAB ARSIP -->
     <div class="notulen-content" id="notulen-arsip-rapat">
       <div id="notulen-list">
-        <div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:'Plus Jakarta Sans',sans-serif;">
+        <div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family: 'Inter', sans-serif;">
           Belum ada notulen tersimpan
         </div>
       </div>
@@ -1839,22 +1750,22 @@
     <!-- TAB DATA — Upload & List -->
     <div id="siswa-tab-data" class="jadwal-tab-content active">
       <div class="card glow-cyan" style="margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📤 UPLOAD DATA SISWA</div>
+        <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:10px;">📤 UPLOAD DATA SISWA</div>
         <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
           Format file Excel/CSV — 3 kolom wajib: <b style="color:var(--white);">Nama, Kelas, NISN</b>
         </div>
-        <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,144,199,0.08);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin-bottom:8px;">
+        <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,212,255,0.08);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family: 'Inter', sans-serif;letter-spacing:0.2px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin-bottom:8px;">
           📁 PILIH FILE (.xlsx / .csv)
           <input type="file" id="siswa-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="uploadSiswaFile(this)">
         </label>
-        <button onclick="downloadTemplateSiswa()" style="width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--slate2);color:var(--muted);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">
+        <button onclick="downloadTemplateSiswa()" style="width:100%;padding:9px;border-radius:10px;border:1px solid var(--border);background:var(--slate2);color:var(--muted);font-size:10px;cursor:pointer;font-family: 'Inter', sans-serif;">
           📥 DOWNLOAD TEMPLATE EXCEL
         </button>
         <div id="siswa-upload-status" style="font-size:10px;margin-top:8px;text-align:center;display:none;"></div>
       </div>
 
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📋 DAFTAR SISWA (<span id="siswa-total-count">0</span>)</div>
+        <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;">📋 DAFTAR SISWA (<span id="siswa-total-count">0</span>)</div>
         <button class="btn-del" onclick="hapusSemuaSiswa()" style="font-size:10px;">🗑️ Hapus Semua</button>
       </div>
       <div class="teacher-search" style="margin-bottom:10px;">
@@ -1867,7 +1778,7 @@
     <!-- TAB NAIK KELAS -->
     <div id="siswa-tab-naik" class="jadwal-tab-content">
       <div class="card" style="margin-bottom:12px;border-color:rgba(255,140,0,0.3);">
-        <div style="font-size:10px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">⬆️ TANDAI STATUS NAIK / TIDAK NAIK</div>
+        <div style="font-size:10px;color:var(--orange);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:8px;">⬆️ TANDAI STATUS NAIK / TIDAK NAIK</div>
         <div style="font-size:10px;color:var(--muted);line-height:1.6;">
           Tandai setiap siswa: <b style="color:var(--green);">Naik Kelas</b> (akan diacak ke kelas baru) atau <b style="color:var(--red);">Tidak Naik</b> (tetap di kelas yang sama / mengulang). Siswa kelas 9 yang naik otomatis dianggap <b style="color:var(--cyan);">LULUS</b> dan tidak akan tampil di sistem.
         </div>
@@ -1885,13 +1796,13 @@
     <!-- TAB ACAK & HASIL -->
     <div id="siswa-tab-acak" class="jadwal-tab-content">
       <div class="card glow-cyan" style="margin-bottom:12px;">
-        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">⚙️ KONFIGURASI KELAS TUJUAN</div>
+        <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:10px;">⚙️ KONFIGURASI KELAS TUJUAN</div>
         <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
           Tentukan nama kelas baru & jumlah siswa per kelas. Total kuota harus sama/lebih dari jumlah siswa yang naik.
         </div>
         <div id="kelas-tujuan-list"></div>
         <button class="btn-add" onclick="tambahKelasTujuan()" style="width:100%;margin-top:8px;font-size:11px;">＋ Tambah Kelas Tujuan</button>
-        <div id="kuota-summary" style="margin-top:10px;font-size:10px;color:var(--muted);text-align:center;font-family:'Plus Jakarta Sans',sans-serif;"></div>
+        <div id="kuota-summary" style="margin-top:10px;font-size:10px;color:var(--muted);text-align:center;font-family: 'Inter', sans-serif;"></div>
       </div>
 
       <button class="btn-primary" onclick="prosesAcakSiswa()" style="background:linear-gradient(135deg,var(--purple),var(--cyan));font-size:12px;padding:12px;margin-bottom:14px;">
@@ -1964,7 +1875,7 @@
       </div>
       <div class="form-group">
         <label class="form-label">KOP / SUBJUDUL</label>
-        <input type="text" class="form-input" id="setting-appsub" placeholder="Contoh: WAKA KURIKULUM DASHBOARD" maxlength="50">
+        <input type="text" class="form-input" id="setting-appsub" placeholder="Contoh: Dashboard Waka Kurikulum" maxlength="50">
       </div>
       <div class="form-group">
         <label class="form-label">NAMA SEKOLAH</label>
@@ -1980,10 +1891,10 @@
     <div class="setting-section">
       <div class="setting-section-label">🎨 WARNA TEMA</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button onclick="setThemeColor('cyan')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--cyan);background:rgba(0,144,199,0.15);color:var(--cyan);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● CYAN</button>
-        <button onclick="setThemeColor('green')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--green);background:rgba(0,168,107,0.15);color:var(--green);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● GREEN</button>
-        <button onclick="setThemeColor('purple')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--purple);background:rgba(180,0,255,0.15);color:var(--purple);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● PURPLE</button>
-        <button onclick="setThemeColor('orange')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--orange);background:rgba(255,140,0,0.15);color:var(--orange);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● ORANGE</button>
+        <button onclick="setThemeColor('cyan')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--cyan);background:rgba(0,212,255,0.15);color:var(--cyan);font-size:10px;cursor:pointer;font-family: 'Inter', sans-serif;">● CYAN</button>
+        <button onclick="setThemeColor('green')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--green);background:rgba(0,255,136,0.15);color:var(--green);font-size:10px;cursor:pointer;font-family: 'Inter', sans-serif;">● GREEN</button>
+        <button onclick="setThemeColor('purple')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--purple);background:rgba(180,0,255,0.15);color:var(--purple);font-size:10px;cursor:pointer;font-family: 'Inter', sans-serif;">● PURPLE</button>
+        <button onclick="setThemeColor('orange')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--orange);background:rgba(255,140,0,0.15);color:var(--orange);font-size:10px;cursor:pointer;font-family: 'Inter', sans-serif;">● ORANGE</button>
       </div>
     </div>
 
@@ -1995,12 +1906,12 @@
       </div>
 
       <!-- Backup -->
-      <button onclick="backupData()" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,144,199,0.1);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <button onclick="backupData()" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,212,255,0.1);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
         📥 DOWNLOAD BACKUP (.json)
       </button>
 
       <!-- Restore -->
-      <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--green);background:rgba(0,168,107,0.08);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;">
+      <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--green);background:rgba(0,255,136,0.08);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family: 'Inter', sans-serif;letter-spacing:0.2px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;">
         📤 PILIH FILE RESTORE (.json)
         <input type="file" id="restore-file-input" accept=".json" style="display:none" onchange="restoreData(this)">
       </label>
@@ -2010,7 +1921,7 @@
     <!-- Reset -->
     <div class="setting-section">
       <div class="setting-section-label">⚠️ DATA</div>
-      <button onclick="resetSemuaData()" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--red);background:rgba(220,38,64,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">
+      <button onclick="resetSemuaData()" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--red);background:rgba(255,59,92,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family: 'Inter', sans-serif;letter-spacing:0.2px;">
         🗑️ RESET SEMUA DATA
       </button>
       <div style="font-size:9px;color:var(--muted);margin-top:6px;text-align:center;">Hapus semua data tersimpan & kembali ke awal</div>
@@ -2029,6 +1940,7 @@
     <div class="modal-handle"></div>
     <div class="modal-form-title" id="modal-form-title">TAMBAH DATA</div>
     <div id="modal-form-body"><!-- Injected by JS --></div>
+    <div id="modal-form-extra-actions"></div>
     <div class="modal-form-actions">
       <button class="btn-cancel" onclick="closeModalForm()">✕ BATAL</button>
       <button class="btn-save" onclick="saveModalForm()">💾 SIMPAN</button>
@@ -2155,7 +2067,7 @@ function animParticles() {
     if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
     if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
     ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
-    ctx.fillStyle = `rgba(0,144,199,${p.a})`; ctx.fill();
+    ctx.fillStyle = `rgba(11,132,201,${p.a * 0.5})`; ctx.fill();
   });
   requestAnimationFrame(animParticles);
 }
@@ -2194,25 +2106,23 @@ const JAM_LABELS = {
   1:'07:00', 2:'07:40', 3:'08:20', 4:'09:00', 5:'10:00',
   6:'10:40', 7:'11:20', 8:'12:40', 9:'13:00'
 };
-// Batas maksimal jam mengajar per hari
-// Jumat: JP1-5 saja, Sabtu: JP1-7 saja, hari lain: JP1-9
-const MAX_JAM_HARI = { 1:9, 2:9, 3:9, 4:9, 5:5, 6:7 };
-function getMaxJam(hari) { return MAX_JAM_HARI[hari] || 9; }
 const KELAS_LIST = ['7A','7B','7C','8A','8B','8C','9A','9B','9C'];
 
-// Peta warna per kelas — dot colors for legend
-const KELAS_COLORS = {
-  '7A': { dot:'#F59E0B', bg:'#FEF3C7', text:'#92400E', label:'Kuning' },
-  '7B': { dot:'#64748B', bg:'#F1F5F9', text:'#1E293B', label:'Abu-abu' },
-  '7C': { dot:'#14B8A6', bg:'#CCFBF1', text:'#134E4A', label:'Teal' },
-  '8A': { dot:'#3B82F6', bg:'#DBEAFE', text:'#1E3A8A', label:'Biru' },
-  '8B': { dot:'#8B5CF6', bg:'#EDE9FE', text:'#4C1D95', label:'Ungu' },
-  '8C': { dot:'#F43F5E', bg:'#FFE4E6', text:'#881337', label:'Merah Muda' },
-  '9A': { dot:'#10B981', bg:'#D1FAE5', text:'#064E3B', label:'Hijau' },
-  '9B': { dot:'#F97316', bg:'#FFEDD5', text:'#7C2D12', label:'Oranye' },
-  '9C': { dot:'#6366F1', bg:'#E0E7FF', text:'#312E81', label:'Indigo' },
+// Palet warna per kelas — konsisten di header, sel, dan badge
+const KELAS_COLOR = {
+  '7A': { bg:'#EFF6FF', border:'#93C5FD', text:'#1D4ED8', dot:'#3B82F6' },  // biru
+  '7B': { bg:'#F0FDF4', border:'#86EFAC', text:'#166534', dot:'#22C55E' },  // hijau
+  '7C': { bg:'#FEFCE8', border:'#FDE047', text:'#854D0E', dot:'#EAB308' },  // kuning
+  '8A': { bg:'#FFF7ED', border:'#FDBA74', text:'#9A3412', dot:'#F97316' },  // oranye
+  '8B': { bg:'#FDF4FF', border:'#E879F9', text:'#86198F', dot:'#D946EF' },  // ungu
+  '8C': { bg:'#FFF1F2', border:'#FDA4AF', text:'#BE123C', dot:'#FB7185' },  // merah muda
+  '9A': { bg:'#F0FDFA', border:'#5EEAD4', text:'#115E59', dot:'#14B8A6' },  // teal
+  '9B': { bg:'#EDE9FE', border:'#C4B5FD', text:'#5B21B6', dot:'#8B5CF6' },  // violet
+  '9C': { bg:'#FFF5F0', border:'#FCA5A5', text:'#991B1B', dot:'#EF4444' },  // merah
 };
-function kelasClass(kelas) { return 'kelas-' + kelas.replace(/\s/g,''); }
+
+// Data blokir jam — { hari, jam, label, warna }
+let BLOCK_DATA = [];
 
 // JJM per mapel per minggu (acuan struktur kurikulum)
 const MAPEL_JJM = {
@@ -2366,12 +2276,12 @@ function renderConflictAlert() {
   const conflicts = detectConflicts();
   if (!conflicts.length) { el.innerHTML = ''; return; }
   el.innerHTML = `
-    <div style="background:rgba(220,38,64,0.1);border:1px solid var(--red);border-radius:12px;padding:12px;margin-bottom:10px;">
-      <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--red);letter-spacing:1px;margin-bottom:8px;">
+    <div style="background:rgba(255,59,92,0.1);border:1px solid var(--red);border-radius:12px;padding:12px;margin-bottom:10px;">
+      <div style="font-size:10px;font-family: 'Inter', sans-serif;color:var(--red);letter-spacing:0.2px;margin-bottom:8px;">
         ⚠️ TERDETEKSI ${conflicts.length} BENTROK JADWAL
       </div>
       ${conflicts.map(c => `
-        <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(220,38,64,0.15);">
+        <div style="display:flex;gap:8px;align-items:flex-start;padding:5px 0;border-bottom:1px solid rgba(255,59,92,0.15);">
           <span style="font-size:14px;">${c.type==='guru'?'👤':'🏫'}</span>
           <div style="font-size:10px;color:var(--white);line-height:1.5;flex:1;">${c.detail}</div>
         </div>`).join('')}
@@ -2385,7 +2295,7 @@ function renderGrid() {
   const hariData = JADWAL_DATA2[hari] || {};
   const mgmpToday = getMGMPForDay(hari);
 
-  // Build conflict lookup
+  // Build conflict lookup for this hari: "jam-guru" -> [kelas,...]
   const jamGuruMap = {};
   Object.entries(hariData).forEach(([kelas, jamObj]) => {
     Object.entries(jamObj).forEach(([jam, cell]) => {
@@ -2395,58 +2305,83 @@ function renderGrid() {
     });
   });
 
-  // Legend strip
-  const legendHtml = `<div class="kelas-legend">${KELAS_LIST.map(k => {
-    const c = KELAS_COLORS[k];
-    return `<div class="kelas-legend-item leg-${k}" title="${c.label}">
-      <div class="leg-dot" style="background:${c.dot}"></div>${k}
-    </div>`;
-  }).join('')}</div>`;
-
-  // Table with colored column headers
   let html = '<table class="jadwal-grid"><thead><tr>';
-  html += '<th style="min-width:44px;">JAM</th>';
+  const maxJamHari = hari === 5 ? 5 : hari === 6 ? 7 : 9;
+  const hariNama = ['', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'][hari] || '';
+  html += `<th style="min-width:48px;"><div style="font-size:9px;font-weight:800;color:#1A3A6E;">Jam</div><div style="font-size:7px;color:#5A7AAA;font-weight:500;">${hariNama} · ${maxJamHari} JP</div></th>`;
   kelasList.forEach(k => {
-    const c = KELAS_COLORS[k];
-    html += `<th style="background:${c.bg};color:${c.text};border-bottom:2px solid ${c.dot};">${k}</th>`;
+    const kc = KELAS_COLOR[k] || { bg:'#F4F7FC', border:'#CBD5E1', text:'#334155', dot:'#64748B' };
+    html += `<th style="position:relative;background:${kc.bg};border-bottom:2px solid ${kc.border};">
+      <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+        <span style="width:7px;height:7px;border-radius:50%;background:${kc.dot};flex-shrink:0;display:inline-block;"></span>
+        <span style="font-size:11px;font-weight:700;color:${kc.text};font-family:'Inter',sans-serif;">${k}</span>
+      </div>
+      <button onclick="clearJadwalKelas(${hari},'${k}')"
+        title="Kosongkan jadwal kelas ${k} hari ini"
+        style="display:block;margin:3px auto 0;padding:2px 6px;border-radius:4px;
+               border:1px solid rgba(224,49,75,0.3);background:rgba(224,49,75,0.07);
+               color:#C0314B;font-size:7px;cursor:pointer;font-family:'Inter',sans-serif;
+               font-weight:600;letter-spacing:0.2px;line-height:1.4;">
+        ✕ clear
+      </button>
+    </th>`;
   });
   html += '</tr></thead><tbody>';
 
-  const maxJam = getMaxJam(hari);
-  for (let jam = 1; jam <= maxJam; jam++) {
-    html += `<tr><td class="td-jam"><span class="jam-label">JP${jam}</span>${JAM_LABELS[jam]}</td>`;
+  for (let jam = 1; jam <= maxJamHari; jam++) {
+    html += `<tr><td class="td-jam">
+      <span class="jam-label">${jam}</span>
+      <span class="td-jam-time">${JAM_LABELS[jam]}</span>
+    </td>`;
     kelasList.forEach(kelas => {
       const cell = (hariData[kelas] || {})[jam];
-      const kcClass = kelasClass(kelas);
+      const kc = KELAS_COLOR[kelas] || { bg:'#F4F7FC', border:'#CBD5E1', text:'#334155', dot:'#64748B' };
+      // Cek apakah jam ini diblokir untuk kelas ini
+      const isBlocked = BLOCK_DATA.some(b => b.hari === hari && b.jam === jam && (!b.kelas || b.kelas === kelas));
+      const blockInfo = BLOCK_DATA.find(b => b.hari === hari && b.jam === jam && (!b.kelas || b.kelas === kelas));
       if (cell) {
-        const isMGMP = isGuruBlocked(cell.guru, hari, jam);
+        const isMGMP = mgmpToday.some(m => m.guru === cell.guru);
         const guruKey = `${jam}-${cell.guru}`;
         const isBentrok = (jamGuruMap[guruKey] || []).length > 1;
-        let cellClass = `jadwal-cell ${kcClass}`;
+        let cellClass = 'jadwal-cell';
         if (isMGMP) cellClass += ' mgmp-cell';
         if (isBentrok) cellClass += ' bentrok-cell';
         const shortName = cell.guru.split(' ').slice(-2).join(' ');
         const rangeLabel = cell.jamRange && cell.jamRange.length > 1
-          ? `<div style="font-size:8px;opacity:0.7;margin-top:1px;">JP${cell.jamRange[0]}–JP${cell.jamRange[cell.jamRange.length-1]}</div>`
+          ? `<div style="font-size:8px;color:var(--yellow);margin-top:1px;">JP${cell.jamRange[0]}–JP${cell.jamRange[cell.jamRange.length-1]}</div>`
           : '';
-        html += `<td><div class="${cellClass}" onclick="editJadwalCell(${hari},'${kelas}',${jam})">
+        // Tambahkan border warna kelas pada sel yang terisi (kecuali bentrok/mgmp punya warna sendiri)
+        const kelasStyle = (!isMGMP && !isBentrok)
+          ? `style="border-color:${kc.border};border-left:3px solid ${kc.dot};"`
+          : '';
+        html += `<td style="background:${(!isMGMP&&!isBentrok)?kc.bg+'80':''};">
+          <div class="${cellClass}" ${kelasStyle} onclick="editJadwalCell(${hari},'${kelas}',${jam})">
           <span class="jc-del" onclick="event.stopPropagation();hapusJadwalCell(${hari},'${kelas}',${jam})">✕</span>
           ${isBentrok ? '<span class="jc-bentrok" title="Guru bentrok!">⚠️</span>' : ''}
-          <div class="jc-guru">${isMGMP ? (() => { const b = getMGMPForDay(hari).find(m => (m.guru==='__ALL__'||m.guru===cell.guru) && (!m.jamList||!m.jamList.length||m.jamList.includes(jam))); return (b?.jenisKegiatan==='ummi'?'📖':'🚫') + ' ' + (b?.mapel||'MGMP'); })() : shortName}</div>
+          <div class="jc-guru">${isMGMP ? '🏫 MGMP' : shortName}</div>
           <div class="jc-mapel">${cell.mapel || ''}</div>
           ${rangeLabel}
           <div class="jc-ruang">${cell.ruang || ''}</div>
         </div></td>`;
+      } else if (isBlocked) {
+        // Sel yang diblokir — tampil seperti MGMP tapi dengan warna & label blokir
+        const blockColor = blockInfo?.warna || '#6B7488';
+        const blockLabel = blockInfo?.label || 'Terblokir';
+        html += `<td>
+          <div class="blocked-cell" onclick="editBlockCell(${hari},'${kelas}',${jam})" title="${blockLabel}">
+            <span class="jc-del" onclick="event.stopPropagation();hapusBlock(${hari},${jam},'${kelas}')">✕</span>
+            <div style="font-size:9px;font-weight:700;color:${blockColor};font-family:'Inter',sans-serif;">🔒 ${blockLabel}</div>
+          </div>
+        </td>`;
       } else {
-        const c = KELAS_COLORS[kelas];
-        html += `<td style="background:${c.bg}08;"><div class="td-empty" onclick="openJadwalFormCell(${hari},'${kelas}',${jam})" title="Tap untuk isi">＋</div></td>`;
+        html += `<td><div class="td-empty" onclick="openJadwalFormCell(${hari},'${kelas}',${jam})" title="Tap untuk isi"
+          oncontextmenu="event.preventDefault();openBlockForm(${hari},${jam},'${kelas}')" >＋</div></td>`;
       }
     });
     html += '</tr>';
   }
   html += '</tbody></table>';
-
-  document.getElementById('jadwal-grid-container').innerHTML = legendHtml + html;
+  document.getElementById('jadwal-grid-container').innerHTML = html;
   renderConflictAlert();
 }
 
@@ -2526,8 +2461,8 @@ function renderAdviceBox() {
 
   if (!advices.length) { box.innerHTML = ''; return; }
 
-  box.innerHTML = `<div style="background:rgba(0,144,199,0.06);border:1px solid rgba(0,144,199,0.25);border-radius:10px;padding:10px;margin-top:8px;">
-    <div style="font-size:9px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:6px;">💡 SARAN UNTUK ANDA</div>
+  box.innerHTML = `<div style="background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.25);border-radius:10px;padding:10px;margin-top:8px;">
+    <div style="font-size:9px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin-bottom:6px;">💡 SARAN UNTUK ANDA</div>
     ${advices.map(a => `<div style="display:flex;gap:6px;padding:3px 0;font-size:10px;color:var(--white);line-height:1.5;">
       <span>${a.ico}</span><span style="flex:1;">${a.msg}</span>
     </div>`).join('')}
@@ -2582,14 +2517,14 @@ function checkGuruConflictLive() {
 
   let html = '';
   if (bentrokList.length) {
-    html += `<div style="background:rgba(220,38,64,0.15);border:1px solid var(--red);border-radius:10px;padding:10px;font-size:10px;color:var(--red);margin-bottom:6px;">
-      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;letter-spacing:1px;margin-bottom:5px;">⚠️ TERDETEKSI BENTROK JAM!</div>
+    html += `<div style="background:rgba(255,59,92,0.15);border:1px solid var(--red);border-radius:10px;padding:10px;font-size:10px;color:var(--red);margin-bottom:6px;">
+      <div style="font-family: 'Inter', sans-serif;font-size:9px;letter-spacing:0.2px;margin-bottom:5px;">⚠️ TERDETEKSI BENTROK JAM!</div>
       ${bentrokList.map(b => `<div style="padding:2px 0;">• ${b}</div>`).join('')}
     </div>`;
   }
   warnList.forEach(w => {
     const isOver = w.startsWith('📊');
-    html += `<div style="background:${isOver?'rgba(255,140,0,0.15)':'rgba(0,168,107,0.1)'};border:1px solid ${isOver?'var(--orange)':'var(--green)'};border-radius:10px;padding:10px;font-size:10px;color:${isOver?'var(--orange)':'var(--green)'};margin-bottom:6px;line-height:1.5;">
+    html += `<div style="background:${isOver?'rgba(255,140,0,0.15)':'rgba(0,255,136,0.1)'};border:1px solid ${isOver?'var(--orange)':'var(--green)'};border-radius:10px;padding:10px;font-size:10px;color:${isOver?'var(--orange)':'var(--green)'};margin-bottom:6px;line-height:1.5;">
       ${w}
     </div>`;
   });
@@ -2602,25 +2537,10 @@ function getMGMPForDay(hari) {
   return mgmpData.filter(m => {
     if (m.jenis === 'tanggal') {
       const d = new Date(m.tanggal);
-      return d.getDay() === parseInt(hari);
-    } else if (m.jenis === 'rutin') {
-      return parseInt(m.hari) === parseInt(hari);
-    } else if (m.jenis === 'setiap') {
-      return parseInt(m.hari) === parseInt(hari);
+      return d.getDay() === hari;
+    } else {
+      return parseInt(m.hari) === hari;
     }
-    return false;
-  });
-}
-
-// Cek apakah guru diblokir pada hari+jam tertentu
-function isGuruBlocked(guruNama, hari, jam) {
-  const blocked = getMGMPForDay(hari);
-  return blocked.some(m => {
-    const matchGuru = m.guru === '__ALL__' || m.guru === guruNama;
-    if (!matchGuru) return false;
-    // Jika jamList kosong = semua jam diblokir
-    if (!m.jamList || m.jamList.length === 0) return true;
-    return m.jamList.includes(parseInt(jam));
   });
 }
 
@@ -2641,9 +2561,7 @@ function openJadwalForm() {
 
 function openJadwalFormCell(hari, kelas, jam) {
   _jadwalFormCtx = { hari, kelas };
-  // Find all existing jams for this kelas+hari by same guru (for edit)
   const existing = (JADWAL_DATA2[hari]?.[kelas]?.[jam]) || {};
-  // Pre-select jams: if editing, find all consecutive jams of same guru in this kelas
   let preSelected = [jam];
   if (existing.guru) {
     const kelasData = JADWAL_DATA2[hari]?.[kelas] || {};
@@ -2653,63 +2571,142 @@ function openJadwalFormCell(hari, kelas, jam) {
     if (!preSelected.includes(jam)) preSelected = [jam];
   }
 
-  document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[hari]} [${kelas}]`;
+  const maxJ = hari===5?5:hari===6?7:9;
+  document.getElementById('modal-form-title').textContent = `📅 Isi Jadwal — ${HARI[hari]} [${kelas}]`;
+
+  // Jam picker dengan deteksi blokir
+  const jamPickerHtml = Array.from({length:maxJ},(_,i)=>i+1).map(j => {
+    const isBlocked = BLOCK_DATA.some(b => b.hari===hari && b.jam===j && (!b.kelas || b.kelas===kelas));
+    const blockInfo = BLOCK_DATA.find(b => b.hari===hari && b.jam===j && (!b.kelas || b.kelas===kelas));
+    const blockLabel = blockInfo?.label || 'Terblokir';
+    const clickHandler = isBlocked
+      ? `onclick="showBlockedWarning(${j},'${blockLabel}')"`
+      : `onclick="toggleFormJam(${j},this)"`;
+    const badgeClass = isBlocked ? 'blocked-jam' : (preSelected.includes(j) ? 'selected' : '');
+    return `<span class="jam-badge ${badgeClass}" data-jam="${j}" data-blocked="${isBlocked}" ${clickHandler}
+      title="${isBlocked ? '🔒 '+blockLabel : 'JP'+j}" style="text-align:center;min-width:46px;">
+      <b style="font-size:11px;">${j}</b><br>
+      <span style="font-size:8px;font-weight:400;color:${isBlocked?'#9CA3AF':'#4B6A9B'};">${JAM_LABELS[j]}</span>
+    </span>`;
+  }).join('');
+
+  // Kelas badge berwarna
+  const kelasBadgeHtml = KELAS_LIST.map(k =>
+    `<span class="jam-badge kelas-badge ${k===kelas?'selected':''}" data-kelas="${k}" onclick="setFormKelas('${k}',this)">${k}</span>`
+  ).join('');
+
+  // Hari badge
+  const hariBadgeHtml = [1,2,3,4,5,6].map(h =>
+    `<span class="jam-badge hari-badge ${h===hari?'selected':''}" data-hari="${h}" onclick="setFormHari(${h},this)">${HARI[h]}</span>`
+  ).join('');
+
   document.getElementById('modal-form-body').innerHTML = `
     <div class="form-group">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
-        <label class="form-label" style="margin-bottom:0;">GURU</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:9px;color:var(--muted);cursor:pointer;">
+        <label class="form-label" style="margin-bottom:0;">Guru</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);cursor:pointer;font-family:'Inter',sans-serif;">
           <input type="checkbox" id="mf-tampil-semua" onchange="rebuildGuruOptions()"> Tampilkan semua guru
         </label>
       </div>
       <select class="form-select" id="mf-guru" onchange="onGuruChange()"></select>
-      <div id="guru-filter-info" style="font-size:9px;color:var(--cyan);margin-top:4px;"></div>
+      <div id="guru-filter-info" style="font-size:9px;color:var(--cyan);margin-top:4px;font-family:'Inter',sans-serif;"></div>
     </div>
     <div class="form-group">
-      <label class="form-label">MATA PELAJARAN</label>
-      <input type="text" class="form-input" id="mf-mapel" value="${existing.mapel||''}" placeholder="Mapel" oninput="checkGuruConflictLive()">
+      <label class="form-label">Mata Pelajaran</label>
+      <input type="text" class="form-input" id="mf-mapel" value="${existing.mapel||''}" placeholder="Mata pelajaran" oninput="checkGuruConflictLive()">
     </div>
     <div class="form-group">
-      <label class="form-label">RUANG / LAB</label>
+      <label class="form-label">Ruang / Lab</label>
       <input type="text" class="form-input" id="mf-ruang" value="${existing.ruang||''}" placeholder="Contoh: R.01 / Lab IPA">
     </div>
-
-    <div style="margin-bottom:10px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px;">HARI</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;">
-        ${[1,2,3,4,5,6].map(h=>`<span class="jam-badge hari-badge ${h===hari?'selected':''}" data-hari="${h}" onclick="setFormHari(${h},this)">${HARI[h]}</span>`).join('')}
-      </div>
+    <div style="margin-bottom:10px;padding-top:6px;border-top:1px solid var(--border);">
+      <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:6px;">Hari</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">${hariBadgeHtml}</div>
     </div>
-
-    <div style="margin-bottom:10px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px;">KELAS</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;">
-        ${KELAS_LIST.map(k=>`<span class="jam-badge kelas-badge ${k===kelas?'selected':''}" data-kelas="${k}" onclick="setFormKelas('${k}',this)">${k}</span>`).join('')}
-      </div>
+    <div style="margin-bottom:10px;padding-top:6px;border-top:1px solid var(--border);">
+      <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:6px;">Kelas</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px;">${kelasBadgeHtml}</div>
     </div>
-
-    <div style="margin-bottom:6px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:4px;">JAM KE — <span style="color:var(--cyan);">Pilih lebih dari satu untuk blok jam</span></div>
-      <div id="jam-picker" style="display:flex;flex-wrap:wrap;gap:5px;">
-        ${Array.from({length:getMaxJam(_jadwalFormCtx?.hari||hari)},(_,i)=>i+1).map(j=>`
-          <span class="jam-badge ${preSelected.includes(j)?'selected':''}"
-                data-jam="${j}"
-                onclick="toggleFormJam(${j},this)"
-                style="text-align:center;min-width:42px;">
-            JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span>
-          </span>`).join('')}
+    <div style="margin-bottom:6px;padding-top:6px;border-top:1px solid var(--border);">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <div style="font-size:10px;font-weight:600;color:#374151;">Jam Ke
+          <span style="font-size:9px;font-weight:400;color:#6B7280;margin-left:4px;">— pilih lebih dari satu untuk blok</span>
+        </div>
+        <button onclick="openBlockFormFromJadwal()"
+          style="padding:3px 9px;border-radius:6px;border:1px solid #7C3AED;background:#EDE9FE;
+                 color:#5B21B6;font-size:9px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">
+          🔒 Blokir
+        </button>
       </div>
-      <div id="jam-range-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;"></div>
+      <div id="jam-picker" style="display:flex;flex-wrap:wrap;gap:5px;">${jamPickerHtml}</div>
+      <div id="jam-range-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Inter',sans-serif;font-weight:600;"></div>
     </div>
-    <div id="advice-box"></div>
-    ${existing.guru ? `<button onclick="hapusJadwalCell(${hari},'${kelas}',${jam});closeModalForm();" style="width:100%;padding:11px;margin-top:10px;border-radius:11px;border:1px solid var(--red);background:rgba(220,38,64,0.1);color:var(--red);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">🗑️ KOSONGKAN JADWAL INI</button>` : ''}`;
+    <div id="advice-box"></div>`;
 
   currentModalType = 'jadwal-cell';
   document.getElementById('modal-form').classList.add('open');
   rebuildGuruOptions(existing.guru);
   updateJamRangeLabel();
-  // Run conflict check on open
   setTimeout(checkGuruConflictLive, 100);
+
+  const extraBox = document.getElementById('modal-form-extra-actions');
+  if (extraBox) {
+    extraBox.innerHTML = existing.guru ? `
+      <button type="button" onclick="kosongkanJadwalDariForm()"
+        style="width:100%;margin-top:10px;padding:11px;border-radius:12px;
+               border:1px solid var(--red);background:rgba(224,49,75,0.08);
+               color:var(--red);font-size:12px;font-weight:600;cursor:pointer;
+               font-family:'Inter',sans-serif;">
+        🧹 Kosongkan Jadwal Ini
+      </button>` : '';
+  }
+}
+
+function showBlockedWarning(jam, label) {
+  showToast(`🔒 JP${jam} diblokir: ${label}. Buka kunci dulu.`, true);
+  setTimeout(() => {
+    if (confirm(`JP${jam} diblokir: "${label}".
+Buka kunci jam ini?`)) {
+      const ctx = _jadwalFormCtx;
+      if (!ctx) return;
+      BLOCK_DATA = BLOCK_DATA.filter(b => !(b.hari===ctx.hari && b.jam===jam && (!b.kelas||b.kelas===ctx.kelas)));
+      saveAll();
+      openJadwalFormCell(ctx.hari, ctx.kelas, jam);
+      showToast(`🔓 JP${jam} berhasil dibuka!`);
+    }
+  }, 300);
+}
+
+function openBlockFormFromJadwal() {
+  const ctx = _jadwalFormCtx;
+  if (!ctx) return;
+  const jams = getSelectedJams();
+  const jam = jams.length ? jams[0] : 1;
+  closeModalForm();
+  setTimeout(() => openBlockForm(ctx.hari, jam, ctx.kelas), 200);
+}
+
+// Mengosongkan jadwal langsung dari dalam modal form (tanpa harus menutup modal & klik ✕ di grid)
+function kosongkanJadwalDariForm() {
+  const ctx = _jadwalFormCtx;
+  if (!ctx) return;
+  if (!confirm('Kosongkan jadwal ini? Data guru/mapel pada jam terpilih akan dihapus.')) return;
+
+  // Kosongkan SEMUA jam yang sedang tercentang di jam-picker (bisa lebih dari satu jika blok jam)
+  const jams = getSelectedJams();
+  const hariData = JADWAL_DATA2[ctx.hari]?.[ctx.kelas];
+  if (hariData) {
+    if (jams.length) {
+      jams.forEach(j => delete hariData[j]);
+    } else {
+      // fallback: kosongkan semua jam di kelas+hari ini jika tidak ada jam dipilih
+      Object.keys(hariData).forEach(j => delete hariData[j]);
+    }
+  }
+  renderGrid(); saveAll();
+  if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
+  showToast('🧹 Jadwal dikosongkan!');
+  closeModalForm();
 }
 
 // ===== FILTER GURU PER KELAS AMPU =====
@@ -2809,20 +2806,125 @@ function setFormKelas(k, el) {
 function editJadwalCell(hari, kelas, jam) { openJadwalFormCell(hari, kelas, jam); }
 function hapusJadwalCell(hari, kelas, jam) {
   if (!JADWAL_DATA2[hari]?.[kelas]) return;
-  const cell = JADWAL_DATA2[hari][kelas][jam];
-  if (!cell) return;
-  const jamsToDelete = (cell.jamRange && cell.jamRange.length > 1) ? cell.jamRange : [jam];
-  const rangeLabel = jamsToDelete.length > 1 ? `JP${jamsToDelete[0]}–JP${jamsToDelete[jamsToDelete.length-1]}` : `JP${jam}`;
-  if (!confirm(`Hapus jadwal ${cell.guru} (${rangeLabel}) di kelas ${kelas}?`)) return;
-  jamsToDelete.forEach(j => {
-    if (JADWAL_DATA2[hari][kelas][j]) delete JADWAL_DATA2[hari][kelas][j];
-  });
+  delete JADWAL_DATA2[hari][kelas][jam];
   renderGrid(); saveAll();
   if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
   showToast('🗑️ Jadwal dihapus');
 }
 
-// ===== LIST PER GURU =====
+// Kosongkan SEMUA jadwal hari aktif (semua kelas, semua jam)
+function clearJadwalHari() {
+  const h = _gridHari || 1;
+  const hNama = HARI[h] || 'hari ini';
+  const kelasList = Object.keys(JADWAL_DATA2[h] || {});
+  if (!kelasList.length) { showToast('ℹ️ Tidak ada data jadwal di hari ini'); return; }
+  if (!confirm(`Hapus SEMUA jadwal hari ${hNama}?\n\nSemua kelas & jam pada hari tersebut akan dikosongkan.\nTindakan ini tidak bisa dibatalkan.`)) return;
+  JADWAL_DATA2[h] = {};
+  renderGrid(); saveAll();
+  if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
+  showToast(`🧹 Semua jadwal ${hNama} berhasil dikosongkan`);
+}
+
+// Kosongkan jadwal satu kelas di hari aktif
+function clearJadwalKelas(hari, kelas) {
+  if (!confirm(`Hapus semua jadwal kelas ${kelas} hari ${HARI[hari]}?`)) return;
+  if (JADWAL_DATA2[hari]) JADWAL_DATA2[hari][kelas] = {};
+  renderGrid(); saveAll();
+  showToast(`🧹 Jadwal ${kelas} hari ${HARI[hari]} dikosongkan`);
+}
+
+// Kosongkan SELURUH jadwal semua hari dan semua kelas
+function clearJadwalSemua() {
+  const totalSel = [1,2,3,4,5,6].reduce((acc, h) => {
+    const hd = JADWAL_DATA2[h] || {};
+    return acc + Object.values(hd).reduce((a, jd) => a + Object.keys(jd).length, 0);
+  }, 0);
+  if (!totalSel) { showToast('ℹ️ Tidak ada data jadwal untuk dihapus'); return; }
+  if (!confirm(`⚠️ Hapus SELURUH jadwal (${totalSel} sesi dari semua hari & kelas)?\n\nTindakan ini tidak dapat dibatalkan.`)) return;
+  [1,2,3,4,5,6].forEach(h => { JADWAL_DATA2[h] = {}; });
+  renderGrid(); saveAll();
+  if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
+  showToast('🗑️ Seluruh jadwal berhasil dikosongkan');
+}
+
+// ===== FITUR BLOKIR JAM =====
+// Pilihan label blokir yang tersedia
+const BLOCK_LABELS = ['Libur', 'Upacara', 'Rapat', 'Olahraga', 'Sholat Jumat', 'Ekskul', 'Remedial', 'Ujian', 'Kosong'];
+const BLOCK_COLORS = {
+  'Libur':        '#DC2626',
+  'Upacara':      '#7C3AED',
+  'Rapat':        '#D97706',
+  'Olahraga':     '#16A34A',
+  'Sholat Jumat': '#0369A1',
+  'Ekskul':       '#DB2777',
+  'Remedial':     '#0F766E',
+  'Ujian':        '#B45309',
+  'Kosong':       '#6B7280',
+};
+
+function openBlockForm(hari, jam, kelas = '') {
+  const hariNama = ['','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][hari];
+  const kelasOpts = ['Semua Kelas', ...KELAS_LIST].map(k =>
+    `<option value="${k === 'Semua Kelas' ? '' : k}" ${k === (kelas || 'Semua Kelas') ? 'selected' : ''}>${k}</option>`
+  ).join('');
+  const labelOpts = BLOCK_LABELS.map(l =>
+    `<div class="block-label-opt" onclick="selectBlockLabel(this,'${l}')" 
+     style="display:inline-block;padding:5px 10px;margin:3px;border-radius:20px;cursor:pointer;
+            font-size:11px;font-weight:600;font-family:'Inter',sans-serif;
+            border:1px solid ${BLOCK_COLORS[l]}40;background:${BLOCK_COLORS[l]}15;color:${BLOCK_COLORS[l]};">
+       ${l}
+     </div>`
+  ).join('');
+
+  document.getElementById('modal-form-title').textContent = `🔒 Blokir Jam — ${hariNama} JP${jam}`;
+  document.getElementById('modal-form-body').innerHTML = `
+    <div class="form-group">
+      <label class="form-label">BERLAKU UNTUK KELAS</label>
+      <select class="form-select" id="mf-block-kelas">${kelasOpts}</select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">PILIH LABEL BLOKIR</label>
+      <div id="block-label-picker" style="margin-bottom:8px;">${labelOpts}</div>
+      <input type="text" class="form-input" id="mf-block-label" placeholder="Atau ketik label sendiri..." maxlength="30">
+    </div>
+    <input type="hidden" id="mf-block-hari" value="${hari}">
+    <input type="hidden" id="mf-block-jam" value="${jam}">
+  `;
+  const extra = document.getElementById('modal-form-extra-actions');
+  if (extra) extra.innerHTML = '';
+  currentModalType = 'blokir-jam';
+  document.getElementById('modal-form').classList.add('open');
+}
+
+function selectBlockLabel(el, label) {
+  document.querySelectorAll('.block-label-opt').forEach(e => e.style.opacity = '0.5');
+  el.style.opacity = '1';
+  el.style.outline = '2px solid currentColor';
+  const inp = document.getElementById('mf-block-label');
+  if (inp) inp.value = label;
+}
+
+function editBlockCell(hari, kelas, jam) {
+  openBlockForm(hari, jam, kelas);
+}
+
+function hapusBlock(hari, jam, kelas = '') {
+  BLOCK_DATA = BLOCK_DATA.filter(b => {
+    if (b.hari !== hari || b.jam !== jam) return true;
+    if (kelas && b.kelas && b.kelas !== kelas) return true;
+    return false;
+  });
+  renderGrid(); saveAll();
+  showToast('🔓 Blokir jam dihapus');
+}
+
+function hapusSemuaBlock() {
+  if (!BLOCK_DATA.length) { showToast('ℹ️ Tidak ada jam yang diblokir'); return; }
+  if (!confirm(`Hapus semua ${BLOCK_DATA.length} blokir jam?`)) return;
+  BLOCK_DATA = [];
+  renderGrid(); saveAll();
+  showToast('🔓 Semua blokir jam dihapus');
+}
 function populateListGuruSel() {
   const sel = document.getElementById('list-guru-sel');
   if (!sel) return;
@@ -2845,8 +2947,8 @@ function renderListGuru() {
       Object.entries(kelasData).forEach(([jam, cell]) => {
         if (cell.guru === nama) {
           hasSesi = true;
-          sesiHtml += `<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
-            <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--cyan);min-width:36px;">JP${jam}</span>
+          sesiHtml += `<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">
+            <span style="font-family: 'Inter', sans-serif;font-size:10px;color:var(--cyan);min-width:36px;">JP${jam}</span>
             <span style="font-size:9px;color:var(--muted);min-width:36px;">${JAM_LABELS[jam]}</span>
             <span style="font-weight:700;font-size:11px;color:var(--white);flex:1;">${kelas}</span>
             <span style="font-size:10px;color:var(--muted);">${cell.mapel||''}</span>
@@ -2857,14 +2959,14 @@ function renderListGuru() {
     });
     if (hasSesi) {
       html += `<div class="card" style="margin-bottom:8px;">
-        <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--cyan);margin-bottom:8px;">${HARI[hari].toUpperCase()}</div>
+        <div style="font-size:10px;font-family: 'Inter', sans-serif;color:var(--cyan);margin-bottom:8px;">${HARI[hari].toUpperCase()}</div>
         ${sesiHtml}</div>`;
     }
   });
   // MGMP info
   if (mgmpG.length) {
     html += `<div class="card" style="border-color:rgba(255,140,0,0.3);margin-bottom:8px;">
-      <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--orange);margin-bottom:8px;">🏫 JADWAL MGMP</div>
+      <div style="font-size:10px;font-family: 'Inter', sans-serif;color:var(--orange);margin-bottom:8px;">🏫 JADWAL MGMP</div>
       ${mgmpG.map(m => `<div style="font-size:11px;color:var(--white);padding:4px 0;">${m.mapel} — ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[m.hari]+' Minggu ke-'+m.minggu}</div>`).join('')}
     </div>`;
   }
@@ -2877,41 +2979,71 @@ function renderRekapTable() {
   const container = document.getElementById('rekap-table-container');
   if (!container) return;
 
+  // maxJam per hari: Jumat=5, Sabtu=7, lainnya=9
+  const maxJamPerHari = { 1:9, 2:9, 3:9, 4:9, 5:5, 6:7 };
+
   let html = '<table class="rekap-table"><thead>';
-  // Row 1: Hari headers (colspan 9 per hari)
-  html += '<tr><th class="rekap-no rekap-nama-header">NO</th><th class="rekap-nama rekap-nama-header">NAMA</th>';
+
+  // Row 1: Hari headers — colspan sesuai maxJam hari
+  html += '<tr><th class="rekap-no rekap-nama-header">No</th><th class="rekap-nama rekap-nama-header">Nama Guru</th>';
   [1,2,3,4,5,6].forEach(h => {
-    html += `<th colspan="9" class="rekap-hari-header">${HARI[h].toUpperCase()}</th>`;
+    const maxJ = maxJamPerHari[h];
+    const borderClass = 'hari-border-left';
+    html += `<th colspan="${maxJ}" class="rekap-hari-header ${borderClass}">${HARI[h]} <span style="font-size:7px;opacity:0.7;">(${maxJ} JP)</span></th>`;
   });
   html += '</tr>';
-  // Row 2: Jam ke- headers
+
+  // Row 2: Nomor jam header — hanya sampai maxJam
   html += '<tr><th class="rekap-no rekap-nama-header"></th><th class="rekap-nama rekap-nama-header"></th>';
   [1,2,3,4,5,6].forEach(h => {
-    for (let j = 1; j <= 9; j++) html += `<th>${j}</th>`;
+    const maxJ = maxJamPerHari[h];
+    for (let j = 1; j <= maxJ; j++) {
+      const borderClass = j === 1 ? 'hari-border-left' : '';
+      html += `<th class="${borderClass}" style="font-size:8px;font-weight:700;color:#E0ECFF;">${j}</th>`;
+    }
   });
   html += '</tr></thead><tbody>';
 
   GURU_DATA.forEach((g, gi) => {
-    html += `<tr><td class="rekap-no">${gi+1}</td><td class="rekap-nama">${g.nama}</td>`;
+    const rowBg = gi % 2 === 0 ? '' : 'style="background:#F8FAFC;"';
+    html += `<tr ${rowBg}><td class="rekap-no">${gi+1}</td><td class="rekap-nama">${g.nama}</td>`;
     [1,2,3,4,5,6].forEach(hari => {
-      const maxJamRekap = getMaxJam(hari);
-      for (let jam = 1; jam <= 9; jam++) {
-        if (jam > maxJamRekap) { html += '<td style="background:rgba(0,0,0,0.04);"></td>'; continue; }
-        const blocked = isGuruBlocked(g.nama, hari, jam);
+      const maxJ = maxJamPerHari[hari];
+      const mgmpToday = getMGMPForDay(hari);
+      const isMGMPGuru = mgmpToday.some(m => m.guru === g.nama);
+      const hariData = JADWAL_DATA2[hari] || {};
+
+      for (let jam = 1; jam <= maxJ; jam++) {
+        const borderClass = jam === 1 ? 'hari-border-left' : '';
+
+        // Cek blokir — berlaku jika blokir all-kelas ATAU blokir spesifik yang mencakup guru ini
+        const isBlocked = BLOCK_DATA.some(b =>
+          b.hari === hari && b.jam === jam && !b.kelas
+        );
+        const blockInfo = BLOCK_DATA.find(b =>
+          b.hari === hari && b.jam === jam && !b.kelas
+        );
+
+        // Cari apakah guru mengajar di jam ini
         let foundKelas = null;
-        const hariData = JADWAL_DATA2[hari] || {};
         Object.entries(hariData).forEach(([kelas, jamObj]) => {
           if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
         });
-        if (foundKelas && !blocked) {
-          const kcCls = kelasClass(foundKelas);
-          html += `<td class="rekap-cell-fill ${kcCls}" onclick="openRekapCell('${g.nama}',${hari},${jam},'${foundKelas}')" title="${HARI[hari]} JP${jam} — Kelas ${foundKelas}">${foundKelas}</td>`;
-        } else if (blocked) {
-          const bData = getMGMPForDay(hari).find(m => (m.guru==='__ALL__'||m.guru===g.nama) && (!m.jamList||!m.jamList.length||m.jamList.includes(jam)));
-          const blokIcon = bData?.jenisKegiatan==='ummi' ? 'U' : 'M';
-          html += `<td class="rekap-cell-mgmp" title="${bData?.mapel||'Blokir'}">${blokIcon}</td>`;
+
+        if (isBlocked) {
+          const blockLabel = blockInfo?.label || '🔒';
+          html += `<td class="rekap-cell-blocked ${borderClass}" title="${HARI[hari]} JP${jam} — ${blockLabel}" onclick="showBlockedWarningRekap(${hari},${jam},'${blockLabel}')">🔒</td>`;
+        } else if (foundKelas) {
+          const kc = KELAS_COLOR[foundKelas] || {};
+          const dotColor = kc.dot || '#3B82F6';
+          html += `<td class="rekap-cell-fill ${borderClass}" onclick="openRekapCell('${g.nama}',${hari},${jam},'${foundKelas}')" title="${HARI[hari]} JP${jam} — ${foundKelas}"
+            style="background:${kc.bg||'rgba(11,132,201,0.12)'};color:${kc.text||'#0B5FA6'};border-left-color:${jam===1?'#FFFFFF':kc.border||'#C5D0E0'};">
+            ${foundKelas}
+          </td>`;
+        } else if (isMGMPGuru) {
+          html += `<td class="rekap-cell-mgmp ${borderClass}" title="${HARI[hari]} JP${jam} — MGMP">M</td>`;
         } else {
-          html += `<td class="rekap-cell-empty" onclick="openRekapCell('${g.nama}',${hari},${jam},null)" title="Tap untuk isi">·</td>`;
+          html += `<td class="rekap-cell-empty ${borderClass}" onclick="openRekapCell('${g.nama}',${hari},${jam},null)" title="Tap untuk isi JP${jam}">·</td>`;
         }
       }
     });
@@ -2919,6 +3051,18 @@ function renderRekapTable() {
   });
   html += '</tbody></table>';
   container.innerHTML = html;
+}
+
+// Peringatan blokir jam di rekap — sama dengan di grid
+function showBlockedWarningRekap(hari, jam, label) {
+  const hariNama = ['','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][hari];
+  if (confirm(`🔒 ${hariNama} JP${jam} diblokir: "${label}".\nApakah Anda ingin membuka kunci jam ini?`)) {
+    BLOCK_DATA = BLOCK_DATA.filter(b => !(b.hari === hari && b.jam === jam && !b.kelas));
+    renderGrid();
+    renderRekapTable();
+    saveAll();
+    showToast(`🔓 ${hariNama} JP${jam} berhasil dibuka!`);
+  }
 }
 
 // Klik sel di rekap table -> buka form isi jadwal, guru & jam sudah pre-filled
@@ -2993,117 +3137,52 @@ function exportRekapPDF() {
   setTimeout(() => win.print(), 400);
 }
 
-// ===== BLOKIR JAM / MGMP / UMMI / CUSTOM =====
-const BLOK_ICONS = { mgmp:'🏫', ummi:'📖', custom:'📌', global:'🚫' };
-const BLOK_LABELS = { mgmp:'MGMP', ummi:'UMMI', custom:'Kegiatan Lain', global:'Blokir Global' };
-
+// ===== MGMP =====
 function populateMGMPGuruSel() {
   const sel = document.getElementById('mgmp-guru-sel');
   if (!sel) return;
   sel.innerHTML = GURU_DATA.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel})</option>`).join('');
 }
-
-function updateBlokForm() {
-  const jenis = document.getElementById('blok-jenis')?.value;
-  const guruWrap = document.getElementById('blok-guru-wrap');
-  if (guruWrap) guruWrap.style.display = jenis === 'global' ? 'none' : 'block';
-}
-
-function updateBlokDateField() {
-  const pola = document.getElementById('mgmp-jenis')?.value;
-  const fTanggal = document.getElementById('mgmp-field-tanggal');
-  const fRutin = document.getElementById('mgmp-field-rutin');
-  const fSetiap = document.getElementById('blok-field-setiap');
-  if (fTanggal) fTanggal.style.display = pola === 'tanggal' ? 'block' : 'none';
-  if (fRutin) fRutin.style.display = pola === 'rutin' ? 'block' : 'none';
-  if (fSetiap) fSetiap.style.display = pola === 'setiap' ? 'block' : 'none';
-}
-
-function getBlokJamPicked() {
-  const picked = [];
-  document.querySelectorAll('#blok-jam-picker .jam-badge.selected').forEach(el => {
-    picked.push(parseInt(el.dataset.jam));
-  });
-  return picked.sort((a,b) => a-b);
-}
-
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'mgmp-jenis') {
+    const isRutin = e.target.value === 'rutin';
+    document.getElementById('mgmp-field-tanggal').style.display = isRutin ? 'none' : 'block';
+    document.getElementById('mgmp-field-rutin').style.display = isRutin ? 'block' : 'none';
+  }
+});
 function tambahMGMP() {
-  const jenisKegiatan = document.getElementById('blok-jenis')?.value || 'mgmp';
-  const guru = jenisKegiatan === 'global' ? '__ALL__' : (document.getElementById('mgmp-guru-sel')?.value || '');
-  const pola = document.getElementById('mgmp-jenis')?.value || 'tanggal';
+  const guru = document.getElementById('mgmp-guru-sel')?.value;
+  const jenis = document.getElementById('mgmp-jenis')?.value;
   const tanggal = document.getElementById('mgmp-tanggal')?.value;
-  const hariSel = document.getElementById(pola === 'setiap' ? 'blok-hari-setiap' : 'mgmp-hari')?.value;
+  const hari = document.getElementById('mgmp-hari')?.value;
   const minggu = document.getElementById('mgmp-minggu')?.value;
-  const nama = document.getElementById('blok-nama')?.value.trim();
+  const mapel = document.getElementById('mgmp-mapel')?.value.trim();
   const catatan = document.getElementById('mgmp-catatan')?.value.trim();
-  const jamList = getBlokJamPicked();
-  if (jenisKegiatan !== 'global' && !guru) { showToast('⚠️ Pilih guru!', true); return; }
-  if (!nama) { showToast('⚠️ Isi nama kegiatan!', true); return; }
-  if (pola === 'tanggal' && !tanggal) { showToast('⚠️ Pilih tanggal!', true); return; }
-  mgmpData.push({ guru, jenis: pola, jenisKegiatan, tanggal, hari: hariSel, minggu, mapel: nama, catatan, jamList });
-  document.querySelectorAll('#blok-jam-picker .jam-badge').forEach(el => el.classList.remove('selected'));
-  if (document.getElementById('blok-nama')) document.getElementById('blok-nama').value = '';
-  if (document.getElementById('mgmp-catatan')) document.getElementById('mgmp-catatan').value = '';
+  if (!guru || !mapel) { showToast('⚠️ Lengkapi data MGMP!', true); return; }
+  if (jenis === 'tanggal' && !tanggal) { showToast('⚠️ Pilih tanggal MGMP!', true); return; }
+  mgmpData.push({ guru, jenis, tanggal, hari, minggu, mapel, catatan });
   renderMGMPList(); renderGrid(); saveAll();
-  showToast('✅ Blokir "' + nama + '" disimpan!');
+  showToast('✅ MGMP tersimpan!');
 }
 function renderMGMPList() {
   const el = document.getElementById('mgmp-list');
   if (!el) return;
-  if (!mgmpData.length) {
-    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;">Belum ada blokir jam tersimpan</div>';
-    return;
-  }
-  el.innerHTML = mgmpData.map((m, i) => {
-    const ico = BLOK_ICONS[m.jenisKegiatan] || '🚫';
-    const jenisLabel = BLOK_LABELS[m.jenisKegiatan] || (m.jenisKegiatan || 'MGMP');
-    let jadwalLabel = '';
-    if (m.jenis === 'tanggal') jadwalLabel = m.tanggal || '-';
-    else if (m.jenis === 'rutin') jadwalLabel = 'Rutin ' + (HARI[parseInt(m.hari)]||'') + ' Minggu ke-' + m.minggu;
-    else if (m.jenis === 'setiap') jadwalLabel = 'Setiap ' + (HARI[parseInt(m.hari)]||'');
-    else jadwalLabel = m.jenis || '';
-    const jamArr = m.jamList || [];
-    const jamLabel = jamArr.length ? ' · JP' + jamArr[0] + (jamArr.length>1?'–JP'+jamArr[jamArr.length-1]:'') : ' · Semua jam';
-    const guruLabel = m.guru === '__ALL__' ? '👥 Semua Guru' : (m.guru || '-');
-    return '<div class="mgmp-card">'
-      + '<div class="mgmp-icon">' + ico + '</div>'
-      + '<div class="mgmp-info">'
-      + '<div class="mgmp-nama">' + (m.mapel||'') + ' <span style="font-size:9px;color:var(--muted);font-weight:500;">[' + jenisLabel + ']</span></div>'
-      + '<div class="mgmp-detail">' + guruLabel + '</div>'
-      + '<div class="mgmp-detail">' + jadwalLabel + jamLabel + '</div>'
-      + (m.catatan ? '<div class="mgmp-catatan">📝 ' + m.catatan + '</div>' : '')
-      + '</div>'
-      + '<div style="display:flex;flex-direction:column;gap:4px;align-self:flex-start;">'
-      + '<button class="btn-edit" onclick="editMGMP(' + i + ')" style="font-size:10px;">✏️</button>'
-      + '<button class="btn-del" onclick="hapusMGMP(' + i + ')">🗑️</button>'
-      + '</div></div>';
-  }).join('');
+  if (!mgmpData.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;font-family:\'Inter\',sans-serif;">Belum ada jadwal MGMP</div>'; return; }
+  el.innerHTML = mgmpData.map((m, i) => `
+    <div class="mgmp-card">
+      <div class="mgmp-icon">🏫</div>
+      <div class="mgmp-info">
+        <div class="mgmp-nama">${m.guru}</div>
+        <div class="mgmp-detail">${m.mapel} · ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[parseInt(m.hari)]+' Minggu ke-'+m.minggu}</div>
+        ${m.catatan?`<div class="mgmp-catatan">📝 ${m.catatan}</div>`:''}
+      </div>
+      <button class="btn-del" onclick="hapusMGMP(${i})" style="align-self:flex-start;">🗑️</button>
+    </div>`).join('');
 }
-
-function editMGMP(i) {
-  const m = mgmpData[i];
-  document.getElementById('modal-form-title').textContent = '✏️ EDIT BLOKIR JAM';
-  document.getElementById('modal-form-body').innerHTML =
-    '<div class="form-group"><label class="form-label">NAMA KEGIATAN</label>'
-    + '<input type="text" class="form-input" id="mf-blok-nama" value="' + (m.mapel||'') + '"></div>'
-    + '<div class="form-group"><label class="form-label">CATATAN</label>'
-    + '<input type="text" class="form-input" id="mf-blok-catatan" value="' + (m.catatan||'') + '"></div>'
-    + '<div class="form-group"><label class="form-label">JAM YANG DIBLOKIR (kosong = semua jam)</label>'
-    + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;">'
-    + [1,2,3,4,5,6,7,8,9].map(j =>
-        '<span class="jam-badge ' + ((m.jamList||[]).includes(j)?'selected':'') + '" data-jam="' + j + '" onclick="this.classList.toggle(&quot;selected&quot;)" style="text-align:center;min-width:40px;font-size:10px;">JP' + j + '</span>'
-      ).join('')
-    + '</div></div>';
-  currentModalType = '__mgmp-edit__';
-  currentModalData = { idx: i };
-  document.getElementById('modal-form').classList.add('open');
-}
-
 function hapusMGMP(i) {
-  if (!confirm('Hapus blokir "' + (mgmpData[i].mapel||'') + '"?')) return;
   mgmpData.splice(i, 1);
   renderMGMPList(); renderGrid(); saveAll();
-  showToast('🗑️ Blokir dihapus');
+  showToast('🗑️ MGMP dihapus');
 }
 
 // ===== TUGAS TAMBAHAN =====
@@ -3148,7 +3227,7 @@ function editKelasAmpu(i) {
   document.getElementById('modal-form-body').innerHTML = `
     <div style="font-size:11px;color:var(--white);margin-bottom:4px;font-weight:700;">${g.nama}</div>
     <div style="font-size:9px;color:var(--muted);margin-bottom:12px;">${g.mapel}</div>
-    <div style="font-size:9px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:8px;letter-spacing:0.5px;">PILIH SEMUA KELAS YANG DIAJAR GURU INI</div>
+    <div style="font-size:9px;color:var(--cyan);font-family: 'Inter', sans-serif;margin-bottom:8px;letter-spacing:0.5px;">PILIH SEMUA KELAS YANG DIAJAR GURU INI</div>
     <div id="kelas-ampu-picker" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
       ${KELAS_LIST.map(k => `<span class="jam-badge ${currentKelas.includes(k)?'selected':''}" data-kelas-ampu="${k}" onclick="this.classList.toggle('selected')" style="min-width:44px;text-align:center;">${k}</span>`).join('')}
     </div>
@@ -3205,11 +3284,11 @@ function renderMiniSchedule() {
   const statusMap = { hadir: ['status-hadir','✅'], telat: ['status-telat','⚠️'], belum: ['status-belum','🕐'] };
   el.innerHTML = items.map(s => {
     const [cls, ico] = statusMap[s.status] || ['status-belum','🕐'];
-    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
-      <div><span style="color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;">${s.jam}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span></div>
+    return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;">
+      <div><span style="color:var(--muted);font-family: 'Inter', sans-serif;font-size:9px;">${s.jam}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span></div>
       <span>${ico}</span>
     </div>`;
-  }).join('') + `<div style="text-align:right;margin-top:6px;"><span onclick="switchScreen('jadwal')" style="font-size:10px;color:var(--cyan);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">LIHAT SEMUA →</span></div>`;
+  }).join('') + `<div style="text-align:right;margin-top:6px;"><span onclick="switchScreen('jadwal')" style="font-size:10px;color:var(--cyan);cursor:pointer;font-family: 'Inter', sans-serif;">LIHAT SEMUA →</span></div>`;
 }
 renderMiniSchedule();
 
@@ -3277,7 +3356,7 @@ function renderRiwayat() {
       ${r.photos.length ? `<div class="lli-photos">${r.photos.map(p => `<img src="${p}">`).join('')}</div>` : ''}
       <div class="lli-actions">
         <button class="btn-danger" onclick="cetakDokumen(${i})">🖨️ Cetak</button>
-        <button style="padding:7px 12px;border:1px solid var(--cyan);border-radius:8px;background:rgba(0,144,199,0.1);color:var(--cyan);font-size:10px;font-weight:600;cursor:pointer;" onclick="">📤 Bagikan</button>
+        <button style="padding:7px 12px;border:1px solid var(--cyan);border-radius:8px;background:rgba(0,212,255,0.1);color:var(--cyan);font-size:10px;font-weight:600;cursor:pointer;" onclick="">📤 Bagikan</button>
       </div>
     </div>`).join('');
 }
@@ -3321,9 +3400,9 @@ function renderStatistik() {
     return `<div style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;">
         <span style="color:var(--white)">${name}</span>
-        <span style="color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;">${c}×</span>
+        <span style="color:var(--red);font-family: 'Inter', sans-serif;">${c}×</span>
       </div>
-      <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;">
+      <div style="height:6px;background:var(--border);border-radius:4px;overflow:hidden;">
         <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--red),#FF8C00);border-radius:4px;"></div>
       </div>
     </div>`;
@@ -3453,11 +3532,11 @@ function showNotifModal() {
   updateNotifDot();
   const colorMap = { warning: 'var(--red)', info: 'var(--cyan)', success: 'var(--green)' };
   document.getElementById('notif-list').innerHTML = notifs.length
-    ? notifs.map(n => '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05);">'
+    ? notifs.map(n => '<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);">'
         + '<span style="font-size:18px;">' + n.ico + '</span>'
         + '<div style="flex:1;">'
         + '<div style="font-size:11px;color:var(--white);line-height:1.5;">' + n.msg + '</div>'
-        + '<div style="font-size:9px;color:' + (colorMap[n.type]||'var(--muted)') + ';margin-top:2px;font-family:"Plus Jakarta Sans",sans-serif;">' + n.time + '</div>'
+        + '<div style="font-size:9px;color:' + (colorMap[n.type]||'var(--muted)') + ';margin-top:2px;font-family:Inter,sans-serif;">' + n.time + '</div>'
         + '</div></div>').join('')
     : '<div style="text-align:center;padding:20px;color:var(--muted);font-size:11px;">Tidak ada notifikasi</div>';
   document.getElementById('notif-modal').classList.add('open');
@@ -3468,7 +3547,7 @@ function closeModal(id) { document.getElementById(id).classList.remove('open'); 
 function showToast(msg, warn = false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
-  t.style.background = warn ? 'rgba(220,38,64,0.15)' : 'rgba(0,168,107,0.15)';
+  t.style.background = warn ? 'rgba(255,59,92,0.15)' : 'rgba(0,255,136,0.15)';
   t.style.borderColor = warn ? 'var(--red)' : 'var(--green)';
   t.style.color = warn ? 'var(--red)' : 'var(--green)';
   t.classList.add('show');
@@ -3563,6 +3642,8 @@ function openModalForm(type, data = null) {
   currentModalData = data;
   document.getElementById('modal-form-title').textContent = config.title;
   document.getElementById('modal-form-body').innerHTML = config.fields;
+  const extraBox = document.getElementById('modal-form-extra-actions');
+  if (extraBox) extraBox.innerHTML = '';
   // Pre-fill edit fields
   if (data) {
     if (data.waktu && document.getElementById('mf-waktu')) document.getElementById('mf-waktu').value = data.waktu;
@@ -3575,6 +3656,8 @@ function closeModalForm() {
   document.getElementById('modal-form').classList.remove('open');
   currentModalType = '';
   currentModalData = null;
+  const extraBox = document.getElementById('modal-form-extra-actions');
+  if (extraBox) extraBox.innerHTML = '';
 }
 function saveModalForm() {
   const type = currentModalType;
@@ -3703,21 +3786,6 @@ function saveModalForm() {
     });
     renderGrid(); saveAll();
     if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
-  } else if (type === '__mgmp-edit__') {
-    const idx = currentModalData?.idx;
-    if (idx === undefined) return;
-    const nama = document.getElementById('mf-blok-nama')?.value.trim();
-    const catatan = document.getElementById('mf-blok-catatan')?.value.trim();
-    const newJams = [];
-    document.querySelectorAll('#modal-form-body .jam-badge.selected').forEach(el => {
-      newJams.push(parseInt(el.dataset.jam));
-    });
-    if (!nama) { showToast('⚠️ Nama kegiatan tidak boleh kosong!', true); return; }
-    mgmpData[idx].mapel = nama;
-    mgmpData[idx].catatan = catatan;
-    mgmpData[idx].jamList = newJams.sort((a,b) => a-b);
-    renderMGMPList(); renderGrid(); saveAll();
-    showToast('✅ Blokir diperbarui!');
   } else if (type === '__tugas-edit__') {
     const idx = currentModalData?.idx;
     if (idx === undefined) return;
@@ -3756,6 +3824,18 @@ function saveModalForm() {
     if (!judul) { showToast('⚠️ Judul rapat harus diisi!', true); return; }
     addNotulenToArsip({ judul, tempat: tempat || '—', peserta: peserta || '—', isi: isi || '—', teks: '', waktu: new Date().toLocaleString('id-ID') });
     showToast('✅ Notulen disimpan ke arsip!');
+  } else if (type === 'blokir-jam') {
+    const hari = parseInt(document.getElementById('mf-block-hari')?.value);
+    const jam  = parseInt(document.getElementById('mf-block-jam')?.value);
+    const kelas = document.getElementById('mf-block-kelas')?.value || '';
+    const label = (document.getElementById('mf-block-label')?.value.trim()) || 'Terblokir';
+    const warna = BLOCK_COLORS[label] || '#6B7280';
+    // Hapus blokir lama untuk hari+jam+kelas yang sama dulu
+    BLOCK_DATA = BLOCK_DATA.filter(b => !(b.hari === hari && b.jam === jam && b.kelas === kelas));
+    BLOCK_DATA.push({ hari, jam, kelas, label, warna });
+    renderGrid(); saveAll();
+    const kelasLabel = kelas || 'Semua Kelas';
+    showToast(`🔒 JP${jam} ${['','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'][hari]} [${kelasLabel}] diblokir: ${label}`);
   }
   closeModalForm();
 }
@@ -4079,7 +4159,7 @@ function addNotulenToArsip(record) {
 function renderNotulenList() {
   const el = document.getElementById('notulen-list');
   if (!notulenRecords.length) {
-    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:\'Plus Jakarta Sans\',sans-serif;">Belum ada notulen tersimpan</div>';
+    el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:\'Inter\',sans-serif;">Belum ada notulen tersimpan</div>';
     return;
   }
   el.innerHTML = notulenRecords.map((n, i) => `
@@ -4117,7 +4197,7 @@ function downloadNotulenPDF(r) {
     @media print { body { -webkit-print-color-adjust: exact; } }
     body { font-family: 'Times New Roman', serif; padding: 40px; max-width: 700px; margin: 0 auto; font-size: 13px; }
     .kop { text-align: center; border-bottom: 3px double #003366; padding-bottom: 12px; margin-bottom: 20px; }
-    .kop h2 { font-size: 18px; color: #003366; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .kop h2 { font-size: 18px; color: #003366; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 0.2px; }
     .kop p { font-size: 11px; color: #555; margin: 2px 0; }
     .title { text-align: center; font-size: 16px; font-weight: bold; color: #003366; text-decoration: underline; margin: 16px 0 20px; text-transform: uppercase; }
     .info-table { width: 100%; margin-bottom: 20px; border-collapse: collapse; }
@@ -4384,7 +4464,7 @@ function renderSiswaList(filter = '') {
   document.getElementById('siswa-total-count').textContent = SISWA_DATA.length;
 
   if (!data.length) {
-    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family:'Plus Jakarta Sans',sans-serif;">
+    container.innerHTML = `<div style="text-align:center;padding:30px;color:var(--muted);font-size:11px;font-family: 'Inter', sans-serif;">
       ${SISWA_DATA.length ? 'Tidak ditemukan' : 'Belum ada data siswa. Upload file untuk mulai.'}
     </div>`;
     return;
@@ -4396,13 +4476,13 @@ function renderSiswaList(filter = '') {
 
   let html = '';
   Object.keys(byKelas).sort().forEach(kelas => {
-    html += `<div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin:10px 0 6px;">KELAS ${kelas} (${byKelas[kelas].length})</div>`;
+    html += `<div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;margin:10px 0 6px;">KELAS ${kelas} (${byKelas[kelas].length})</div>`;
     byKelas[kelas].forEach(s => {
       html += `<div class="teacher-card" style="padding:10px 12px;margin-bottom:6px;">
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--white);">${s.nama}</div>
-            <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;">NISN: ${s.nisn || '—'}</div>
+            <div style="font-size:9px;color:var(--muted);font-family: 'Inter', sans-serif;">NISN: ${s.nisn || '—'}</div>
           </div>
           <button class="btn-del" onclick="hapusSiswa('${s.id}')">🗑️</button>
         </div>
@@ -4454,7 +4534,7 @@ function renderNaikKelasList() {
     const naikCount = byKelas[kelas].filter(s => s.status === 'naik').length;
     const tidakCount = byKelas[kelas].filter(s => s.status === 'tidak').length;
     html += `<div style="display:flex;justify-content:space-between;align-items:center;margin:10px 0 6px;">
-      <span style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">KELAS ${kelas}</span>
+      <span style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;">KELAS ${kelas}</span>
       <span style="font-size:9px;color:var(--muted);">✅${naikCount} · ❌${tidakCount} / ${byKelas[kelas].length}</span>
     </div>`;
     byKelas[kelas].forEach(s => {
@@ -4466,8 +4546,8 @@ function renderNaikKelasList() {
             <div style="font-size:8px;color:var(--muted);">NISN: ${s.nisn || '—'}</div>
           </div>
           <div style="display:flex;gap:4px;">
-            <button onclick="setSiswaStatus('${s.id}','naik')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='naik'?'var(--green)':'var(--border)'};background:${s.status==='naik'?'rgba(0,168,107,0.2)':'transparent'};color:${s.status==='naik'?'var(--green)':'var(--muted)'};font-size:9px;cursor:pointer;">✅ Naik</button>
-            <button onclick="setSiswaStatus('${s.id}','tidak')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='tidak'?'var(--red)':'var(--border)'};background:${s.status==='tidak'?'rgba(220,38,64,0.2)':'transparent'};color:${s.status==='tidak'?'var(--red)':'var(--muted)'};font-size:9px;cursor:pointer;">❌ Tidak</button>
+            <button onclick="setSiswaStatus('${s.id}','naik')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='naik'?'var(--green)':'var(--border)'};background:${s.status==='naik'?'rgba(0,255,136,0.2)':'transparent'};color:${s.status==='naik'?'var(--green)':'var(--muted)'};font-size:9px;cursor:pointer;">✅ Naik</button>
+            <button onclick="setSiswaStatus('${s.id}','tidak')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='tidak'?'var(--red)':'var(--border)'};background:${s.status==='tidak'?'rgba(255,59,92,0.2)':'transparent'};color:${s.status==='tidak'?'var(--red)':'var(--muted)'};font-size:9px;cursor:pointer;">❌ Tidak</button>
           </div>
         </div>
       </div>`;
@@ -4582,18 +4662,18 @@ function renderHasilAcak() {
   sudahDiacak.forEach(s => { if (!byKelasBaru[s.kelasBaru]) byKelasBaru[s.kelasBaru] = []; byKelasBaru[s.kelasBaru].push(s); });
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-    <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📊 HASIL PEMBAGIAN KELAS</div>
+    <div style="font-size:10px;color:var(--cyan);font-family: 'Inter', sans-serif;letter-spacing:0.2px;">📊 HASIL PEMBAGIAN KELAS</div>
     <button class="btn-add" onclick="downloadHasilAcakPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
   </div>`;
 
   Object.keys(byKelasBaru).sort().forEach(kelas => {
     html += `<div class="card" style="margin-bottom:10px;">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <span style="font-size:12px;font-weight:700;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;">KELAS ${kelas}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--cyan);font-family: 'Inter', sans-serif;">KELAS ${kelas}</span>
         <span style="font-size:10px;color:var(--muted);">${byKelasBaru[kelas].length} siswa</span>
       </div>
       ${byKelasBaru[kelas].map((s, i) => `
-        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;">
+        <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px;">
           <span style="color:var(--white);">${i+1}. ${s.nama}</span>
           <span style="color:var(--muted);font-size:9px;">${s.nisn || '—'} · asal ${s.kelas}</span>
         </div>`).join('')}
@@ -4636,7 +4716,7 @@ function downloadHasilAcakPDF() {
 // ===== SETTING =====
 const LS_SETTING = 'kuriku_setting';
 let currentSetting = {
-  appName: 'KURIKU', appSub: 'WAKA KURIKULUM DASHBOARD',
+  appName: 'KURIKU', appSub: 'Dashboard Waka Kurikulum',
   schoolName: 'SMP / MTs — Kurikulum Merdeka',
   wakaName: '', logoData: '', themeColor: 'cyan'
 };
@@ -4656,7 +4736,7 @@ function applySetting() {
   if (nameEl) {
     nameEl.childNodes[0].textContent = currentSetting.appName || 'KURIKU';
   }
-  if (subEl) subEl.textContent = currentSetting.appSub || 'WAKA KURIKULUM DASHBOARD';
+  if (subEl) subEl.textContent = currentSetting.appSub || 'Dashboard Waka Kurikulum';
   // Logo
   const logoImg = document.getElementById('header-logo-img');
   if (logoImg) {
@@ -4672,8 +4752,8 @@ function applySetting() {
   if (schoolEl && currentSetting.schoolName) schoolEl.textContent = currentSetting.schoolName;
   // Theme color
   if (currentSetting.themeColor) {
-    const colorMap = { cyan: '#0090C7', green: '#00A86B', purple: '#6B46C1', orange: '#E0660A' };
-    const c = colorMap[currentSetting.themeColor] || '#0090C7';
+    const colorMap = { cyan: '#00D4FF', green: '#00FF88', purple: '#B400FF', orange: '#FF8C00' };
+    const c = colorMap[currentSetting.themeColor] || '#00D4FF';
     document.documentElement.style.setProperty('--cyan', c);
   }
 }
@@ -4735,7 +4815,7 @@ function setThemeColor(color) {
 
 function saveSetting() {
   currentSetting.appName    = document.getElementById('setting-appname').value.trim() || 'KURIKU';
-  currentSetting.appSub     = document.getElementById('setting-appsub').value.trim() || 'WAKA KURIKULUM DASHBOARD';
+  currentSetting.appSub     = document.getElementById('setting-appsub').value.trim() || 'Dashboard Waka Kurikulum';
   currentSetting.schoolName = document.getElementById('setting-schoolname').value.trim();
   currentSetting.wakaName   = document.getElementById('setting-wakaname').value.trim();
   try { localStorage.setItem(LS_SETTING, JSON.stringify(currentSetting)); } catch(e) {}
@@ -4764,6 +4844,7 @@ const LS_KEYS = {
   planning:  'kuriku_planning',
   siswa:     'kuriku_siswa',
   kelasTujuan: 'kuriku_kelas_tujuan',
+  blockData: 'kuriku_block_data',
 };
 
 function saveAll() {
@@ -4777,6 +4858,7 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
     localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
     localStorage.setItem(LS_KEYS.kelasTujuan, JSON.stringify(KELAS_TUJUAN));
+    localStorage.setItem(LS_KEYS.blockData, JSON.stringify(BLOCK_DATA));
     // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
     const planSnap = {};
     ['pendek','menengah','panjang'].forEach(j => {
@@ -4812,6 +4894,8 @@ function loadAll() {
     if (sw) SISWA_DATA = JSON.parse(sw);
     const kt = localStorage.getItem(LS_KEYS.kelasTujuan);
     if (kt) KELAS_TUJUAN = JSON.parse(kt);
+    const bd = localStorage.getItem(LS_KEYS.blockData);
+    if (bd) BLOCK_DATA = JSON.parse(bd);
     // Planning DOM
     const pl = localStorage.getItem(LS_KEYS.planning);
     if (pl) {

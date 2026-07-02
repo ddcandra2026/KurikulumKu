@@ -1908,7 +1908,7 @@
       <div class="card glow-cyan" style="margin-bottom:12px;">
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📤 UPLOAD DATA SISWA</div>
         <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-          Format file Excel/CSV — 3 kolom wajib: <b style="color:var(--white);">Nama, Kelas, NISN</b>
+          Format file Excel/CSV — susunan kolom: <b style="color:var(--white);">NISN, NIS, Kelas, Nama Siswa</b> (NIS boleh dikosongkan jika belum ada)
         </div>
         <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,144,199,0.08);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin-bottom:8px;">
           📁 PILIH FILE (.xlsx / .csv)
@@ -1926,7 +1926,7 @@
       </div>
       <div class="teacher-search" style="margin-bottom:10px;">
         <span>🔍</span>
-        <input type="text" id="search-siswa" placeholder="Cari nama / NISN / kelas..." oninput="filterSiswa(this.value)">
+        <input type="text" id="search-siswa" placeholder="Cari nama / NISN / NIS / kelas..." oninput="filterSiswa(this.value)">
       </div>
       <div id="siswa-list-container"></div>
     </div>
@@ -4611,7 +4611,7 @@ function restoreData(input) {
 }
 
 // ===== DATA SISWA & NAIK KELAS =====
-let SISWA_DATA = [];        // [{id, nama, kelas, nisn, status: 'naik'|'tidak'|null, kelasBaru: null}]
+let SISWA_DATA = [];        // [{id, nama, kelas, nisn, nis, status: 'naik'|'tidak'|null, kelasBaru: null}]
 let KELAS_TUJUAN = [];      // [{nama: '9A', kuota: 32}, ...]
 
 function switchSiswaTab(tab, el) {
@@ -4655,10 +4655,13 @@ function uploadSiswaFile(input) {
       const namaKey = findKey(['nama']);
       const kelasKey = findKey(['kelas']);
       const nisnKey = findKey(['nisn']);
+      // NIS harus dicek terpisah dari NISN agar tidak salah tangkap (kolom "NISN" juga mengandung teks "nis")
+      const nisKey = keys.find(k => k.toLowerCase().trim() === 'nis')
+        || keys.find(k => k.toLowerCase().includes('nis') && k !== nisnKey && !k.toLowerCase().includes('nisn'));
 
       if (!namaKey || !kelasKey || !nisnKey) {
         statusEl.style.color = 'var(--red)';
-        statusEl.textContent = `❌ Kolom tidak lengkap! Ditemukan: ${keys.join(', ')}. Wajib ada: Nama, Kelas, NISN`;
+        statusEl.textContent = `❌ Kolom tidak lengkap! Ditemukan: ${keys.join(', ')}. Wajib ada: NISN, Kelas, Nama Siswa`;
         return;
       }
 
@@ -4667,10 +4670,11 @@ function uploadSiswaFile(input) {
         const nama = String(row[namaKey] || '').trim();
         const kelas = String(row[kelasKey] || '').trim().toUpperCase();
         const nisn = String(row[nisnKey] || '').trim();
+        const nis = nisKey ? String(row[nisKey] || '').trim() : '';
         if (!nama || !kelas) return;
         SISWA_DATA.push({
           id: 'siswa_' + Date.now() + '_' + added,
-          nama, kelas, nisn,
+          nama, kelas, nisn, nis,
           status: null, kelasBaru: null
         });
         added++;
@@ -4692,13 +4696,13 @@ function uploadSiswaFile(input) {
 function downloadTemplateSiswa() {
   const wb = XLSX.utils.book_new();
   const wsData = [
-    ['Nama', 'Kelas', 'NISN'],
-    ['Contoh Siswa Satu', '8A', '1234567890'],
-    ['Contoh Siswa Dua', '8A', '1234567891'],
-    ['Contoh Siswa Tiga', '8B', '1234567892'],
+    ['NISN', 'NIS', 'KELAS', 'NAMA SISWA'],
+    ['1234567890', '2024001', '8A', 'Contoh Siswa Satu'],
+    ['1234567891', '2024002', '8A', 'Contoh Siswa Dua'],
+    ['1234567892', '2024003', '8B', 'Contoh Siswa Tiga'],
   ];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
-  ws['!cols'] = [{wch:25},{wch:10},{wch:15}];
+  ws['!cols'] = [{wch:15},{wch:12},{wch:10},{wch:25}];
   XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
   XLSX.writeFile(wb, 'template-data-siswa.xlsx');
   showToast('📥 Template berhasil diunduh!');
@@ -4709,7 +4713,7 @@ function renderSiswaList(filter = '') {
   const container = document.getElementById('siswa-list-container');
   if (!container) return;
   const data = filter
-    ? SISWA_DATA.filter(s => s.nama.toLowerCase().includes(filter.toLowerCase()) || s.nisn.includes(filter) || s.kelas.toLowerCase().includes(filter.toLowerCase()))
+    ? SISWA_DATA.filter(s => s.nama.toLowerCase().includes(filter.toLowerCase()) || s.nisn.includes(filter) || (s.nis||'').includes(filter) || s.kelas.toLowerCase().includes(filter.toLowerCase()))
     : SISWA_DATA;
 
   document.getElementById('siswa-total-count').textContent = SISWA_DATA.length;
@@ -4733,7 +4737,7 @@ function renderSiswaList(filter = '') {
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div>
             <div style="font-size:12px;font-weight:700;color:var(--white);">${s.nama}</div>
-            <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;">NISN: ${s.nisn || '—'}</div>
+            <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;">NISN: ${s.nisn || '—'} · NIS: ${s.nis || '—'}</div>
           </div>
           <button class="btn-del" onclick="hapusSiswa('${s.id}')">🗑️</button>
         </div>
@@ -4794,7 +4798,7 @@ function renderNaikKelasList() {
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div style="flex:1;">
             <div style="font-size:11px;font-weight:700;color:var(--white);">${s.nama}</div>
-            <div style="font-size:8px;color:var(--muted);">NISN: ${s.nisn || '—'}</div>
+            <div style="font-size:8px;color:var(--muted);">NISN: ${s.nisn || '—'} · NIS: ${s.nis || '—'}</div>
           </div>
           <div style="display:flex;gap:4px;">
             <button onclick="setSiswaStatus('${s.id}','naik')" style="padding:5px 9px;border-radius:7px;border:1px solid ${s.status==='naik'?'var(--green)':'var(--border)'};background:${s.status==='naik'?'rgba(0,168,107,0.2)':'transparent'};color:${s.status==='naik'?'var(--green)':'var(--muted)'};font-size:9px;cursor:pointer;">✅ Naik</button>
@@ -4926,7 +4930,7 @@ function renderHasilAcak() {
       ${byKelasBaru[kelas].map((s, i) => `
         <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;">
           <span style="color:var(--white);">${i+1}. ${s.nama}</span>
-          <span style="color:var(--muted);font-size:9px;">${s.nisn || '—'} · asal ${s.kelas}</span>
+          <span style="color:var(--muted);font-size:9px;">NISN ${s.nisn || '—'} / NIS ${s.nis || '—'} · asal ${s.kelas}</span>
         </div>`).join('')}
     </div>`;
   });
@@ -4945,8 +4949,8 @@ function downloadHasilAcakPDF() {
   let sections = '';
   Object.keys(byKelasBaru).sort().forEach(kelas => {
     sections += `<h3 style="background:#003366;color:white;padding:8px 12px;margin-top:18px;">KELAS ${kelas} (${byKelasBaru[kelas].length} siswa)</h3>
-    <table><thead><tr><th>No</th><th>Nama</th><th>NISN</th><th>Kelas Asal</th></tr></thead><tbody>
-    ${byKelasBaru[kelas].map((s,i) => `<tr><td style="text-align:center;">${i+1}</td><td>${s.nama}</td><td>${s.nisn||'-'}</td><td style="text-align:center;">${s.kelas}</td></tr>`).join('')}
+    <table><thead><tr><th>No</th><th>Nama</th><th>NISN</th><th>NIS</th><th>Kelas Asal</th></tr></thead><tbody>
+    ${byKelasBaru[kelas].map((s,i) => `<tr><td style="text-align:center;">${i+1}</td><td>${s.nama}</td><td>${s.nisn||'-'}</td><td>${s.nis||'-'}</td><td style="text-align:center;">${s.kelas}</td></tr>`).join('')}
     </tbody></table>`;
   });
 

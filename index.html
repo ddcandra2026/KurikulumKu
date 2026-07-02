@@ -701,6 +701,16 @@
   .kelas-badge[data-kelas="9B"].selected { background:#FFEDD5; border-color:rgba(249,115,22,0.75); color:#7C2D12; }
   .kelas-badge[data-kelas="9C"].selected { background:#E0E7FF; border-color:rgba(99,102,241,0.75); color:#312E81; }
 
+  /* Badge kelas yang terkunci (hard block) — tidak bisa dipilih */
+  .kelas-badge.locked, .jam-badge.kelas-badge.locked {
+    cursor: not-allowed !important; pointer-events: none;
+    background: rgba(231,76,60,0.08) !important; border-color: rgba(231,76,60,0.4) !important;
+    color: #e74c3c !important; opacity: 0.85; line-height: 1.3;
+  }
+  .kelas-badge.locked.selected, .jam-badge.kelas-badge.locked.selected {
+    background: rgba(231,76,60,0.16) !important; border-color: #e74c3c !important;
+  }
+
   /* Legend */
   .kelas-legend { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
   .kelas-legend-item {
@@ -937,9 +947,6 @@
     background: rgba(0,144,199,0.15); color: var(--cyan); font-weight: 700;
     font-size: 8px; letter-spacing: 0.5px;
   }
-  .rekap-table .day-sep {
-    border-right: 3px solid var(--cyan) !important;
-  }
   .rekap-table .rekap-no {
     width: 22px; background: var(--slate); color: var(--muted);
   }
@@ -1016,6 +1023,12 @@
     min-height: 38px; cursor: pointer; border-radius: 4px;
   }
   .td-empty:active { background: rgba(0,144,199,0.05); }
+  .td-empty.td-locked {
+    cursor: not-allowed; color: #e74c3c; font-size: 13px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(231,76,60,0.06); border: 1px dashed rgba(231,76,60,0.4);
+  }
+  .td-empty.td-locked:active { background: rgba(231,76,60,0.1); }
 
   /* Jam label */
   .jam-label {
@@ -1035,6 +1048,34 @@
   .mgmp-nama { font-size: 12px; font-weight: 700; color: var(--white); }
   .mgmp-detail { font-size: 9px; color: var(--orange); font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 2px; }
   .mgmp-catatan { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  /* Custom Block card (mis. UMMI, Upacara, dll) */
+  .block-card {
+    background: rgba(168,85,247,0.06); border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 12px; padding: 12px; margin-bottom: 8px;
+    display: flex; gap: 10px; align-items: flex-start;
+    box-shadow: 0 1px 3px rgba(26,32,53,0.04);
+  }
+  .block-icon { font-size: 20px; flex-shrink: 0; }
+  .block-info { flex: 1; }
+  .block-nama { font-size: 12px; font-weight: 700; color: var(--white); }
+  .block-detail { font-size: 9px; color: #a855f7; font-family: 'Plus Jakarta Sans', sans-serif; margin-top: 2px; }
+  .block-catatan { font-size: 10px; color: var(--muted); margin-top: 3px; }
+
+  .jadwal-cell.block-cell {
+    background: rgba(168,85,247,0.12); border-color: rgba(168,85,247,0.45);
+  }
+  .jadwal-cell.block-cell .jc-guru { color: #a855f7; }
+
+  .rekap-cell-block {
+    background: rgba(168,85,247,0.22); color: #a855f7; font-weight: 700;
+    cursor: pointer; min-width: 22px; font-size: 6px; letter-spacing: -0.2px;
+    white-space: nowrap; overflow: hidden;
+  }
+  .rekap-cell-block:active { opacity: 0.6; }
+
+  /* Garis pemisah antar hari (tab REKAP / export PDF) */
+  .rekap-day-sep { border-left: 3px solid var(--cyan) !important; }
 
   /* Jadwal form modal extra fields */
   .jam-badge {
@@ -1554,7 +1595,8 @@
       <div class="notulen-tab active" id="jtab-grid" onclick="switchJadwalTab('grid',this)">🗂️ GRID</div>
       <div class="notulen-tab" id="jtab-list" onclick="switchJadwalTab('list',this)">📋 LIST</div>
       <div class="notulen-tab" id="jtab-rekap" onclick="switchJadwalTab('rekap',this)">📊 REKAP</div>
-      <div class="notulen-tab" id="jtab-mgmp" onclick="switchJadwalTab('mgmp',this)">🚫 BLOKIR</div>
+      <div class="notulen-tab" id="jtab-mgmp" onclick="switchJadwalTab('mgmp',this)">🏫 MGMP</div>
+      <div class="notulen-tab" id="jtab-block" onclick="switchJadwalTab('block',this)">🔒 BLOKIR</div>
     </div>
 
     <!-- TAB GRID -->
@@ -1629,49 +1671,24 @@
     </div>
 
     <!-- TAB MGMP -->
-    <!-- TAB BLOKIR / BLOCK JAM -->
     <div id="jadwal-tab-mgmp" class="jadwal-tab-content">
-
-      <!-- Form Tambah Blokir -->
       <div class="card" style="margin-bottom:12px;">
-        <div style="font-size:12px;font-weight:800;color:var(--cyan);margin-bottom:12px;">🚫 TAMBAH BLOKIR JAM</div>
-
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🏫 TANDAI GURU MGMP</div>
         <div class="form-group">
-          <label class="form-label">JENIS KEGIATAN</label>
-          <select class="form-select" id="blok-jenis" onchange="updateBlokForm()">
-            <option value="mgmp">MGMP (per guru)</option>
-            <option value="ummi">UMMI / Kegiatan Rutin (per guru)</option>
-            <option value="custom">Kegiatan Lain / Custom (per guru)</option>
-            <option value="global">Blokir Hari Penuh (semua guru)</option>
-          </select>
-        </div>
-
-        <div id="blok-guru-wrap" class="form-group">
           <label class="form-label">GURU</label>
           <select class="form-select" id="mgmp-guru-sel"></select>
         </div>
-
         <div class="form-group">
-          <label class="form-label">NAMA KEGIATAN</label>
-          <input type="text" class="form-input" id="blok-nama" placeholder="Contoh: MGMP Matematika / UMMI / Rapat Dinas">
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">POLA BLOKIR</label>
-          <select class="form-select" id="mgmp-jenis" onchange="updateBlokDateField()">
+          <label class="form-label">JENIS MGMP</label>
+          <select class="form-select" id="mgmp-jenis">
             <option value="tanggal">Tanggal Spesifik</option>
-            <option value="rutin">Rutin Bulanan (Hari ke-N tiap bulan)</option>
-            <option value="setiap">Setiap Minggu (hari tertentu rutin)</option>
+            <option value="rutin">Rutin Bulanan (Hari ke-N per Bulan)</option>
           </select>
         </div>
-
-        <!-- Tanggal spesifik -->
         <div id="mgmp-field-tanggal" class="form-group">
           <label class="form-label">TANGGAL</label>
           <input type="date" class="form-input" id="mgmp-tanggal">
         </div>
-
-        <!-- Rutin bulanan -->
         <div id="mgmp-field-rutin" style="display:none;">
           <div class="form-group">
             <label class="form-label">HARI</label>
@@ -1689,49 +1706,92 @@
             </select>
           </div>
         </div>
-
-        <!-- Setiap minggu -->
-        <div id="blok-field-setiap" style="display:none;">
-          <div class="form-group">
-            <label class="form-label">HARI (setiap minggu)</label>
-            <select class="form-select" id="blok-hari-setiap">
-              <option value="1">Senin</option><option value="2">Selasa</option>
-              <option value="3">Rabu</option><option value="4">Kamis</option>
-              <option value="5">Jumat</option><option value="6">Sabtu</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Custom jam range (opsional) -->
         <div class="form-group">
-          <label class="form-label">BLOKIR JAM KE (kosongkan = blokir seluruh hari)</label>
-          <div id="blok-jam-picker" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;">
-            <span class="jam-badge" data-jam="1" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP1<br><span style="font-size:8px;opacity:.7;">07:00</span></span>
-            <span class="jam-badge" data-jam="2" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP2<br><span style="font-size:8px;opacity:.7;">07:40</span></span>
-            <span class="jam-badge" data-jam="3" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP3<br><span style="font-size:8px;opacity:.7;">08:20</span></span>
-            <span class="jam-badge" data-jam="4" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP4<br><span style="font-size:8px;opacity:.7;">09:00</span></span>
-            <span class="jam-badge" data-jam="5" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP5<br><span style="font-size:8px;opacity:.7;">10:00</span></span>
-            <span class="jam-badge" data-jam="6" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP6<br><span style="font-size:8px;opacity:.7;">10:40</span></span>
-            <span class="jam-badge" data-jam="7" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP7<br><span style="font-size:8px;opacity:.7;">11:20</span></span>
-            <span class="jam-badge" data-jam="8" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP8<br><span style="font-size:8px;opacity:.7;">12:40</span></span>
-            <span class="jam-badge" data-jam="9" onclick="this.classList.toggle('selected')" style="text-align:center;min-width:44px;font-size:10px;">JP9<br><span style="font-size:8px;opacity:.7;">13:00</span></span>
-          </div>
-          <div style="font-size:9px;color:var(--muted);margin-top:5px;">Tap untuk pilih/batal. Tidak ada yang dipilih = blokir seluruh hari</div>
+          <label class="form-label">MATA PELAJARAN MGMP</label>
+          <input type="text" class="form-input" id="mgmp-mapel" placeholder="Contoh: MGMP Matematika">
         </div>
-
         <div class="form-group">
           <label class="form-label">CATATAN (opsional)</label>
-          <input type="text" class="form-input" id="mgmp-catatan" placeholder="Lokasi, keterangan tambahan...">
+          <input type="text" class="form-input" id="mgmp-catatan" placeholder="Lokasi, jam, dll.">
         </div>
-
-        <button class="btn-primary" onclick="tambahMGMP()" style="font-size:12px;padding:12px;">
-          🚫 SIMPAN BLOKIR JAM
-        </button>
+        <button class="btn-primary" onclick="tambahMGMP()" style="font-size:11px;padding:10px;">💾 SIMPAN MGMP</button>
       </div>
-
-      <!-- Daftar Blokir -->
-      <div style="font-size:12px;font-weight:800;color:var(--cyan);margin-bottom:8px;">📋 DAFTAR BLOKIR TERSIMPAN</div>
+      <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">📋 DAFTAR MGMP TERSIMPAN</div>
       <div id="mgmp-list"></div>
+    </div>
+
+    <!-- TAB CUSTOM BLOCK -->
+    <div id="jadwal-tab-block" class="jadwal-tab-content">
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;" id="block-form-heading">🔒 BUAT BLOKIR JAM/HARI CUSTOM</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+          Buat kegiatan apa saja dengan nama bebas (UMMI, Upacara, Rapat, dll). Bisa pilih rentang jam tertentu saja, tidak harus satu hari penuh.
+        </div>
+        <div class="form-group">
+          <label class="form-label">JENIS TARGET BLOKIR</label>
+          <div style="display:flex;gap:8px;">
+            <div id="block-target-guru-btn" class="jam-badge selected" style="flex:1;text-align:center;padding:10px 6px;cursor:pointer;" onclick="setBlockTarget('guru')">👤 GURU TERTENTU</div>
+            <div id="block-target-kelas-btn" class="jam-badge" style="flex:1;text-align:center;padding:10px 6px;cursor:pointer;" onclick="setBlockTarget('kelas')">🏫 KELAS (KUNCI TOTAL)</div>
+          </div>
+          <div id="block-target-desc" style="font-size:9px;color:var(--muted);margin-top:6px;">Blokir 1 guru saja — guru lain tetap bisa mengajar & kelas tetap bisa diisi guru lain di jam ini.</div>
+        </div>
+        <div id="block-field-guru" class="form-group">
+          <label class="form-label">GURU</label>
+          <select class="form-select" id="block-guru-sel"></select>
+        </div>
+        <div id="block-field-kelas" class="form-group" style="display:none;">
+          <label class="form-label">KELAS YANG DIKUNCI (bisa pilih lebih dari satu)</label>
+          <div id="block-kelas-picker" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+          <div style="font-size:9px;color:#e74c3c;margin-top:6px;font-weight:600;">⛔ Kelas terpilih TIDAK BISA diisi jadwal oleh guru manapun pada jam ini. Kelas lain yang tidak dipilih tetap normal.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">LABEL / NAMA KEGIATAN (bebas, ketik sendiri)</label>
+          <input type="text" class="form-input" id="block-label" placeholder="Contoh: UMMI, Upacara, Rapat Guru, Ekskul Pramuka">
+        </div>
+        <div class="form-group">
+          <label class="form-label">JENIS BLOKIR</label>
+          <select class="form-select" id="block-jenis">
+            <option value="tanggal">Tanggal Spesifik</option>
+            <option value="rutin_mingguan">Rutin Mingguan (Setiap Hari Tsb)</option>
+            <option value="rutin_bulanan">Rutin Bulanan (Hari ke-N per Bulan)</option>
+          </select>
+        </div>
+        <div id="block-field-tanggal" class="form-group">
+          <label class="form-label">TANGGAL</label>
+          <input type="date" class="form-input" id="block-tanggal">
+        </div>
+        <div id="block-field-hari" class="form-group" style="display:none;">
+          <label class="form-label">HARI</label>
+          <select class="form-select" id="block-hari">
+            <option value="1">Senin</option><option value="2">Selasa</option>
+            <option value="3">Rabu</option><option value="4">Kamis</option>
+            <option value="5">Jumat</option><option value="6">Sabtu</option>
+          </select>
+        </div>
+        <div id="block-field-minggu" class="form-group" style="display:none;">
+          <label class="form-label">MINGGU KE (tiap bulan)</label>
+          <select class="form-select" id="block-minggu">
+            <option value="1">Minggu ke-1</option><option value="2">Minggu ke-2</option>
+            <option value="3">Minggu ke-3</option><option value="4">Minggu ke-4</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">RENTANG JAM YANG DIBLOKIR</label>
+          <div style="display:flex;gap:8px;">
+            <select class="form-select" id="block-jam-mulai" style="flex:1;" onchange="onBlockJamChange()"></select>
+            <select class="form-select" id="block-jam-selesai" style="flex:1;" onchange="onBlockJamChange()"></select>
+          </div>
+          <div id="block-jam-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">CATATAN (opsional)</label>
+          <input type="text" class="form-input" id="block-catatan" placeholder="Lokasi, keterangan, dll.">
+        </div>
+        <button class="btn-primary" id="block-save-btn" onclick="tambahCustomBlock()" style="font-size:11px;padding:10px;">💾 SIMPAN BLOKIR</button>
+        <button class="btn-cancel" id="block-cancel-edit-btn" onclick="batalEditCustomBlock()" style="font-size:11px;padding:10px;margin-top:8px;width:100%;display:none;">✕ BATAL EDIT</button>
+      </div>
+      <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">📋 DAFTAR BLOKIR TERSIMPAN</div>
+      <div id="block-list"></div>
     </div>
 
     <div class="watermark">Developed by D.D Candra © 2026</div>
@@ -2201,10 +2261,6 @@ const JAM_LABELS = {
   1:'07:00', 2:'07:40', 3:'08:20', 4:'09:00', 5:'10:00',
   6:'10:40', 7:'11:20', 8:'12:40', 9:'13:00'
 };
-// Batas maksimal jam mengajar per hari
-// Jumat: JP1-5 saja, Sabtu: JP1-7 saja, hari lain: JP1-9
-const MAX_JAM_HARI = { 1:9, 2:9, 3:9, 4:9, 5:5, 6:7 };
-function getMaxJam(hari) { return MAX_JAM_HARI[hari] || 9; }
 const KELAS_LIST = ['7A','7B','7C','8A','8B','8C','9A','9B','9C'];
 
 // Peta warna per kelas — dot colors for legend
@@ -2278,6 +2334,20 @@ let mgmpData = [
   { guru: 'Rohman Hidayat',   jenis:'rutin', hari:'6', minggu:'2', mapel:'MGMP IPS',         catatan:'Setiap Sabtu Minggu ke-2' },
   { guru: 'Christiana Tiwi',  jenis:'rutin', hari:'6', minggu:'2', mapel:'MGMP IPS',         catatan:'Setiap Sabtu Minggu ke-2' },
 ];
+
+// ===== CUSTOM BLOCK (mis. UMMI, Upacara, Rapat, dll) — bebas jenis & jam =====
+// { guru, label, jenis:'tanggal'|'rutin_mingguan'|'rutin_bulanan', tanggal, hari, minggu, jamMulai, jamSelesai, catatan }
+let customBlockData = [];
+
+// ===== BATAS JAM MENGAJAR PER HARI =====
+// Jumat: JP1–JP5, Sabtu: JP1–JP7, hari lain: JP1–JP9
+function maxJamForHari(hari) {
+  const h = parseInt(hari);
+  if (h === 5) return 5;  // Jumat
+  if (h === 6) return 7;  // Sabtu
+  return 9;
+}
+
 let selectedDay = new Date().getDay() || 1;
 
 function switchJadwalTab(tab, el) {
@@ -2290,6 +2360,7 @@ function switchJadwalTab(tab, el) {
   if (tab === 'list') { populateListGuruSel(); renderListGuru(); }
   if (tab === 'rekap') renderRekapTable();
   if (tab === 'mgmp') { populateMGMPGuruSel(); renderMGMPList(); }
+  if (tab === 'block') { populateCustomBlockGuruSel(); renderCustomBlockList(); }
 }
 
 function switchJamTab(tab, el) {
@@ -2419,34 +2490,47 @@ function renderGrid() {
   });
   html += '</tr></thead><tbody>';
 
-  const maxJam = getMaxJam(hari);
+  const maxJam = maxJamForHari(hari);
   for (let jam = 1; jam <= maxJam; jam++) {
     html += `<tr><td class="td-jam"><span class="jam-label">JP${jam}</span>${JAM_LABELS[jam]}</td>`;
     kelasList.forEach(kelas => {
       const cell = (hariData[kelas] || {})[jam];
       const kcClass = kelasClass(kelas);
       if (cell) {
-        const isMGMP = isGuruBlocked(cell.guru, hari, jam);
+        const isMGMP = mgmpToday.some(m => m.guru === cell.guru);
+        const isBlocked = !isMGMP && getCustomBlockForGuruSlot(cell.guru, hari, jam).length > 0;
+        const blockInfo = isBlocked ? getCustomBlockForGuruSlot(cell.guru, hari, jam)[0] : null;
+        const kelasBlockHit = getCustomBlockForKelasSlot(kelas, hari, jam);
+        const isKelasConflict = kelasBlockHit.length > 0;
         const guruKey = `${jam}-${cell.guru}`;
         const isBentrok = (jamGuruMap[guruKey] || []).length > 1;
         let cellClass = `jadwal-cell ${kcClass}`;
-        if (isMGMP) cellClass += ' mgmp-cell';
+        if (isKelasConflict) cellClass += ' bentrok-cell';
+        else if (isMGMP) cellClass += ' mgmp-cell';
+        else if (isBlocked) cellClass += ' block-cell';
         if (isBentrok) cellClass += ' bentrok-cell';
         const shortName = cell.guru.split(' ').slice(-2).join(' ');
         const rangeLabel = cell.jamRange && cell.jamRange.length > 1
           ? `<div style="font-size:8px;opacity:0.7;margin-top:1px;">JP${cell.jamRange[0]}–JP${cell.jamRange[cell.jamRange.length-1]}</div>`
           : '';
-        html += `<td><div class="${cellClass}" onclick="editJadwalCell(${hari},'${kelas}',${jam})">
+        const titleAttr = isKelasConflict ? `title="⚠️ Kelas ${kelas} seharusnya terkunci: ${kelasBlockHit[0].label}. Jadwal ini bentrok!"`
+          : (isBlocked ? `title="⚠️ ${cell.guru} sedang diblokir: ${blockInfo.label}"` : '');
+        html += `<td><div class="${cellClass}" onclick="editJadwalCell(${hari},'${kelas}',${jam})" ${titleAttr}>
           <span class="jc-del" onclick="event.stopPropagation();hapusJadwalCell(${hari},'${kelas}',${jam})">✕</span>
-          ${isBentrok ? '<span class="jc-bentrok" title="Guru bentrok!">⚠️</span>' : ''}
-          <div class="jc-guru">${isMGMP ? (() => { const b = getMGMPForDay(hari).find(m => (m.guru==='__ALL__'||m.guru===cell.guru) && (!m.jamList||!m.jamList.length||m.jamList.includes(jam))); return (b?.jenisKegiatan==='ummi'?'📖':'🚫') + ' ' + (b?.mapel||'MGMP'); })() : shortName}</div>
+          ${isBentrok || isKelasConflict ? '<span class="jc-bentrok" title="Bentrok!">⚠️</span>' : ''}
+          <div class="jc-guru">${isMGMP ? '🏫 MGMP' : (isBlocked ? '🔒 '+blockInfo.label : shortName)}</div>
           <div class="jc-mapel">${cell.mapel || ''}</div>
           ${rangeLabel}
           <div class="jc-ruang">${cell.ruang || ''}</div>
         </div></td>`;
       } else {
         const c = KELAS_COLORS[kelas];
-        html += `<td style="background:${c.bg}08;"><div class="td-empty" onclick="openJadwalFormCell(${hari},'${kelas}',${jam})" title="Tap untuk isi">＋</div></td>`;
+        const kelasBlockHit = getCustomBlockForKelasSlot(kelas, hari, jam);
+        if (kelasBlockHit.length) {
+          html += `<td style="background:rgba(231,76,60,0.08);"><div class="td-empty td-locked" title="🔒 Terkunci: ${kelasBlockHit[0].label} — kelas ${kelas} tidak bisa diisi jam ini">🔒<div style="font-size:7px;line-height:1.2;margin-top:2px;">${kelasBlockHit[0].label}</div></div></td>`;
+        } else {
+          html += `<td style="background:${c.bg}08;"><div class="td-empty" onclick="openJadwalFormCell(${hari},'${kelas}',${jam})" title="Tap untuk isi">＋</div></td>`;
+        }
       }
     });
     html += '</tr>';
@@ -2482,11 +2566,22 @@ function renderAdviceBox() {
   const { hari, kelas } = _jadwalFormCtx;
   const advices = [];
 
-  // 1. Cek apakah kelas ini sudah penuh (semua 9 jam terisi)
+  // 0. Cek HARD BLOCK kelas — prioritas tertinggi, jam ini terkunci total untuk kelas ini
+  const jamDipilihAwal = getSelectedJams();
+  if (jamDipilihAwal.length) {
+    const jamTerkunci = jamDipilihAwal.filter(j => isKelasHardBlocked(kelas, hari, j));
+    if (jamTerkunci.length) {
+      const lbl = getCustomBlockForKelasSlot(kelas, hari, jamTerkunci[0])[0]?.label || 'Blokir';
+      advices.push({ ico:'🔒', msg: `⛔ TERKUNCI! Kelas ${kelas} tidak bisa diisi jadwal di JP${jamTerkunci.join(',')} hari ${HARI[hari]} — sedang ada kegiatan "${lbl}". Simpan akan ditolak.` });
+    }
+  }
+
+  // 1. Cek apakah kelas ini sudah penuh (semua jam hari itu terisi)
   const kelasData = JADWAL_DATA2[hari]?.[kelas] || {};
   const jamTerisi = Object.keys(kelasData).length;
-  if (jamTerisi >= 9) {
-    advices.push({ ico:'📅', msg: `Kelas ${kelas} di hari ${HARI[hari]} sudah penuh (9/9 jam terisi). Pertimbangkan pindah ke hari lain yang masih kosong.` });
+  const maxJamHari = maxJamForHari(hari);
+  if (jamTerisi >= maxJamHari) {
+    advices.push({ ico:'📅', msg: `Kelas ${kelas} di hari ${HARI[hari]} sudah penuh (${maxJamHari}/${maxJamHari} jam terisi). Pertimbangkan pindah ke hari lain yang masih kosong.` });
   }
 
   // 2. Cek guru yang available (tidak bentrok) di jam yang sedang dipilih
@@ -2521,6 +2616,22 @@ function renderAdviceBox() {
   if (mgmpHariIni.length) {
     const mapelTerdampak = [...new Set(mgmpHariIni.map(m => m.mapel.replace('MGMP ','')))];
     advices.push({ ico:'🏫', msg: `Hari ${HARI[hari]} ada ${mgmpHariIni.length} guru sedang MGMP (${mapelTerdampak.join(', ')}). Pastikan tidak menjadwalkan mereka di hari ini.` });
+  }
+
+  // 3b. Cek Custom Block (UMMI, Upacara, dll) untuk guru yang sedang dipilih di jam yang dipilih
+  const guruSedangDipilih = document.getElementById('mf-guru')?.value || '';
+  if (guruSedangDipilih && jamDipilih.length) {
+    const jamKena = jamDipilih.filter(j => getCustomBlockForGuruSlot(guruSedangDipilih, hari, j).length > 0);
+    if (jamKena.length) {
+      const lbl = getCustomBlockForGuruSlot(guruSedangDipilih, hari, jamKena[0])[0]?.label || 'Blokir';
+      advices.push({ ico:'🔒', msg: `${guruSedangDipilih} sedang diblokir (${lbl}) di JP${jamKena.join(',')} hari ${HARI[hari]}. Pertimbangkan guru/jam lain.` });
+    }
+  }
+  // Info umum: hari ini ada kegiatan blokir apa saja
+  const blockHariIni = getCustomBlockForDay(hari);
+  if (blockHariIni.length) {
+    const labelSet = [...new Set(blockHariIni.map(b => b.label))];
+    advices.push({ ico:'🔒', msg: `Hari ${HARI[hari]} ada blokir aktif: ${labelSet.join(', ')}. Cek daftar guru yang terdampak di tab BLOKIR.` });
   }
 
   // 4. Saran umum jika user sepertinya kosongkan banyak field
@@ -2609,26 +2720,53 @@ function getMGMPForDay(hari) {
   return mgmpData.filter(m => {
     if (m.jenis === 'tanggal') {
       const d = new Date(m.tanggal);
-      return d.getDay() === parseInt(hari);
-    } else if (m.jenis === 'rutin') {
-      return parseInt(m.hari) === parseInt(hari);
-    } else if (m.jenis === 'setiap') {
-      return parseInt(m.hari) === parseInt(hari);
+      return d.getDay() === hari;
+    } else {
+      return parseInt(m.hari) === hari;
     }
-    return false;
   });
 }
 
-// Cek apakah guru diblokir pada hari+jam tertentu
-function isGuruBlocked(guruNama, hari, jam) {
-  const blocked = getMGMPForDay(hari);
-  return blocked.some(m => {
-    const matchGuru = m.guru === '__ALL__' || m.guru === guruNama;
-    if (!matchGuru) return false;
-    // Jika jamList kosong = semua jam diblokir
-    if (!m.jamList || m.jamList.length === 0) return true;
-    return m.jamList.includes(parseInt(jam));
+// ===== CUSTOM BLOCK — cek per hari & per jam =====
+function getCustomBlockForDay(hari) {
+  return customBlockData.filter(b => {
+    if (b.jenis === 'tanggal') {
+      if (!b.tanggal) return false;
+      const d = new Date(b.tanggal);
+      return d.getDay() === parseInt(hari);
+    }
+    return parseInt(b.hari) === parseInt(hari);
   });
+}
+function getCustomBlockForSlot(hari, jam) {
+  const j = parseInt(jam);
+  return getCustomBlockForDay(hari).filter(b => j >= parseInt(b.jamMulai) && j <= parseInt(b.jamSelesai));
+}
+// Blokir untuk guru tertentu di hari+jam tertentu (dipakai rekap & pengecekan)
+function getCustomBlockForGuruSlot(guru, hari, jam) {
+  return getCustomBlockForSlot(hari, jam).filter(b => b.target !== 'kelas' && b.guru === guru);
+}
+// Blokir untuk kelas tertentu di hari+jam tertentu (hard block — semua guru)
+function getCustomBlockForKelasSlot(kelas, hari, jam) {
+  return getCustomBlockForSlot(hari, jam).filter(b => b.target === 'kelas' && (b.kelasList || []).includes(kelas));
+}
+function isKelasHardBlocked(kelas, hari, jam) {
+  return getCustomBlockForKelasSlot(kelas, hari, jam).length > 0;
+}
+// Render badge KELAS untuk form isi jadwal — kelas yang terkunci (hard block) dibekukan & diberi keterangan kegiatan
+function renderKelasBadgesHtml(hari, jams, selectedKelas) {
+  const jamArr = Array.isArray(jams) ? jams : [jams];
+  return KELAS_LIST.map(k => {
+    const hits = jamArr.flatMap(j => getCustomBlockForKelasSlot(k, hari, j));
+    const isLocked = hits.length > 0;
+    const isSel = k === selectedKelas;
+    if (isLocked) {
+      return `<span class="jam-badge kelas-badge locked ${isSel?'selected':''}" data-kelas="${k}" title="🔒 Kelas ${k} sedang diblokir: ${hits[0].label}" style="text-align:center;">
+        ${k}<br><span style="font-size:7px;">🔒 ${hits[0].label}</span>
+      </span>`;
+    }
+    return `<span class="jam-badge kelas-badge ${isSel?'selected':''}" data-kelas="${k}" onclick="setFormKelas('${k}',this)">${k}</span>`;
+  }).join('');
 }
 
 // ===== JADWAL FORM — MULTI JAM =====
@@ -2647,6 +2785,14 @@ function openJadwalForm() {
 }
 
 function openJadwalFormCell(hari, kelas, jam) {
+  const existingCheck = (JADWAL_DATA2[hari]?.[kelas]?.[jam]) || {};
+  if (!existingCheck.guru) {
+    const kelasBlockHit = getCustomBlockForKelasSlot(kelas, hari, jam);
+    if (kelasBlockHit.length) {
+      showToast(`🔒 Jam ini terkunci untuk kegiatan "${kelasBlockHit[0].label}". Kelas ${kelas} tidak bisa diisi jadwal pada JP${jam} hari ${HARI[hari]}.`, true);
+      return;
+    }
+  }
   _jadwalFormCtx = { hari, kelas };
   // Find all existing jams for this kelas+hari by same guru (for edit)
   const existing = (JADWAL_DATA2[hari]?.[kelas]?.[jam]) || {};
@@ -2689,16 +2835,16 @@ function openJadwalFormCell(hari, kelas, jam) {
     </div>
 
     <div style="margin-bottom:10px;">
-      <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px;">KELAS</div>
-      <div style="display:flex;flex-wrap:wrap;gap:4px;">
-        ${KELAS_LIST.map(k=>`<span class="jam-badge kelas-badge ${k===kelas?'selected':''}" data-kelas="${k}" onclick="setFormKelas('${k}',this)">${k}</span>`).join('')}
+      <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px;">KELAS — <span style="color:#e74c3c;">kelas terkunci tidak bisa dipilih</span></div>
+      <div id="kelas-picker-wrap" style="display:flex;flex-wrap:wrap;gap:4px;">
+        ${renderKelasBadgesHtml(hari, preSelected, kelas)}
       </div>
     </div>
 
     <div style="margin-bottom:6px;">
       <div style="font-size:9px;color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:4px;">JAM KE — <span style="color:var(--cyan);">Pilih lebih dari satu untuk blok jam</span></div>
       <div id="jam-picker" style="display:flex;flex-wrap:wrap;gap:5px;">
-        ${Array.from({length:getMaxJam(_jadwalFormCtx?.hari||hari)},(_,i)=>i+1).map(j=>`
+        ${Array.from({length: maxJamForHari(hari)}, (_, idx) => idx + 1).map(j=>`
           <span class="jam-badge ${preSelected.includes(j)?'selected':''}"
                 data-jam="${j}"
                 onclick="toggleFormJam(${j},this)"
@@ -2785,6 +2931,7 @@ function toggleFormJam(j, el) {
   updateJamRangeLabel();
   checkGuruConflictLive();
   renderAdviceBox();
+  refreshKelasPickerLock();
 }
 
 function updateJamRangeLabel() {
@@ -2799,12 +2946,36 @@ function updateJamRangeLabel() {
   }
 }
 
+// Render ulang badge KELAS sesuai status kunci untuk hari+jam yang sedang aktif di form
+function refreshKelasPickerLock() {
+  const wrap = document.getElementById('kelas-picker-wrap');
+  if (!wrap || !_jadwalFormCtx) return;
+  const jams = getSelectedJams();
+  wrap.innerHTML = renderKelasBadgesHtml(_jadwalFormCtx.hari, jams.length ? jams : [1], _jadwalFormCtx.kelas);
+}
+
 function setFormHari(h, el) {
   document.querySelectorAll('.hari-badge').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   _jadwalFormCtx.hari = h;
   document.getElementById('modal-form-title').textContent = `📅 ISI JADWAL — ${HARI[h]} [${_jadwalFormCtx.kelas}]`;
+  // Rebuild jam-picker sesuai batas jam hari ini (Jumat s/d JP5, Sabtu s/d JP7)
+  const picker = document.getElementById('jam-picker');
+  if (picker) {
+    const selectedNow = getSelectedJams();
+    const maxJam = maxJamForHari(h);
+    picker.innerHTML = Array.from({length: maxJam}, (_, idx) => idx + 1).map(j => `
+      <span class="jam-badge ${selectedNow.includes(j) ? 'selected' : ''}"
+            data-jam="${j}"
+            onclick="toggleFormJam(${j},this)"
+            style="text-align:center;min-width:42px;">
+        JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span>
+      </span>`).join('');
+    updateJamRangeLabel();
+  }
+  refreshKelasPickerLock();
   checkGuruConflictLive();
+  renderAdviceBox();
 }
 function setFormKelas(k, el) {
   document.querySelectorAll('.kelas-badge').forEach(b => b.classList.remove('selected'));
@@ -2812,6 +2983,7 @@ function setFormKelas(k, el) {
   _jadwalFormCtx.kelas = k;
   rebuildGuruOptions();
   checkGuruConflictLive();
+  renderAdviceBox();
 }
 function editJadwalCell(hari, kelas, jam) { openJadwalFormCell(hari, kelas, jam); }
 function hapusJadwalCell(hari, kelas, jam) {
@@ -2842,8 +3014,9 @@ function renderListGuru() {
   const el = document.getElementById('jadwal-list-guru');
   if (!nama) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:20px;">Pilih guru untuk lihat jadwal</div>'; return; }
   const mgmpG = mgmpData.filter(m => m.guru === nama);
+  const blockG = customBlockData.filter(b => b.guru === nama);
   let html = '';
-  [1,2,3,4,5].forEach(hari => {
+  [1,2,3,4,5,6].forEach(hari => {
     const hariData = JADWAL_DATA2[hari] || {};
     let hasSesi = false;
     let sesiHtml = '';
@@ -2863,7 +3036,7 @@ function renderListGuru() {
       });
     });
     if (hasSesi) {
-      html += `<div class="card" style="margin-bottom:8px;">
+      html += `<div class="card" style="margin-bottom:8px;border-left:3px solid var(--cyan);">
         <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--cyan);margin-bottom:8px;">${HARI[hari].toUpperCase()}</div>
         ${sesiHtml}</div>`;
     }
@@ -2873,6 +3046,17 @@ function renderListGuru() {
     html += `<div class="card" style="border-color:rgba(255,140,0,0.3);margin-bottom:8px;">
       <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--orange);margin-bottom:8px;">🏫 JADWAL MGMP</div>
       ${mgmpG.map(m => `<div style="font-size:11px;color:var(--white);padding:4px 0;">${m.mapel} — ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[m.hari]+' Minggu ke-'+m.minggu}</div>`).join('')}
+    </div>`;
+  }
+  // Custom Block info (UMMI, Upacara, dll)
+  if (blockG.length) {
+    html += `<div class="card" style="border-color:rgba(168,85,247,0.3);margin-bottom:8px;">
+      <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:#a855f7;margin-bottom:8px;">🔒 JADWAL BLOKIR</div>
+      ${blockG.map(b => {
+        const jenisLabel = b.jenis==='tanggal' ? b.tanggal : (b.jenis==='rutin_bulanan' ? 'Rutin '+HARI[b.hari]+' Minggu ke-'+b.minggu : 'Rutin setiap '+HARI[b.hari]);
+        const jamLabel = (b.jamMulai==b.jamSelesai) ? `JP${b.jamMulai}` : `JP${b.jamMulai}–JP${b.jamSelesai}`;
+        return `<div style="font-size:11px;color:var(--white);padding:4px 0;">${b.label} — ${jenisLabel} · ${jamLabel}</div>`;
+      }).join('')}
     </div>`;
   }
   if (!html) html = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:20px;">Belum ada jadwal tersimpan untuk guru ini</div>';
@@ -2885,41 +3069,43 @@ function renderRekapTable() {
   if (!container) return;
 
   let html = '<table class="rekap-table"><thead>';
-  // Row 1: Hari headers (colspan sesuai jumlah jam maksimal hari itu)
+  // Row 1: Hari headers (colspan dinamis — Jumat s/d JP5, Sabtu s/d JP7, hari lain s/d JP9)
   html += '<tr><th class="rekap-no rekap-nama-header">NO</th><th class="rekap-nama rekap-nama-header">NAMA</th>';
   [1,2,3,4,5,6].forEach(h => {
-    html += `<th colspan="${getMaxJam(h)}" class="rekap-hari-header day-sep">${HARI[h].toUpperCase()}</th>`;
+    html += `<th colspan="${maxJamForHari(h)}" class="rekap-hari-header rekap-day-sep">${HARI[h].toUpperCase()}</th>`;
   });
   html += '</tr>';
   // Row 2: Jam ke- headers
   html += '<tr><th class="rekap-no rekap-nama-header"></th><th class="rekap-nama rekap-nama-header"></th>';
   [1,2,3,4,5,6].forEach(h => {
-    const maxJamHdr = getMaxJam(h);
-    for (let j = 1; j <= maxJamHdr; j++) html += `<th${j===maxJamHdr?' class="day-sep"':''}>${j}</th>`;
+    for (let j = 1; j <= maxJamForHari(h); j++) html += `<th${j===1?' class="rekap-day-sep"':''}>${j}</th>`;
   });
   html += '</tr></thead><tbody>';
 
   GURU_DATA.forEach((g, gi) => {
     html += `<tr><td class="rekap-no">${gi+1}</td><td class="rekap-nama">${g.nama}</td>`;
     [1,2,3,4,5,6].forEach(hari => {
-      const maxJamRekap = getMaxJam(hari);
-      for (let jam = 1; jam <= maxJamRekap; jam++) {
-        const sepCls = jam === maxJamRekap ? ' day-sep' : '';
-        const blocked = isGuruBlocked(g.nama, hari, jam);
+      const mgmpToday = getMGMPForDay(hari);
+      const isMGMPGuru = mgmpToday.some(m => m.guru === g.nama);
+      const maxJam = maxJamForHari(hari);
+      for (let jam = 1; jam <= maxJam; jam++) {
+        const sepClass = (jam === 1) ? ' rekap-day-sep' : '';
+        // Find if this guru teaches at this hari+jam (search all kelas)
         let foundKelas = null;
         const hariData = JADWAL_DATA2[hari] || {};
         Object.entries(hariData).forEach(([kelas, jamObj]) => {
           if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
         });
-        if (foundKelas && !blocked) {
+        const blockHit = getCustomBlockForGuruSlot(g.nama, hari, jam);
+        if (foundKelas) {
           const kcCls = kelasClass(foundKelas);
-          html += `<td class="rekap-cell-fill ${kcCls}${sepCls}" onclick="openRekapCell('${g.nama}',${hari},${jam},'${foundKelas}')" title="${HARI[hari]} JP${jam} — Kelas ${foundKelas}">${foundKelas}</td>`;
-        } else if (blocked) {
-          const bData = getMGMPForDay(hari).find(m => (m.guru==='__ALL__'||m.guru===g.nama) && (!m.jamList||!m.jamList.length||m.jamList.includes(jam)));
-          const blokIcon = bData?.jenisKegiatan==='ummi' ? 'U' : 'M';
-          html += `<td class="rekap-cell-mgmp${sepCls}" title="${bData?.mapel||'Blokir'}">${blokIcon}</td>`;
+          html += `<td class="rekap-cell-fill ${kcCls}${sepClass}" onclick="openRekapCell('${g.nama}',${hari},${jam},'${foundKelas}')" title="${HARI[hari]} JP${jam} — Kelas ${foundKelas}">${foundKelas}</td>`;
+        } else if (isMGMPGuru) {
+          html += `<td class="rekap-cell-mgmp${sepClass}" title="MGMP">M</td>`;
+        } else if (blockHit.length) {
+          html += `<td class="rekap-cell-block${sepClass}" title="🔒 ${blockHit[0].label}">${blockHit[0].label.slice(0,4)}</td>`;
         } else {
-          html += `<td class="rekap-cell-empty${sepCls}" onclick="openRekapCell('${g.nama}',${hari},${jam},null)" title="Tap untuk isi">·</td>`;
+          html += `<td class="rekap-cell-empty${sepClass}" onclick="openRekapCell('${g.nama}',${hari},${jam},null)" title="Tap untuk isi">·</td>`;
         }
       }
     });
@@ -2958,16 +3144,18 @@ function exportRekapPDF() {
     [1,2,3,4,5,6].forEach(hari => {
       const mgmpToday = getMGMPForDay(hari);
       const isMGMPGuru = mgmpToday.some(m => m.guru === g.nama);
-      const maxJamPdf = getMaxJam(hari);
-      for (let jam = 1; jam <= maxJamPdf; jam++) {
-        const sepStyle = jam === maxJamPdf ? 'border-right:3px solid #003366;' : '';
+      const maxJam = maxJamForHari(hari);
+      for (let jam = 1; jam <= maxJam; jam++) {
+        const sepStyle = (jam === 1) ? 'border-left:3px solid #003366;' : '';
         let foundKelas = null;
         const hariData = JADWAL_DATA2[hari] || {};
         Object.entries(hariData).forEach(([kelas, jamObj]) => {
           if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
         });
+        const blockHit = getCustomBlockForGuruSlot(g.nama, hari, jam);
         if (foundKelas) rows += `<td style="background:#eef;font-weight:bold;${sepStyle}">${foundKelas}</td>`;
         else if (isMGMPGuru) rows += `<td style="background:#fde;color:#e67e22;${sepStyle}">M</td>`;
+        else if (blockHit.length) rows += `<td style="background:#f3e8ff;color:#7c3aed;${sepStyle}font-size:6px;" title="${blockHit[0].label}">${blockHit[0].label.slice(0,4)}</td>`;
         else rows += `<td style="${sepStyle}"></td>`;
       }
     });
@@ -2975,12 +3163,9 @@ function exportRekapPDF() {
   });
 
   let hariHeaders = '';
-  [1,2,3,4,5,6].forEach(h => { hariHeaders += `<th colspan="${getMaxJam(h)}" style="border-right:3px solid #003366;">${HARI[h].toUpperCase()}</th>`; });
+  [1,2,3,4,5,6].forEach(h => { hariHeaders += `<th colspan="${maxJamForHari(h)}" style="border-left:3px solid #001a33;">${HARI[h].toUpperCase()}</th>`; });
   let jamHeaders = '';
-  [1,2,3,4,5,6].forEach(h => {
-    const maxJamHdrPdf = getMaxJam(h);
-    for (let j=1;j<=maxJamHdrPdf;j++) jamHeaders += `<th${j===maxJamHdrPdf?' style="border-right:3px solid #003366;"':''}>${j}</th>`;
-  });
+  [1,2,3,4,5,6].forEach(h => { for (let j=1;j<=maxJamForHari(h);j++) jamHeaders += `<th${j===1?' style="border-left:3px solid #001a33;"':''}>${j}</th>`; });
 
   win.document.write(`<!DOCTYPE html><html><head><title>Rekap Jadwal</title>
   <style>
@@ -3006,116 +3191,253 @@ function exportRekapPDF() {
   setTimeout(() => win.print(), 400);
 }
 
-// ===== BLOKIR JAM / MGMP / UMMI / CUSTOM =====
-const BLOK_ICONS = { mgmp:'🏫', ummi:'📖', custom:'📌', global:'🚫' };
-const BLOK_LABELS = { mgmp:'MGMP', ummi:'UMMI', custom:'Kegiatan Lain', global:'Blokir Global' };
-
+// ===== MGMP =====
 function populateMGMPGuruSel() {
   const sel = document.getElementById('mgmp-guru-sel');
   if (!sel) return;
   sel.innerHTML = GURU_DATA.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel})</option>`).join('');
 }
-
-function updateBlokForm() {
-  const jenis = document.getElementById('blok-jenis')?.value;
-  const guruWrap = document.getElementById('blok-guru-wrap');
-  if (guruWrap) guruWrap.style.display = jenis === 'global' ? 'none' : 'block';
-}
-
-function updateBlokDateField() {
-  const pola = document.getElementById('mgmp-jenis')?.value;
-  const fTanggal = document.getElementById('mgmp-field-tanggal');
-  const fRutin = document.getElementById('mgmp-field-rutin');
-  const fSetiap = document.getElementById('blok-field-setiap');
-  if (fTanggal) fTanggal.style.display = pola === 'tanggal' ? 'block' : 'none';
-  if (fRutin) fRutin.style.display = pola === 'rutin' ? 'block' : 'none';
-  if (fSetiap) fSetiap.style.display = pola === 'setiap' ? 'block' : 'none';
-}
-
-function getBlokJamPicked() {
-  const picked = [];
-  document.querySelectorAll('#blok-jam-picker .jam-badge.selected').forEach(el => {
-    picked.push(parseInt(el.dataset.jam));
-  });
-  return picked.sort((a,b) => a-b);
-}
-
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'mgmp-jenis') {
+    const isRutin = e.target.value === 'rutin';
+    document.getElementById('mgmp-field-tanggal').style.display = isRutin ? 'none' : 'block';
+    document.getElementById('mgmp-field-rutin').style.display = isRutin ? 'block' : 'none';
+  }
+});
 function tambahMGMP() {
-  const jenisKegiatan = document.getElementById('blok-jenis')?.value || 'mgmp';
-  const guru = jenisKegiatan === 'global' ? '__ALL__' : (document.getElementById('mgmp-guru-sel')?.value || '');
-  const pola = document.getElementById('mgmp-jenis')?.value || 'tanggal';
+  const guru = document.getElementById('mgmp-guru-sel')?.value;
+  const jenis = document.getElementById('mgmp-jenis')?.value;
   const tanggal = document.getElementById('mgmp-tanggal')?.value;
-  const hariSel = document.getElementById(pola === 'setiap' ? 'blok-hari-setiap' : 'mgmp-hari')?.value;
+  const hari = document.getElementById('mgmp-hari')?.value;
   const minggu = document.getElementById('mgmp-minggu')?.value;
-  const nama = document.getElementById('blok-nama')?.value.trim();
+  const mapel = document.getElementById('mgmp-mapel')?.value.trim();
   const catatan = document.getElementById('mgmp-catatan')?.value.trim();
-  const jamList = getBlokJamPicked();
-  if (jenisKegiatan !== 'global' && !guru) { showToast('⚠️ Pilih guru!', true); return; }
-  if (!nama) { showToast('⚠️ Isi nama kegiatan!', true); return; }
-  if (pola === 'tanggal' && !tanggal) { showToast('⚠️ Pilih tanggal!', true); return; }
-  mgmpData.push({ guru, jenis: pola, jenisKegiatan, tanggal, hari: hariSel, minggu, mapel: nama, catatan, jamList });
-  document.querySelectorAll('#blok-jam-picker .jam-badge').forEach(el => el.classList.remove('selected'));
-  if (document.getElementById('blok-nama')) document.getElementById('blok-nama').value = '';
-  if (document.getElementById('mgmp-catatan')) document.getElementById('mgmp-catatan').value = '';
+  if (!guru || !mapel) { showToast('⚠️ Lengkapi data MGMP!', true); return; }
+  if (jenis === 'tanggal' && !tanggal) { showToast('⚠️ Pilih tanggal MGMP!', true); return; }
+  mgmpData.push({ guru, jenis, tanggal, hari, minggu, mapel, catatan });
   renderMGMPList(); renderGrid(); saveAll();
-  showToast('✅ Blokir "' + nama + '" disimpan!');
+  showToast('✅ MGMP tersimpan!');
 }
 function renderMGMPList() {
   const el = document.getElementById('mgmp-list');
   if (!el) return;
-  if (!mgmpData.length) {
-    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;">Belum ada blokir jam tersimpan</div>';
-    return;
-  }
-  el.innerHTML = mgmpData.map((m, i) => {
-    const ico = BLOK_ICONS[m.jenisKegiatan] || '🚫';
-    const jenisLabel = BLOK_LABELS[m.jenisKegiatan] || (m.jenisKegiatan || 'MGMP');
-    let jadwalLabel = '';
-    if (m.jenis === 'tanggal') jadwalLabel = m.tanggal || '-';
-    else if (m.jenis === 'rutin') jadwalLabel = 'Rutin ' + (HARI[parseInt(m.hari)]||'') + ' Minggu ke-' + m.minggu;
-    else if (m.jenis === 'setiap') jadwalLabel = 'Setiap ' + (HARI[parseInt(m.hari)]||'');
-    else jadwalLabel = m.jenis || '';
-    const jamArr = m.jamList || [];
-    const jamLabel = jamArr.length ? ' · JP' + jamArr[0] + (jamArr.length>1?'–JP'+jamArr[jamArr.length-1]:'') : ' · Semua jam';
-    const guruLabel = m.guru === '__ALL__' ? '👥 Semua Guru' : (m.guru || '-');
-    return '<div class="mgmp-card">'
-      + '<div class="mgmp-icon">' + ico + '</div>'
-      + '<div class="mgmp-info">'
-      + '<div class="mgmp-nama">' + (m.mapel||'') + ' <span style="font-size:9px;color:var(--muted);font-weight:500;">[' + jenisLabel + ']</span></div>'
-      + '<div class="mgmp-detail">' + guruLabel + '</div>'
-      + '<div class="mgmp-detail">' + jadwalLabel + jamLabel + '</div>'
-      + (m.catatan ? '<div class="mgmp-catatan">📝 ' + m.catatan + '</div>' : '')
-      + '</div>'
-      + '<div style="display:flex;flex-direction:column;gap:4px;align-self:flex-start;">'
-      + '<button class="btn-edit" onclick="editMGMP(' + i + ')" style="font-size:10px;">✏️</button>'
-      + '<button class="btn-del" onclick="hapusMGMP(' + i + ')">🗑️</button>'
-      + '</div></div>';
-  }).join('');
+  if (!mgmpData.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;font-family:\'Plus Jakarta Sans\',sans-serif;">Belum ada jadwal MGMP</div>'; return; }
+  el.innerHTML = mgmpData.map((m, i) => `
+    <div class="mgmp-card">
+      <div class="mgmp-icon">🏫</div>
+      <div class="mgmp-info">
+        <div class="mgmp-nama">${m.guru}</div>
+        <div class="mgmp-detail">${m.mapel} · ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[parseInt(m.hari)]+' Minggu ke-'+m.minggu}</div>
+        ${m.catatan?`<div class="mgmp-catatan">📝 ${m.catatan}</div>`:''}
+      </div>
+      <button class="btn-del" onclick="hapusMGMP(${i})" style="align-self:flex-start;">🗑️</button>
+    </div>`).join('');
 }
-
-function editMGMP(i) {
-  const m = mgmpData[i];
-  document.getElementById('modal-form-title').textContent = '✏️ EDIT BLOKIR JAM';
-  document.getElementById('modal-form-body').innerHTML =
-    '<div class="form-group"><label class="form-label">NAMA KEGIATAN</label>'
-    + '<input type="text" class="form-input" id="mf-blok-nama" value="' + (m.mapel||'') + '"></div>'
-    + '<div class="form-group"><label class="form-label">CATATAN</label>'
-    + '<input type="text" class="form-input" id="mf-blok-catatan" value="' + (m.catatan||'') + '"></div>'
-    + '<div class="form-group"><label class="form-label">JAM YANG DIBLOKIR (kosong = semua jam)</label>'
-    + '<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;">'
-    + [1,2,3,4,5,6,7,8,9].map(j =>
-        '<span class="jam-badge ' + ((m.jamList||[]).includes(j)?'selected':'') + '" data-jam="' + j + '" onclick="this.classList.toggle(&quot;selected&quot;)" style="text-align:center;min-width:40px;font-size:10px;">JP' + j + '</span>'
-      ).join('')
-    + '</div></div>';
-  currentModalType = '__mgmp-edit__';
-  currentModalData = { idx: i };
-  document.getElementById('modal-form').classList.add('open');
-}
-
 function hapusMGMP(i) {
-  if (!confirm('Hapus blokir "' + (mgmpData[i].mapel||'') + '"?')) return;
   mgmpData.splice(i, 1);
   renderMGMPList(); renderGrid(); saveAll();
+  showToast('🗑️ MGMP dihapus');
+}
+
+// ===== CUSTOM BLOCK CRUD (UMMI, Upacara, Rapat, dll) =====
+let _blockTargetMode = 'guru';
+let _editingBlockIdx = null;
+function setBlockTarget(mode) {
+  _blockTargetMode = mode;
+  document.getElementById('block-target-guru-btn')?.classList.toggle('selected', mode === 'guru');
+  document.getElementById('block-target-kelas-btn')?.classList.toggle('selected', mode === 'kelas');
+  document.getElementById('block-field-guru').style.display = (mode === 'guru') ? 'block' : 'none';
+  document.getElementById('block-field-kelas').style.display = (mode === 'kelas') ? 'block' : 'none';
+  const desc = document.getElementById('block-target-desc');
+  if (desc) desc.textContent = (mode === 'guru')
+    ? 'Blokir 1 guru saja — guru lain tetap bisa mengajar & kelas tetap bisa diisi guru lain di jam ini.'
+    : 'Kunci total kelas — TIDAK ADA guru yang bisa diisi ke kelas ini pada jam yang dipilih (mis. Upacara, Ekskul).';
+}
+function populateCustomBlockGuruSel() {
+  const sel = document.getElementById('block-guru-sel');
+  if (sel) sel.innerHTML = GURU_DATA.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel})</option>`).join('');
+  if (_editingBlockIdx === null) { renderBlockKelasPicker(); setBlockTarget('guru'); }
+  buildBlockJamOptions();
+}
+// Ambil hari yang sedang aktif di form blokir (dari tanggal atau pilihan hari)
+function getBlockFormHari() {
+  const hariSel = document.getElementById('block-hari');
+  const jenisSel = document.getElementById('block-jenis');
+  const tanggalInp = document.getElementById('block-tanggal');
+  if (jenisSel && jenisSel.value === 'tanggal' && tanggalInp && tanggalInp.value) {
+    return new Date(tanggalInp.value).getDay() || 1;
+  }
+  return parseInt(hariSel?.value) || 1;
+}
+// Render pemilih kelas — kelas yang sudah terkunci di hari+jam yang sama otomatis dibekukan
+function renderBlockKelasPicker(selected = []) {
+  const el = document.getElementById('block-kelas-picker');
+  if (!el) return;
+  const hari = getBlockFormHari();
+  const jMulai = parseInt(document.getElementById('block-jam-mulai')?.value || 1);
+  const jSelesai = parseInt(document.getElementById('block-jam-selesai')?.value || jMulai);
+  const jams = [];
+  for (let j = jMulai; j <= jSelesai; j++) jams.push(j);
+
+  el.innerHTML = KELAS_LIST.map(k => {
+    const hits = jams.flatMap(j => getCustomBlockForKelasSlot(k, hari, j))
+      .filter(b => customBlockData.indexOf(b) !== _editingBlockIdx);
+    if (hits.length && !selected.includes(k)) {
+      return `<span class="jam-badge kelas-badge locked" title="🔒 ${k} sudah terkunci: ${hits[0].label}" style="text-align:center;min-width:44px;">
+        ${k}<br><span style="font-size:7px;">🔒 ${hits[0].label}</span>
+      </span>`;
+    }
+    return `<span class="jam-badge ${selected.includes(k)?'selected':''}" data-blokkelas="${k}" onclick="this.classList.toggle('selected')" style="min-width:44px;text-align:center;">${k}</span>`;
+  }).join('');
+}
+function getSelectedBlockKelas() {
+  return [...document.querySelectorAll('#block-kelas-picker .jam-badge.selected')].map(el => el.dataset.blokkelas);
+}
+function buildBlockJamOptions() {
+  const hariSel = document.getElementById('block-hari');
+  const jenisSel = document.getElementById('block-jenis');
+  const tanggalInp = document.getElementById('block-tanggal');
+  let hari = 1;
+  if (jenisSel && jenisSel.value === 'tanggal' && tanggalInp && tanggalInp.value) {
+    hari = new Date(tanggalInp.value).getDay() || 1;
+  } else if (hariSel) {
+    hari = parseInt(hariSel.value) || 1;
+  }
+  const max = maxJamForHari(hari);
+  const mulaiSel = document.getElementById('block-jam-mulai');
+  const selesaiSel = document.getElementById('block-jam-selesai');
+  if (!mulaiSel || !selesaiSel) return;
+  const curMulai = mulaiSel.value, curSelesai = selesaiSel.value;
+  let opts = '';
+  for (let j = 1; j <= max; j++) opts += `<option value="${j}">JP${j} (${JAM_LABELS[j]})</option>`;
+  mulaiSel.innerHTML = opts;
+  selesaiSel.innerHTML = opts;
+  mulaiSel.value = (curMulai && curMulai <= max) ? curMulai : '1';
+  selesaiSel.value = (curSelesai && curSelesai <= max) ? curSelesai : String(max);
+  onBlockJamChange();
+}
+function onBlockJamChange() {
+  const mulai = parseInt(document.getElementById('block-jam-mulai')?.value || 1);
+  let selesai = parseInt(document.getElementById('block-jam-selesai')?.value || mulai);
+  if (selesai < mulai) {
+    selesai = mulai;
+    const selesaiSel = document.getElementById('block-jam-selesai');
+    if (selesaiSel) selesaiSel.value = String(mulai);
+  }
+  const lbl = document.getElementById('block-jam-label');
+  if (lbl) {
+    lbl.textContent = mulai === selesai
+      ? `Blokir JP${mulai} (${JAM_LABELS[mulai]}) saja`
+      : `Blokir JP${mulai}–JP${selesai} (${JAM_LABELS[mulai]} s/d ${JAM_LABELS[selesai]}) · ${selesai-mulai+1} jam`;
+  }
+  // Refresh status kunci kelas sesuai jam yang sedang dipilih (pertahankan kelas yang sudah tercentang)
+  renderBlockKelasPicker(getSelectedBlockKelas());
+}
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'block-jenis') {
+    const v = e.target.value;
+    document.getElementById('block-field-tanggal').style.display = (v === 'tanggal') ? 'block' : 'none';
+    document.getElementById('block-field-hari').style.display = (v === 'tanggal') ? 'none' : 'block';
+    document.getElementById('block-field-minggu').style.display = (v === 'rutin_bulanan') ? 'block' : 'none';
+    buildBlockJamOptions();
+  }
+  if (e.target.id === 'block-hari' || e.target.id === 'block-tanggal') buildBlockJamOptions();
+});
+function tambahCustomBlock() {
+  const target = _blockTargetMode;
+  const guru = document.getElementById('block-guru-sel')?.value;
+  const kelasList = getSelectedBlockKelas();
+  const label = document.getElementById('block-label')?.value.trim();
+  const jenis = document.getElementById('block-jenis')?.value;
+  const tanggal = document.getElementById('block-tanggal')?.value;
+  const hari = document.getElementById('block-hari')?.value;
+  const minggu = document.getElementById('block-minggu')?.value;
+  const jamMulai = document.getElementById('block-jam-mulai')?.value;
+  const jamSelesai = document.getElementById('block-jam-selesai')?.value;
+  const catatan = document.getElementById('block-catatan')?.value.trim();
+  if (!label) { showToast('⚠️ Isi label / nama kegiatan!', true); return; }
+  if (target === 'guru' && !guru) { showToast('⚠️ Pilih guru!', true); return; }
+  if (target === 'kelas' && !kelasList.length) { showToast('⚠️ Pilih minimal 1 kelas!', true); return; }
+  if (jenis === 'tanggal' && !tanggal) { showToast('⚠️ Pilih tanggal blokir!', true); return; }
+  if (!jamMulai || !jamSelesai) { showToast('⚠️ Pilih rentang jam blokir!', true); return; }
+  const entry = { target, guru: target==='guru'?guru:null, kelasList: target==='kelas'?kelasList:[], label, jenis, tanggal, hari, minggu, jamMulai, jamSelesai, catatan };
+  if (_editingBlockIdx !== null) {
+    customBlockData[_editingBlockIdx] = entry;
+    showToast('✅ Blokir diperbarui!');
+    batalEditCustomBlock();
+  } else {
+    customBlockData.push(entry);
+    showToast('✅ Blokir tersimpan!' + (target==='kelas' ? ' Kelas terkait kini terkunci pada jam tsb.' : ''));
+  }
+  renderBlockKelasPicker(); renderCustomBlockList(); renderGrid(); saveAll();
+}
+function editCustomBlock(i) {
+  const b = customBlockData[i];
+  if (!b) return;
+  _editingBlockIdx = i;
+  document.getElementById('block-form-heading').textContent = '✏️ EDIT BLOKIR';
+  document.getElementById('block-save-btn').textContent = '🔄 UPDATE BLOKIR';
+  document.getElementById('block-cancel-edit-btn').style.display = 'block';
+  setBlockTarget(b.target || 'guru');
+  if (b.target === 'guru') document.getElementById('block-guru-sel').value = b.guru || '';
+  renderBlockKelasPicker(b.target === 'kelas' ? (b.kelasList || []) : []);
+  document.getElementById('block-label').value = b.label || '';
+  document.getElementById('block-jenis').value = b.jenis;
+  document.getElementById('block-field-tanggal').style.display = (b.jenis === 'tanggal') ? 'block' : 'none';
+  document.getElementById('block-field-hari').style.display = (b.jenis === 'tanggal') ? 'none' : 'block';
+  document.getElementById('block-field-minggu').style.display = (b.jenis === 'rutin_bulanan') ? 'block' : 'none';
+  if (b.tanggal) document.getElementById('block-tanggal').value = b.tanggal;
+  if (b.hari) document.getElementById('block-hari').value = b.hari;
+  if (b.minggu) document.getElementById('block-minggu').value = b.minggu;
+  buildBlockJamOptions();
+  document.getElementById('block-jam-mulai').value = b.jamMulai;
+  document.getElementById('block-jam-selesai').value = b.jamSelesai;
+  onBlockJamChange();
+  document.getElementById('block-catatan').value = b.catatan || '';
+  document.querySelector('#jadwal-tab-block .card')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function batalEditCustomBlock() {
+  _editingBlockIdx = null;
+  document.getElementById('block-form-heading').textContent = '🔒 BUAT BLOKIR JAM/HARI CUSTOM';
+  document.getElementById('block-save-btn').textContent = '💾 SIMPAN BLOKIR';
+  document.getElementById('block-cancel-edit-btn').style.display = 'none';
+  document.getElementById('block-label').value = '';
+  document.getElementById('block-catatan').value = '';
+  setBlockTarget('guru');
+  renderBlockKelasPicker();
+}
+function renderCustomBlockList() {
+  const el = document.getElementById('block-list');
+  if (!el) return;
+  if (!customBlockData.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;font-family:\'Plus Jakarta Sans\',sans-serif;">Belum ada blokir custom</div>'; return; }
+  el.innerHTML = customBlockData.map((b, i) => {
+    let jenisLabel;
+    if (b.jenis === 'tanggal') jenisLabel = b.tanggal;
+    else if (b.jenis === 'rutin_bulanan') jenisLabel = 'Rutin ' + HARI[parseInt(b.hari)] + ' Minggu ke-' + b.minggu;
+    else jenisLabel = 'Rutin setiap ' + HARI[parseInt(b.hari)];
+    const jamLabel = (b.jamMulai == b.jamSelesai) ? `JP${b.jamMulai}` : `JP${b.jamMulai}–JP${b.jamSelesai}`;
+    const targetLabel = b.target === 'kelas'
+      ? `🏫 Kelas: ${(b.kelasList||[]).join(', ')} <span style="color:#e74c3c;">(terkunci semua guru)</span>`
+      : `👤 ${b.guru}`;
+    return `
+    <div class="block-card">
+      <div class="block-icon">🔒</div>
+      <div class="block-info">
+        <div class="block-nama">${targetLabel}</div>
+        <div class="block-detail">${b.label} · ${jenisLabel} · ${jamLabel}</div>
+        ${b.catatan?`<div class="block-catatan">📝 ${b.catatan}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;align-self:flex-start;">
+        <button class="btn-edit" onclick="editCustomBlock(${i})">✏️</button>
+        <button class="btn-del" onclick="hapusCustomBlock(${i})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+function hapusCustomBlock(i) {
+  customBlockData.splice(i, 1);
+  if (_editingBlockIdx === i) batalEditCustomBlock();
+  renderCustomBlockList(); renderGrid(); saveAll();
   showToast('🗑️ Blokir dihapus');
 }
 
@@ -3181,8 +3503,7 @@ function exportJadwalPDF() {
   const hariData = JADWAL_DATA2[hari] || {};
   const win = window.open('', '_blank');
   let rows = '';
-  const maxJamExport = getMaxJam(hari);
-  for (let jam = 1; jam <= maxJamExport; jam++) {
+  for (let jam = 1; jam <= maxJamForHari(hari); jam++) {
     rows += `<tr><td style="font-weight:700;text-align:center;background:#eef;">JP${jam}<br><span style="font-size:9px;">${JAM_LABELS[jam]}</span></td>`;
     kelasList.forEach(kelas => {
       const cell = (hariData[kelas] || {})[jam];
@@ -3667,6 +3988,14 @@ function saveModalForm() {
     if (!guru) { showToast('⚠️ Pilih guru!', true); return; }
     if (!jams.length) { showToast('⚠️ Pilih minimal 1 jam!', true); return; }
 
+    // Hard-block guard: cegah simpan jika kelas ini terkunci (blokir kelas) pada salah satu jam yang dipilih
+    const jamTerkunci = jams.filter(j => isKelasHardBlocked(ctx.kelas, ctx.hari, j));
+    if (jamTerkunci.length) {
+      const lbl = getCustomBlockForKelasSlot(ctx.kelas, ctx.hari, jamTerkunci[0])[0]?.label || 'Blokir';
+      showToast(`🔒 Tidak bisa disimpan! Kelas ${ctx.kelas} terkunci untuk "${lbl}" di JP${jamTerkunci.join(',')} hari ${HARI[ctx.hari]}.`, true);
+      return;
+    }
+
     // Detect conflict before saving
     const hariData = JADWAL_DATA2[ctx.hari] || {};
     const conflicts = [];
@@ -3717,21 +4046,6 @@ function saveModalForm() {
     });
     renderGrid(); saveAll();
     if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
-  } else if (type === '__mgmp-edit__') {
-    const idx = currentModalData?.idx;
-    if (idx === undefined) return;
-    const nama = document.getElementById('mf-blok-nama')?.value.trim();
-    const catatan = document.getElementById('mf-blok-catatan')?.value.trim();
-    const newJams = [];
-    document.querySelectorAll('#modal-form-body .jam-badge.selected').forEach(el => {
-      newJams.push(parseInt(el.dataset.jam));
-    });
-    if (!nama) { showToast('⚠️ Nama kegiatan tidak boleh kosong!', true); return; }
-    mgmpData[idx].mapel = nama;
-    mgmpData[idx].catatan = catatan;
-    mgmpData[idx].jamList = newJams.sort((a,b) => a-b);
-    renderMGMPList(); renderGrid(); saveAll();
-    showToast('✅ Blokir diperbarui!');
   } else if (type === '__tugas-edit__') {
     const idx = currentModalData?.idx;
     if (idx === undefined) return;
@@ -4198,6 +4512,7 @@ function backupData() {
       guru: GURU_DATA,
       jadwal2: JADWAL_DATA2,
       mgmp: mgmpData,
+      customBlock: customBlockData,
       late: lateRecords,
       notulen: notulenRecords.map(n => ({ ...n, teks: n.teks?.substring(0, 2000) })), // trim large teks
       planning: planSnap,
@@ -4254,6 +4569,8 @@ function restoreData(input) {
       if (data.jadwal2) JADWAL_DATA2 = data.jadwal2;
       // Restore MGMP
       if (data.mgmp) mgmpData = data.mgmp;
+      // Restore Custom Block
+      if (data.customBlock) customBlockData = data.customBlock;
       // Restore keterlambatan
       if (data.late) lateRecords = data.late;
       // Restore notulen
@@ -4773,6 +5090,7 @@ const LS_KEYS = {
   jadwal:    'kuriku_jadwal',
   jadwal2:   'kuriku_jadwal2',
   mgmp:      'kuriku_mgmp',
+  customBlock: 'kuriku_custom_block',
   late:      'kuriku_late',
   notulen:   'kuriku_notulen',
   planning:  'kuriku_planning',
@@ -4787,6 +5105,7 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.jadwal,  JSON.stringify(JADWAL_DATA));
     localStorage.setItem(LS_KEYS.jadwal2, JSON.stringify(JADWAL_DATA2));
     localStorage.setItem(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
+    localStorage.setItem(LS_KEYS.customBlock, JSON.stringify(customBlockData));
     localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
     localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
     localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
@@ -4815,6 +5134,9 @@ function loadAll() {
     // MGMP — only load if localStorage has data (preserve defaults otherwise)
     const mg = localStorage.getItem(LS_KEYS.mgmp);
     if (mg) mgmpData = JSON.parse(mg);
+    // Custom Block
+    const cb = localStorage.getItem(LS_KEYS.customBlock);
+    if (cb) customBlockData = JSON.parse(cb);
     // Keterlambatan
     const l = localStorage.getItem(LS_KEYS.late);
     if (l) lateRecords = JSON.parse(l);

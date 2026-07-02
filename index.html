@@ -1597,6 +1597,7 @@
       <div class="notulen-tab" id="jtab-rekap" onclick="switchJadwalTab('rekap',this)">📊 REKAP</div>
       <div class="notulen-tab" id="jtab-mgmp" onclick="switchJadwalTab('mgmp',this)">🏫 MGMP</div>
       <div class="notulen-tab" id="jtab-block" onclick="switchJadwalTab('block',this)">🔒 BLOKIR</div>
+      <div class="notulen-tab" id="jtab-auto" onclick="switchJadwalTab('auto',this)">🎲 AUTO</div>
     </div>
 
     <!-- TAB GRID -->
@@ -1792,6 +1793,66 @@
       </div>
       <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">📋 DAFTAR BLOKIR TERSIMPAN</div>
       <div id="block-list"></div>
+    </div>
+
+    <!-- TAB AUTO GENERATE -->
+    <div id="jadwal-tab-auto" class="jadwal-tab-content">
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🎲 BEBAN MENGAJAR</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+          Input guru, mapel, kelas yang diajar, dan jam per minggu. Sistem akan otomatis membuat jadwal sambil menghindari bentrok guru, jam MGMP/UMMI, dan blokir lain yang sudah Anda buat.
+        </div>
+        <div class="form-group">
+          <label class="form-label">GURU</label>
+          <select class="form-select" id="auto-guru-sel"></select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">MATA PELAJARAN</label>
+          <input type="text" class="form-input" id="auto-mapel" placeholder="Contoh: Matematika, IPA, B. Indonesia">
+        </div>
+        <div class="form-group">
+          <label class="form-label">KELAS YANG DIAJAR (bisa pilih lebih dari satu — jam/minggu berlaku untuk MASING-MASING kelas)</label>
+          <div id="auto-kelas-picker" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">JAM PER MINGGU (per kelas)</label>
+          <select class="form-select" id="auto-jam-minggu">
+            <option value="2">2 jam/minggu</option>
+            <option value="3">3 jam/minggu</option>
+            <option value="4" selected>4 jam/minggu</option>
+            <option value="5">5 jam/minggu</option>
+            <option value="6">6 jam/minggu</option>
+            <option value="7">7 jam/minggu</option>
+            <option value="8">8 jam/minggu</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">RUANG (opsional, berlaku semua sesi)</label>
+          <input type="text" class="form-input" id="auto-ruang" placeholder="Contoh: R.01 (kosongkan jika tidak perlu)">
+        </div>
+        <button class="btn-primary" id="auto-save-btn" onclick="tambahBebanMengajar()" style="font-size:11px;padding:10px;">➕ TAMBAH KE DAFTAR BEBAN</button>
+        <button class="btn-cancel" id="auto-cancel-edit-btn" onclick="batalEditBeban()" style="font-size:11px;padding:10px;margin-top:8px;width:100%;display:none;">✕ BATAL EDIT</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📋 DAFTAR BEBAN MENGAJAR (<span id="beban-total-jam">0</span> jam total)</div>
+      </div>
+      <div id="beban-list" style="margin-bottom:14px;"></div>
+
+      <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.35);">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">⚙️ MODE GENERATE</div>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:10px;color:var(--white);margin-bottom:10px;cursor:pointer;">
+          <input type="radio" name="auto-mode" value="fill" checked style="margin-top:2px;">
+          <span><b>Isi jam kosong saja</b> — jadwal yang sudah ada (diisi manual) tidak diubah, sistem hanya mengisi slot yang masih kosong.</span>
+        </label>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:10px;color:var(--white);cursor:pointer;">
+          <input type="radio" name="auto-mode" value="reset" style="margin-top:2px;">
+          <span><b>Hapus &amp; buat ulang dari nol</b> — seluruh jadwal Senin–Sabtu dihapus dulu, lalu dibuat ulang dari daftar beban mengajar. <span style="color:#e74c3c;">Tidak bisa dibatalkan!</span></span>
+        </label>
+        <button class="btn-primary" onclick="generateJadwalOtomatis()" style="font-size:12px;padding:12px;margin-top:12px;">🎲 GENERATE JADWAL OTOMATIS</button>
+      </div>
+
+      <div id="auto-report"></div>
     </div>
 
     <div class="watermark">Developed by D.D Candra © 2026</div>
@@ -2339,6 +2400,10 @@ let mgmpData = [
 // { guru, label, jenis:'tanggal'|'rutin_mingguan'|'rutin_bulanan', tanggal, hari, minggu, jamMulai, jamSelesai, catatan }
 let customBlockData = [];
 
+// ===== BEBAN MENGAJAR (untuk Auto-Generate Jadwal) =====
+// { id, guru, mapel, kelasList:[], jamPerMinggu, ruang }
+let bebanMengajarData = [];
+
 // ===== BATAS JAM MENGAJAR PER HARI =====
 // Jumat: JP1–JP5, Sabtu: JP1–JP7, hari lain: JP1–JP9
 function maxJamForHari(hari) {
@@ -2361,6 +2426,7 @@ function switchJadwalTab(tab, el) {
   if (tab === 'rekap') renderRekapTable();
   if (tab === 'mgmp') { populateMGMPGuruSel(); renderMGMPList(); }
   if (tab === 'block') { populateCustomBlockGuruSel(); renderCustomBlockList(); }
+  if (tab === 'auto') { populateAutoGuruSel(); renderBebanMengajarList(); }
 }
 
 function switchJamTab(tab, el) {
@@ -2753,6 +2819,15 @@ function getCustomBlockForKelasSlot(kelas, hari, jam) {
 function isKelasHardBlocked(kelas, hari, jam) {
   return getCustomBlockForKelasSlot(kelas, hari, jam).length > 0;
 }
+// Cek apakah SEMUA kelas terkunci di hari+jam ini (mis. Upacara) — dipakai di REKAP karena
+// baris di sana berbasis guru, bukan kelas, sehingga blokir tipe kelas perlu dicek terpisah.
+function getFullyBlockedInfo(hari, jam) {
+  const perKelas = KELAS_LIST.map(k => getCustomBlockForKelasSlot(k, hari, jam));
+  if (perKelas.every(hits => hits.length > 0)) {
+    return perKelas[0][0]; // representative block entry (label dll)
+  }
+  return null;
+}
 // Render badge KELAS untuk form isi jadwal — kelas yang terkunci (hard block) dibekukan & diberi keterangan kegiatan
 function renderKelasBadgesHtml(hari, jams, selectedKelas) {
   const jamArr = Array.isArray(jams) ? jams : [jams];
@@ -3097,6 +3172,7 @@ function renderRekapTable() {
           if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
         });
         const blockHit = getCustomBlockForGuruSlot(g.nama, hari, jam);
+        const fullyBlocked = !foundKelas && !isMGMPGuru && !blockHit.length ? getFullyBlockedInfo(hari, jam) : null;
         if (foundKelas) {
           const kcCls = kelasClass(foundKelas);
           html += `<td class="rekap-cell-fill ${kcCls}${sepClass}" onclick="openRekapCell('${g.nama}',${hari},${jam},'${foundKelas}')" title="${HARI[hari]} JP${jam} — Kelas ${foundKelas}">${foundKelas}</td>`;
@@ -3104,6 +3180,8 @@ function renderRekapTable() {
           html += `<td class="rekap-cell-mgmp${sepClass}" title="MGMP">M</td>`;
         } else if (blockHit.length) {
           html += `<td class="rekap-cell-block${sepClass}" title="🔒 ${blockHit[0].label}">${blockHit[0].label.slice(0,4)}</td>`;
+        } else if (fullyBlocked) {
+          html += `<td class="rekap-cell-block${sepClass}" title="🔒 Semua kelas terkunci: ${fullyBlocked.label}">${fullyBlocked.label.slice(0,4)}</td>`;
         } else {
           html += `<td class="rekap-cell-empty${sepClass}" onclick="openRekapCell('${g.nama}',${hari},${jam},null)" title="Tap untuk isi">·</td>`;
         }
@@ -3153,9 +3231,11 @@ function exportRekapPDF() {
           if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
         });
         const blockHit = getCustomBlockForGuruSlot(g.nama, hari, jam);
+        const fullyBlocked = !foundKelas && !isMGMPGuru && !blockHit.length ? getFullyBlockedInfo(hari, jam) : null;
         if (foundKelas) rows += `<td style="background:#eef;font-weight:bold;${sepStyle}">${foundKelas}</td>`;
         else if (isMGMPGuru) rows += `<td style="background:#fde;color:#e67e22;${sepStyle}">M</td>`;
         else if (blockHit.length) rows += `<td style="background:#f3e8ff;color:#7c3aed;${sepStyle}font-size:6px;" title="${blockHit[0].label}">${blockHit[0].label.slice(0,4)}</td>`;
+        else if (fullyBlocked) rows += `<td style="background:#f3e8ff;color:#7c3aed;${sepStyle}font-size:6px;" title="${fullyBlocked.label}">${fullyBlocked.label.slice(0,4)}</td>`;
         else rows += `<td style="${sepStyle}"></td>`;
       }
     });
@@ -3439,6 +3519,264 @@ function hapusCustomBlock(i) {
   if (_editingBlockIdx === i) batalEditCustomBlock();
   renderCustomBlockList(); renderGrid(); saveAll();
   showToast('🗑️ Blokir dihapus');
+}
+
+// ===== BEBAN MENGAJAR — CRUD =====
+let _editingBebanIdx = null;
+function populateAutoGuruSel() {
+  const sel = document.getElementById('auto-guru-sel');
+  if (sel) sel.innerHTML = GURU_DATA.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel})</option>`).join('');
+  if (_editingBebanIdx === null) renderAutoKelasPicker();
+}
+function renderAutoKelasPicker(selected = []) {
+  const el = document.getElementById('auto-kelas-picker');
+  if (!el) return;
+  el.innerHTML = KELAS_LIST.map(k => `<span class="jam-badge ${selected.includes(k)?'selected':''}" data-autokelas="${k}" onclick="this.classList.toggle('selected')" style="min-width:44px;text-align:center;">${k}</span>`).join('');
+}
+function getSelectedAutoKelas() {
+  return [...document.querySelectorAll('#auto-kelas-picker .jam-badge.selected')].map(el => el.dataset.autokelas);
+}
+function tambahBebanMengajar() {
+  const guru = document.getElementById('auto-guru-sel')?.value;
+  const mapel = document.getElementById('auto-mapel')?.value.trim();
+  const kelasList = getSelectedAutoKelas();
+  const jamPerMinggu = parseInt(document.getElementById('auto-jam-minggu')?.value || 4);
+  const ruang = document.getElementById('auto-ruang')?.value.trim();
+  if (!guru) { showToast('⚠️ Pilih guru!', true); return; }
+  if (!mapel) { showToast('⚠️ Isi mata pelajaran!', true); return; }
+  if (!kelasList.length) { showToast('⚠️ Pilih minimal 1 kelas!', true); return; }
+  const entry = { guru, mapel, kelasList, jamPerMinggu, ruang };
+  if (_editingBebanIdx !== null) {
+    bebanMengajarData[_editingBebanIdx] = entry;
+    showToast('✅ Beban mengajar diperbarui!');
+    batalEditBeban();
+  } else {
+    bebanMengajarData.push(entry);
+    showToast('✅ Beban mengajar ditambahkan!');
+  }
+  document.getElementById('auto-mapel').value = '';
+  document.getElementById('auto-ruang').value = '';
+  renderAutoKelasPicker();
+  renderBebanMengajarList();
+  saveAll();
+}
+function editBeban(i) {
+  const b = bebanMengajarData[i];
+  if (!b) return;
+  _editingBebanIdx = i;
+  document.getElementById('auto-guru-sel').value = b.guru;
+  document.getElementById('auto-mapel').value = b.mapel;
+  document.getElementById('auto-jam-minggu').value = b.jamPerMinggu;
+  document.getElementById('auto-ruang').value = b.ruang || '';
+  renderAutoKelasPicker(b.kelasList);
+  document.getElementById('auto-save-btn').textContent = '🔄 UPDATE BEBAN';
+  document.getElementById('auto-cancel-edit-btn').style.display = 'block';
+  document.querySelector('#jadwal-tab-auto .card')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function batalEditBeban() {
+  _editingBebanIdx = null;
+  document.getElementById('auto-mapel').value = '';
+  document.getElementById('auto-ruang').value = '';
+  document.getElementById('auto-save-btn').textContent = '➕ TAMBAH KE DAFTAR BEBAN';
+  document.getElementById('auto-cancel-edit-btn').style.display = 'none';
+  renderAutoKelasPicker();
+}
+function hapusBeban(i) {
+  bebanMengajarData.splice(i, 1);
+  if (_editingBebanIdx === i) batalEditBeban();
+  renderBebanMengajarList();
+  saveAll();
+  showToast('🗑️ Beban mengajar dihapus');
+}
+function renderBebanMengajarList() {
+  const el = document.getElementById('beban-list');
+  const totalEl = document.getElementById('beban-total-jam');
+  if (!el) return;
+  let totalJam = 0;
+  if (!bebanMengajarData.length) {
+    el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;font-family:\'Plus Jakarta Sans\',sans-serif;">Belum ada beban mengajar. Tambahkan dulu di atas.</div>';
+  } else {
+    el.innerHTML = bebanMengajarData.map((b, i) => {
+      const jamTotal = b.jamPerMinggu * b.kelasList.length;
+      totalJam += jamTotal;
+      return `
+      <div class="mgmp-card" style="border-color:rgba(0,144,199,0.25);">
+        <div class="mgmp-icon">🎲</div>
+        <div class="mgmp-info">
+          <div class="mgmp-nama">${b.guru} — ${b.mapel}</div>
+          <div class="mgmp-detail">Kelas: ${b.kelasList.join(', ')} · ${b.jamPerMinggu} jam/minggu/kelas · Total ${jamTotal} jam</div>
+          ${b.ruang?`<div class="mgmp-catatan">📍 ${b.ruang}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;align-self:flex-start;">
+          <button class="btn-edit" onclick="editBeban(${i})">✏️</button>
+          <button class="btn-del" onclick="hapusBeban(${i})">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  if (totalEl) totalEl.textContent = totalJam;
+}
+
+// ===== AUTO-GENERATE JADWAL — algoritma penjadwalan otomatis =====
+function generateJadwalOtomatis() {
+  if (!bebanMengajarData.length) { showToast('⚠️ Tambahkan beban mengajar dulu!', true); return; }
+  const mode = document.querySelector('input[name="auto-mode"]:checked')?.value || 'fill';
+
+  if (mode === 'reset') {
+    if (!confirm('⚠️ Semua jadwal Senin–Sabtu yang sudah ada akan DIHAPUS lalu dibuat ulang dari daftar beban mengajar. Lanjutkan?')) return;
+    [1,2,3,4,5,6].forEach(h => { JADWAL_DATA2[h] = {}; });
+  }
+
+  // 1. Susun daftar tugas: satu tugas per (guru, mapel, kelas)
+  let tasks = [];
+  bebanMengajarData.forEach(b => {
+    b.kelasList.forEach(kelas => {
+      tasks.push({ guru: b.guru, mapel: b.mapel, kelas, ruang: b.ruang || '', need: b.jamPerMinggu, placed: 0 });
+    });
+  });
+
+  // 2. Occupancy map — mulai dari jadwal yang sudah ada (mode 'fill') atau kosong (mode 'reset')
+  const guruBusy = {}; // key `${hari}-${jam}-${guru}` => true
+  const kelasBusy = {}; // key `${hari}-${jam}-${kelas}` => true
+  [1,2,3,4,5,6].forEach(hari => {
+    const hariData = JADWAL_DATA2[hari] || {};
+    Object.entries(hariData).forEach(([kelas, jamObj]) => {
+      Object.entries(jamObj).forEach(([jam, cell]) => {
+        if (cell?.guru) {
+          guruBusy[`${hari}-${jam}-${cell.guru}`] = true;
+          kelasBusy[`${hari}-${jam}-${kelas}`] = true;
+        }
+      });
+    });
+  });
+
+  const isSlotFree = (hari, jam, guru, kelas) => {
+    if (guruBusy[`${hari}-${jam}-${guru}`]) return false;
+    if (kelasBusy[`${hari}-${jam}-${kelas}`]) return false;
+    if (isKelasHardBlocked(kelas, hari, jam)) return false;
+    if (getMGMPForDay(hari).some(m => m.guru === guru)) return false;
+    if (getCustomBlockForGuruSlot(guru, hari, jam).length) return false;
+    return true;
+  };
+
+  // Hitung "domain size" (jumlah slot kosong yang tersedia) untuk urutkan tugas paling sulit dulu (heuristik CSP klasik)
+  const countDomain = (task) => {
+    let n = 0;
+    [1,2,3,4,5,6].forEach(hari => {
+      for (let jam = 1; jam <= maxJamForHari(hari); jam++) {
+        if (isSlotFree(hari, jam, task.guru, task.kelas)) n++;
+      }
+    });
+    return n;
+  };
+  tasks.forEach(t => { t.domain = countDomain(t); });
+  tasks.sort((a, b) => a.domain - b.domain);
+
+  const HARI_URUT = [1,2,3,4,5,6];
+  const shuffle = arr => { const a = [...arr]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+  // 3. Tentukan pembagian jam per hari (chunk) agar tersebar, tidak numpuk di 1 hari
+  function buildChunks(need) {
+    if (need <= 0) return [];
+    const nDays = need <= 2 ? need : Math.ceil(need / 2);
+    const chunks = [];
+    let remaining = need;
+    for (let i = 0; i < nDays; i++) {
+      const left = nDays - i;
+      const size = Math.ceil(remaining / left);
+      chunks.push(size);
+      remaining -= size;
+    }
+    return chunks; // contoh: 6 => [2,2,2] ; 5 => [2,2,1] ; 3 => [1,1,1] ; 2 => [1,1]
+  }
+
+  const failedTasks = [];
+
+  tasks.forEach(task => {
+    const chunks = buildChunks(task.need);
+    let dayOrder = shuffle(HARI_URUT);
+    let dayPtr = 0;
+    const usedDays = new Set();
+
+    chunks.forEach(chunkSize => {
+      let placedThisChunk = false;
+      // Coba hari yang belum dipakai dulu, baru hari yang sudah dipakai (kalau kehabisan hari)
+      let candidateDays = [...dayOrder.filter(h => !usedDays.has(h)), ...dayOrder.filter(h => usedDays.has(h))];
+
+      for (const hari of candidateDays) {
+        const maxJ = maxJamForHari(hari);
+        // Cari `chunkSize` jam berurutan yang kosong untuk guru & kelas ini
+        for (let start = 1; start <= maxJ - chunkSize + 1; start++) {
+          let ok = true;
+          for (let j = start; j < start + chunkSize; j++) {
+            if (!isSlotFree(hari, j, task.guru, task.kelas)) { ok = false; break; }
+          }
+          if (ok) {
+            for (let j = start; j < start + chunkSize; j++) {
+              guruBusy[`${hari}-${j}-${task.guru}`] = true;
+              kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
+              if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
+              if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
+              JADWAL_DATA2[hari][task.kelas][j] = {
+                guru: task.guru, mapel: task.mapel, ruang: task.ruang,
+                jamRange: Array.from({length: chunkSize}, (_, idx) => start + idx)
+              };
+            }
+            task.placed += chunkSize;
+            usedDays.add(hari);
+            placedThisChunk = true;
+            break;
+          }
+        }
+        if (placedThisChunk) break;
+      }
+
+      // Kalau chunk gabungan tidak muat, coba pecah jadi jam satuan sebagai fallback
+      if (!placedThisChunk && chunkSize > 1) {
+        for (let k = 0; k < chunkSize; k++) {
+          let single = false;
+          for (const hari of candidateDays) {
+            const maxJ = maxJamForHari(hari);
+            for (let j = 1; j <= maxJ; j++) {
+              if (isSlotFree(hari, j, task.guru, task.kelas)) {
+                guruBusy[`${hari}-${j}-${task.guru}`] = true;
+                kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
+                if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
+                if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
+                JADWAL_DATA2[hari][task.kelas][j] = { guru: task.guru, mapel: task.mapel, ruang: task.ruang, jamRange: [j] };
+                task.placed += 1;
+                usedDays.add(hari);
+                single = true;
+                break;
+              }
+            }
+            if (single) break;
+          }
+        }
+      }
+    });
+
+    if (task.placed < task.need) failedTasks.push(task);
+  });
+
+  renderGrid(); renderRekapTable(); saveAll();
+
+  const totalNeed = tasks.reduce((s,t) => s + t.need, 0);
+  const totalPlaced = tasks.reduce((s,t) => s + t.placed, 0);
+  const reportEl = document.getElementById('auto-report');
+  if (reportEl) {
+    let html = `<div class="card" style="border-color:${failedTasks.length ? 'rgba(230,126,34,0.4)' : 'rgba(46,204,113,0.4)'};">
+      <div style="font-size:11px;font-weight:700;color:${failedTasks.length ? 'var(--orange)' : '#2ecc71'};margin-bottom:8px;">
+        ${failedTasks.length ? '⚠️' : '✅'} Selesai: ${totalPlaced}/${totalNeed} jam berhasil dijadwalkan
+      </div>`;
+    if (failedTasks.length) {
+      html += `<div style="font-size:9px;color:var(--muted);margin-bottom:8px;">Jam berikut tidak muat dijadwalkan otomatis (kemungkinan guru/kelas terlalu penuh atau banyak jam yang terkunci). Silakan isi manual lewat tab GRID:</div>`;
+      html += failedTasks.map(t => `<div style="font-size:10px;color:var(--white);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">🔸 ${t.guru} — ${t.mapel} — Kelas ${t.kelas}: kurang ${t.need - t.placed} jam</div>`).join('');
+    }
+    html += '</div>';
+    reportEl.innerHTML = html;
+  }
+  showToast(failedTasks.length ? `⚠️ ${totalPlaced}/${totalNeed} jam terjadwal, ${failedTasks.length} tugas perlu diisi manual` : `✅ Semua ${totalPlaced} jam berhasil dijadwalkan otomatis!`);
 }
 
 // ===== TUGAS TAMBAHAN =====
@@ -4513,6 +4851,7 @@ function backupData() {
       jadwal2: JADWAL_DATA2,
       mgmp: mgmpData,
       customBlock: customBlockData,
+      bebanMengajar: bebanMengajarData,
       late: lateRecords,
       notulen: notulenRecords.map(n => ({ ...n, teks: n.teks?.substring(0, 2000) })), // trim large teks
       planning: planSnap,
@@ -4571,6 +4910,7 @@ function restoreData(input) {
       if (data.mgmp) mgmpData = data.mgmp;
       // Restore Custom Block
       if (data.customBlock) customBlockData = data.customBlock;
+      if (data.bebanMengajar) bebanMengajarData = data.bebanMengajar;
       // Restore keterlambatan
       if (data.late) lateRecords = data.late;
       // Restore notulen
@@ -4918,7 +5258,10 @@ function renderHasilAcak() {
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
     <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📊 HASIL PEMBAGIAN KELAS</div>
-    <button class="btn-add" onclick="downloadHasilAcakPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
+    <div style="display:flex;gap:6px;">
+      <button class="btn-add" onclick="downloadHasilAcakExcel()" style="font-size:10px;padding:6px 10px;">📊 Export Excel</button>
+      <button class="btn-add" onclick="downloadHasilAcakPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
+    </div>
   </div>`;
 
   Object.keys(byKelasBaru).sort().forEach(kelas => {
@@ -4965,6 +5308,44 @@ function downloadHasilAcakPDF() {
   </body></html>`);
   win.document.close();
   setTimeout(() => win.print(), 400);
+}
+
+function downloadHasilAcakExcel() {
+  const sudahDiacak = SISWA_DATA.filter(s => s.status === 'naik' && s.kelasBaru);
+  if (!sudahDiacak.length) { showToast('⚠️ Belum ada hasil untuk diunduh!', true); return; }
+
+  const byKelasBaru = {};
+  sudahDiacak.forEach(s => { if (!byKelasBaru[s.kelasBaru]) byKelasBaru[s.kelasBaru] = []; byKelasBaru[s.kelasBaru].push(s); });
+
+  const wb = XLSX.utils.book_new();
+
+  // Sheet ringkasan: semua siswa dalam satu tabel
+  const rekapRows = [['NO', 'KELAS BARU', 'NAMA SISWA', 'NISN', 'NIS', 'KELAS ASAL']];
+  let no = 1;
+  Object.keys(byKelasBaru).sort().forEach(kelas => {
+    byKelasBaru[kelas].forEach(s => {
+      rekapRows.push([no++, kelas, s.nama, s.nisn || '-', s.nis || '-', s.kelas]);
+    });
+  });
+  const wsRekap = XLSX.utils.aoa_to_sheet(rekapRows);
+  wsRekap['!cols'] = [{wch:5},{wch:12},{wch:28},{wch:15},{wch:12},{wch:12}];
+  XLSX.utils.book_append_sheet(wb, wsRekap, 'Semua Kelas');
+
+  // Sheet terpisah per kelas baru
+  Object.keys(byKelasBaru).sort().forEach(kelas => {
+    const rows = [['NO', 'NAMA SISWA', 'NISN', 'NIS', 'KELAS ASAL']];
+    byKelasBaru[kelas].forEach((s, i) => {
+      rows.push([i + 1, s.nama, s.nisn || '-', s.nis || '-', s.kelas]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:5},{wch:28},{wch:15},{wch:12},{wch:12}];
+    // Nama sheet Excel maks 31 karakter & tidak boleh karakter tertentu
+    const sheetName = ('Kelas ' + kelas).substring(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  XLSX.writeFile(wb, `hasil-pembagian-kelas-${new Date().toISOString().slice(0,10)}.xlsx`);
+  showToast('📊 Excel berhasil diunduh!');
 }
 
 
@@ -5095,6 +5476,7 @@ const LS_KEYS = {
   jadwal2:   'kuriku_jadwal2',
   mgmp:      'kuriku_mgmp',
   customBlock: 'kuriku_custom_block',
+  bebanMengajar: 'kuriku_beban_mengajar',
   late:      'kuriku_late',
   notulen:   'kuriku_notulen',
   planning:  'kuriku_planning',
@@ -5110,6 +5492,7 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.jadwal2, JSON.stringify(JADWAL_DATA2));
     localStorage.setItem(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
     localStorage.setItem(LS_KEYS.customBlock, JSON.stringify(customBlockData));
+    localStorage.setItem(LS_KEYS.bebanMengajar, JSON.stringify(bebanMengajarData));
     localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
     localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
     localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
@@ -5141,6 +5524,9 @@ function loadAll() {
     // Custom Block
     const cb = localStorage.getItem(LS_KEYS.customBlock);
     if (cb) customBlockData = JSON.parse(cb);
+    // Beban Mengajar
+    const bm = localStorage.getItem(LS_KEYS.bebanMengajar);
+    if (bm) bebanMengajarData = JSON.parse(bm);
     // Keterlambatan
     const l = localStorage.getItem(LS_KEYS.late);
     if (l) lateRecords = JSON.parse(l);

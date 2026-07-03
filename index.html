@@ -963,7 +963,8 @@
     cursor: pointer; min-width: 22px; font-size: 7px;
   }
   .rekap-cell-mgmp {
-    background: rgba(255,140,0,0.2); color: var(--orange); font-weight: 700;
+    background: repeating-linear-gradient(45deg, rgba(120,53,15,0.22), rgba(120,53,15,0.22) 3px, rgba(120,53,15,0.38) 3px, rgba(120,53,15,0.38) 6px);
+    color: #78350F; font-weight: 700;
     cursor: pointer; min-width: 22px; font-size: 7px;
   }
   .rekap-cell-empty {
@@ -1007,9 +1008,10 @@
     position: absolute; top: 1px; left: 3px; font-size: 9px;
   }
   .jadwal-cell.mgmp-cell {
-    background: rgba(255,140,0,0.12); border-color: rgba(255,140,0,0.4);
+    background: repeating-linear-gradient(45deg, rgba(120,53,15,0.14), rgba(120,53,15,0.14) 4px, rgba(120,53,15,0.24) 4px, rgba(120,53,15,0.24) 8px);
+    border-color: rgba(120,53,15,0.55);
   }
-  .jadwal-cell.mgmp-cell .jc-guru { color: var(--orange); }
+  .jadwal-cell.mgmp-cell .jc-guru { color: #78350F; }
   .jadwal-cell .jc-del {
     position: absolute; top: 0; right: 0;
     font-size: 11px; color: var(--red); cursor: pointer; opacity: 0.85;
@@ -1847,6 +1849,26 @@
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📋 DAFTAR BEBAN MENGAJAR (<span id="beban-total-jam">0</span> jam total)</div>
       </div>
       <div id="beban-list" style="margin-bottom:14px;"></div>
+
+      <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.35);">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">⚖️ KEADILAN BEBAN MENGAJAR</div>
+        <div class="form-group">
+          <label class="form-label">MAKS. JAM MENGAJAR PER GURU / HARI</label>
+          <select class="form-select" id="auto-max-jam-hari">
+            <option value="4">4 jam/hari</option>
+            <option value="5">5 jam/hari</option>
+            <option value="6" selected>6 jam/hari</option>
+            <option value="7">7 jam/hari</option>
+            <option value="8">8 jam/hari</option>
+            <option value="9">9 jam/hari (tanpa batas)</option>
+          </select>
+          <div style="font-size:9px;color:var(--muted);margin-top:6px;">Sistem akan menyebar jam mengajar antar hari supaya guru tidak kelebihan beban di 1 hari — sesuai batas ini.</div>
+        </div>
+        <label style="display:flex;align-items:flex-start;gap:8px;font-size:10px;color:var(--white);cursor:pointer;">
+          <input type="checkbox" id="auto-fair-last-period" checked style="margin-top:2px;">
+          <span><b>Ratakan jatah mengajar jam terakhir</b> — semua guru bergiliran adil kebagian jam terakhir (JP9/JP7/JP5 sesuai hari), kecuali guru <b>PJOK</b> yang dikecualikan dari rotasi ini.</span>
+        </label>
+      </div>
 
       <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.35);">
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">⚙️ MODE GENERATE</div>
@@ -3271,7 +3293,7 @@ function exportRekapPDF() {
         const blockHit = getCustomBlockForGuruSlot(g.nama, hari, jam);
         const fullyBlocked = !foundKelas && !isMGMPGuru && !blockHit.length ? getFullyBlockedInfo(hari, jam) : null;
         if (foundKelas) rows += `<td style="background:#eef;font-weight:bold;${sepStyle}">${foundKelas}</td>`;
-        else if (isMGMPGuru) rows += `<td style="background:#fde;color:#e67e22;${sepStyle}">M</td>`;
+        else if (isMGMPGuru) rows += `<td style="background:#f0e0d0;color:#78350F;font-weight:bold;${sepStyle}">M</td>`;
         else if (blockHit.length) rows += `<td style="background:#f3e8ff;color:#7c3aed;${sepStyle}font-size:6px;" title="${blockHit[0].label}">${blockHit[0].label.slice(0,4)}</td>`;
         else if (fullyBlocked) rows += `<td style="background:#f3e8ff;color:#7c3aed;${sepStyle}font-size:6px;" title="${fullyBlocked.label}">${fullyBlocked.label.slice(0,4)}</td>`;
         else rows += `<td style="${sepStyle}"></td>`;
@@ -3753,6 +3775,9 @@ function renderBebanMengajarList() {
 function generateJadwalOtomatis() {
   if (!bebanMengajarData.length) { showToast('⚠️ Tambahkan beban mengajar dulu!', true); return; }
   const mode = document.querySelector('input[name="auto-mode"]:checked')?.value || 'fill';
+  const MAX_JAM_HARI = parseInt(document.getElementById('auto-max-jam-hari')?.value || 6);
+  const FAIR_LAST_PERIOD = document.getElementById('auto-fair-last-period')?.checked !== false;
+  const isPjok = (mapel) => /pjok|penjas|olahraga/i.test(mapel || '');
 
   if (mode === 'reset') {
     if (!confirm('⚠️ Semua jadwal Senin–Sabtu yang sudah ada akan DIHAPUS lalu dibuat ulang dari daftar beban mengajar. Lanjutkan?')) return;
@@ -3770,13 +3795,26 @@ function generateJadwalOtomatis() {
   // 2. Occupancy map — mulai dari jadwal yang sudah ada (mode 'fill') atau kosong (mode 'reset')
   const guruBusy = {}; // key `${hari}-${jam}-${guru}` => true
   const kelasBusy = {}; // key `${hari}-${jam}-${kelas}` => true
+  // Lacak rentang jam terpakai per guru per hari (untuk clustering) + total jam per hari (untuk batas keadilan)
+  // + berapa kali guru kebagian jam terakhir (untuk rotasi adil)
+  const guruDaySpan = {};  // guruDaySpan[guru][hari] = {min, max}
+  const guruDayCount = {}; // guruDayCount[guru][hari] = jumlah jam
+  const lastPeriodCount = {}; // lastPeriodCount[guru] = berapa kali kebagian jam terakhir (non-PJOK)
   [1,2,3,4,5,6].forEach(hari => {
     const hariData = JADWAL_DATA2[hari] || {};
     Object.entries(hariData).forEach(([kelas, jamObj]) => {
       Object.entries(jamObj).forEach(([jam, cell]) => {
-        if (cell?.guru) {
-          guruBusy[`${hari}-${jam}-${cell.guru}`] = true;
-          kelasBusy[`${hari}-${jam}-${kelas}`] = true;
+        if (!cell?.guru) return;
+        const j = parseInt(jam);
+        guruBusy[`${hari}-${jam}-${cell.guru}`] = true;
+        kelasBusy[`${hari}-${jam}-${kelas}`] = true;
+        guruDaySpan[cell.guru] = guruDaySpan[cell.guru] || {};
+        const curSpan = guruDaySpan[cell.guru][hari];
+        guruDaySpan[cell.guru][hari] = curSpan ? { min: Math.min(curSpan.min, j), max: Math.max(curSpan.max, j) } : { min: j, max: j };
+        guruDayCount[cell.guru] = guruDayCount[cell.guru] || {};
+        guruDayCount[cell.guru][hari] = (guruDayCount[cell.guru][hari] || 0) + 1;
+        if (!isPjok(cell.mapel) && j === maxJamForHari(hari)) {
+          lastPeriodCount[cell.guru] = (lastPeriodCount[cell.guru] || 0) + 1;
         }
       });
     });
@@ -3807,30 +3845,33 @@ function generateJadwalOtomatis() {
   const HARI_URUT = [1,2,3,4,5,6];
   const shuffle = arr => { const a = [...arr]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
-  // Lacak rentang jam terpakai per guru per hari, supaya sesi baru diusahakan berdekatan (tidak melompat jauh)
-  const guruDaySpan = {}; // guruDaySpan[guru][hari] = {min, max}
-  [1,2,3,4,5,6].forEach(hari => {
-    const hariData = JADWAL_DATA2[hari] || {};
-    Object.entries(hariData).forEach(([kelas, jamObj]) => {
-      Object.entries(jamObj).forEach(([jam, cell]) => {
-        if (!cell?.guru) return;
-        guruDaySpan[cell.guru] = guruDaySpan[cell.guru] || {};
-        const cur = guruDaySpan[cell.guru][hari];
-        const j = parseInt(jam);
-        guruDaySpan[cell.guru][hari] = cur ? { min: Math.min(cur.min, j), max: Math.max(cur.max, j) } : { min: j, max: j };
-      });
-    });
-  });
-  function markGuruSpan(guru, hari, jStart, jEnd) {
+  function markPlacement(guru, mapel, hari, jStart, jEnd) {
     guruDaySpan[guru] = guruDaySpan[guru] || {};
     const cur = guruDaySpan[guru][hari];
-    guruDaySpan[guru][hari] = cur
-      ? { min: Math.min(cur.min, jStart), max: Math.max(cur.max, jEnd) }
-      : { min: jStart, max: jEnd };
+    guruDaySpan[guru][hari] = cur ? { min: Math.min(cur.min, jStart), max: Math.max(cur.max, jEnd) } : { min: jStart, max: jEnd };
+    guruDayCount[guru] = guruDayCount[guru] || {};
+    guruDayCount[guru][hari] = (guruDayCount[guru][hari] || 0) + (jEnd - jStart + 1);
+    if (!isPjok(mapel) && jEnd === maxJamForHari(hari)) {
+      lastPeriodCount[guru] = (lastPeriodCount[guru] || 0) + 1;
+    }
   }
-  // Pilih posisi start terbaik untuk sebuah chunk di hari tsb — utamakan yang paling dekat dengan sesi guru yang sudah ada hari itu
-  function pickBestStart(hari, chunkSize, guru, kelas) {
+
+  // Daftar guru yang ikut program rotasi jam terakhir (semua guru di beban mengajar, kecuali PJOK)
+  const eligibleGuruList = [...new Set(bebanMengajarData.filter(b => !isPjok(b.mapel)).map(b => b.guru))];
+  function avgLastPeriod() {
+    if (!eligibleGuruList.length) return 0;
+    const total = eligibleGuruList.reduce((s, g) => s + (lastPeriodCount[g] || 0), 0);
+    return total / eligibleGuruList.length;
+  }
+
+  // Pilih posisi start terbaik: dekat dengan sesi guru yang sudah ada hari itu (kurangi jarak),
+  // sambil menghormati batas jam/hari & meratakan giliran jam terakhir antar guru (RELATIF terhadap rata-rata,
+  // supaya guru yang belum kebagian justru "ditarik" ke jam terakhir, bukan cuma menghindarinya terus-menerus).
+  function pickBestStart(hari, chunkSize, guru, mapel, kelas, respectCap) {
     const maxJ = maxJamForHari(hari);
+    const dayCount = (guruDayCount[guru] || {})[hari] || 0;
+    if (respectCap && MAX_JAM_HARI < 9 && dayCount + chunkSize > MAX_JAM_HARI) return null;
+
     const validStarts = [];
     for (let start = 1; start <= maxJ - chunkSize + 1; start++) {
       let ok = true;
@@ -3840,19 +3881,22 @@ function generateJadwalOtomatis() {
       if (ok) validStarts.push(start);
     }
     if (!validStarts.length) return null;
+
     const existing = (guruDaySpan[guru] || {})[hari];
-    if (existing) {
-      // Skor: seberapa besar rentang total (span) kalau chunk ini ditaruh di posisi start — makin kecil makin bagus (berdekatan)
-      let best = validStarts[0], bestCost = Infinity;
-      shuffle(validStarts).forEach(start => {
-        const end = start + chunkSize - 1;
-        const span = Math.max(existing.max, end) - Math.min(existing.min, start) + 1;
-        if (span < bestCost) { bestCost = span; best = start; }
-      });
-      return best;
-    }
-    // Belum ada sesi guru ini di hari tsb — pilih acak dari beberapa titik (variasi pagi/tengah/sore), tidak selalu JP1
-    return shuffle(validStarts)[0];
+    const eligibleForFairness = FAIR_LAST_PERIOD && !isPjok(mapel);
+    const avg = eligibleForFairness ? avgLastPeriod() : 0;
+    let best = validStarts[0], bestCost = Infinity;
+    shuffle(validStarts).forEach(start => {
+      const end = start + chunkSize - 1;
+      let cost = existing ? (Math.max(existing.max, end) - Math.min(existing.min, start) + 1) : 0;
+      if (eligibleForFairness && end === maxJ) {
+        // Guru yang giliran jam terakhirnya masih di bawah rata-rata jadi lebih "menarik" (cost turun/negatif),
+        // guru yang sudah lebih sering kebagian jadi kurang menarik (cost naik) — hasilnya bergiliran adil.
+        cost += ((lastPeriodCount[guru] || 0) - avg) * 3;
+      }
+      if (cost < bestCost) { bestCost = cost; best = start; }
+    });
+    return best;
   }
 
   // 3. Tentukan pembagian jam per hari (chunk) agar tersebar, tidak numpuk di 1 hari
@@ -3870,7 +3914,20 @@ function generateJadwalOtomatis() {
     return chunks; // contoh: 6 => [2,2,2] ; 5 => [2,2,1] ; 3 => [1,1,1] ; 2 => [1,1]
   }
 
-  const failedTasks = [];
+  function placeChunk(task, hari, start, chunkSize) {
+    for (let j = start; j < start + chunkSize; j++) {
+      guruBusy[`${hari}-${j}-${task.guru}`] = true;
+      kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
+      if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
+      if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
+      JADWAL_DATA2[hari][task.kelas][j] = {
+        guru: task.guru, mapel: task.mapel, ruang: task.ruang,
+        jamRange: Array.from({length: chunkSize}, (_, idx) => start + idx)
+      };
+    }
+    markPlacement(task.guru, task.mapel, hari, start, start + chunkSize - 1);
+    task.placed += chunkSize;
+  }
 
   tasks.forEach(task => {
     const chunks = buildChunks(task.need);
@@ -3891,40 +3948,22 @@ function generateJadwalOtomatis() {
       const candidateDays = [...belumDipakai, ...sudahDipakai];
 
       for (const hari of candidateDays) {
-        const start = pickBestStart(hari, chunkSize, task.guru, task.kelas);
+        const start = pickBestStart(hari, chunkSize, task.guru, task.mapel, task.kelas, true);
         if (start === null) continue;
-        for (let j = start; j < start + chunkSize; j++) {
-          guruBusy[`${hari}-${j}-${task.guru}`] = true;
-          kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
-          if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
-          if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
-          JADWAL_DATA2[hari][task.kelas][j] = {
-            guru: task.guru, mapel: task.mapel, ruang: task.ruang,
-            jamRange: Array.from({length: chunkSize}, (_, idx) => start + idx)
-          };
-        }
-        markGuruSpan(task.guru, hari, start, start + chunkSize - 1);
-        task.placed += chunkSize;
+        placeChunk(task, hari, start, chunkSize);
         usedDays.add(hari);
         placedThisChunk = true;
         break;
       }
 
-      // Kalau chunk gabungan tidak muat, coba pecah jadi jam satuan sebagai fallback
+      // Kalau chunk gabungan tidak muat dalam batas jam/hari, coba pecah jadi jam satuan (tetap hormati batas)
       if (!placedThisChunk && chunkSize > 1) {
         for (let k = 0; k < chunkSize; k++) {
           let single = false;
           for (const hari of candidateDays) {
-            const start = pickBestStart(hari, 1, task.guru, task.kelas);
+            const start = pickBestStart(hari, 1, task.guru, task.mapel, task.kelas, true);
             if (start === null) continue;
-            const j = start;
-            guruBusy[`${hari}-${j}-${task.guru}`] = true;
-            kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
-            if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
-            if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
-            JADWAL_DATA2[hari][task.kelas][j] = { guru: task.guru, mapel: task.mapel, ruang: task.ruang, jamRange: [j] };
-            markGuruSpan(task.guru, hari, j, j);
-            task.placed += 1;
+            placeChunk(task, hari, start, 1);
             usedDays.add(hari);
             single = true;
             break;
@@ -3933,9 +3972,30 @@ function generateJadwalOtomatis() {
         }
       }
     });
-
-    if (task.placed < task.need) failedTasks.push(task);
   });
+
+  // Pass 2: sisa jam yang tidak muat karena batas jam/hari terlalu ketat — coba lagi TANPA batas harian
+  // (supaya tetap terjadwal, dicatat di laporan sebagai "melebihi batas ideal" biar Waka tahu perlu ditinjau)
+  const overCapTasks = [];
+  tasks.forEach(task => {
+    if (task.placed >= task.need) return;
+    let extra = 0;
+    while (task.placed < task.need) {
+      let placedOne = false;
+      for (const hari of shuffle(HARI_URUT)) {
+        const start = pickBestStart(hari, 1, task.guru, task.mapel, task.kelas, false);
+        if (start === null) continue;
+        placeChunk(task, hari, start, 1);
+        extra += 1;
+        placedOne = true;
+        break;
+      }
+      if (!placedOne) break;
+    }
+    if (extra > 0) overCapTasks.push({ guru: task.guru, mapel: task.mapel, kelas: task.kelas, extra });
+  });
+
+  const failedTasks = tasks.filter(t => t.placed < t.need);
 
   renderGrid(); renderRekapTable(); saveAll();
 
@@ -3946,9 +4006,14 @@ function generateJadwalOtomatis() {
     let html = `<div class="card" style="border-color:${failedTasks.length ? 'rgba(230,126,34,0.4)' : 'rgba(46,204,113,0.4)'};">
       <div style="font-size:11px;font-weight:700;color:${failedTasks.length ? 'var(--orange)' : '#2ecc71'};margin-bottom:8px;">
         ${failedTasks.length ? '⚠️' : '✅'} Selesai: ${totalPlaced}/${totalNeed} jam berhasil dijadwalkan
-      </div>`;
+      </div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:4px;">Batas: maks ${MAX_JAM_HARI} jam/guru/hari${FAIR_LAST_PERIOD ? ' · rotasi jam terakhir aktif (kecuali PJOK)' : ''}</div>`;
+    if (overCapTasks.length) {
+      html += `<div style="font-size:9px;color:#e67e22;margin:8px 0 4px;">⚠️ ${overCapTasks.length} tugas terpaksa melebihi batas ${MAX_JAM_HARI} jam/hari karena tidak ada slot lain yang cocok — pertimbangkan tinjau ulang beban mengajarnya:</div>`;
+      html += overCapTasks.map(t => `<div style="font-size:10px;color:var(--white);padding:3px 0;">🔸 ${t.guru} — ${t.mapel} — Kelas ${t.kelas}: ${t.extra} jam melebihi batas harian</div>`).join('');
+    }
     if (failedTasks.length) {
-      html += `<div style="font-size:9px;color:var(--muted);margin-bottom:8px;">Jam berikut tidak muat dijadwalkan otomatis (kemungkinan guru/kelas terlalu penuh atau banyak jam yang terkunci). Silakan isi manual lewat tab GRID:</div>`;
+      html += `<div style="font-size:9px;color:var(--muted);margin:8px 0 4px;">Jam berikut tetap tidak muat dijadwalkan (kemungkinan guru/kelas terlalu penuh atau banyak jam terkunci). Silakan isi manual lewat tab GRID:</div>`;
       html += failedTasks.map(t => `<div style="font-size:10px;color:var(--white);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);">🔸 ${t.guru} — ${t.mapel} — Kelas ${t.kelas}: kurang ${t.need - t.placed} jam</div>`).join('');
     }
     html += '</div>';

@@ -1712,10 +1712,19 @@
           <input type="text" class="form-input" id="mgmp-mapel" placeholder="Contoh: MGMP Matematika">
         </div>
         <div class="form-group">
+          <label class="form-label">RENTANG JAM MGMP <span style="color:var(--muted);font-weight:400;">(default seharian — persempit kalau MGMP cuma sebagian jam, sisanya bisa dipakai mengajar)</span></label>
+          <div style="display:flex;gap:8px;">
+            <select class="form-select" id="mgmp-jam-mulai" style="flex:1;" onchange="onMgmpJamChange()"></select>
+            <select class="form-select" id="mgmp-jam-selesai" style="flex:1;" onchange="onMgmpJamChange()"></select>
+          </div>
+          <div id="mgmp-jam-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;"></div>
+        </div>
+        <div class="form-group">
           <label class="form-label">CATATAN (opsional)</label>
           <input type="text" class="form-input" id="mgmp-catatan" placeholder="Lokasi, jam, dll.">
         </div>
-        <button class="btn-primary" onclick="tambahMGMP()" style="font-size:11px;padding:10px;">💾 SIMPAN MGMP</button>
+        <button class="btn-primary" id="mgmp-save-btn" onclick="tambahMGMP()" style="font-size:11px;padding:10px;">💾 SIMPAN MGMP</button>
+        <button class="btn-cancel" id="mgmp-cancel-edit-btn" onclick="batalEditMGMP()" style="font-size:11px;padding:10px;margin-top:8px;width:100%;display:none;">✕ BATAL EDIT</button>
       </div>
       <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">📋 DAFTAR MGMP TERSIMPAN</div>
       <div id="mgmp-list"></div>
@@ -2527,7 +2536,6 @@ function renderGrid() {
   const kelasFilter = _gridKelas || '';
   const kelasList = kelasFilter ? [kelasFilter] : KELAS_LIST;
   const hariData = JADWAL_DATA2[hari] || {};
-  const mgmpToday = getMGMPForDay(hari);
 
   // Build conflict lookup
   const jamGuruMap = {};
@@ -2563,7 +2571,7 @@ function renderGrid() {
       const cell = (hariData[kelas] || {})[jam];
       const kcClass = kelasClass(kelas);
       if (cell) {
-        const isMGMP = mgmpToday.some(m => m.guru === cell.guru);
+        const isMGMP = getMGMPForSlot(hari, jam).some(m => m.guru === cell.guru);
         const isBlocked = !isMGMP && getCustomBlockForGuruSlot(cell.guru, hari, jam).length > 0;
         const blockInfo = isBlocked ? getCustomBlockForGuruSlot(cell.guru, hari, jam)[0] : null;
         const kelasBlockHit = getCustomBlockForKelasSlot(kelas, hari, jam);
@@ -2677,11 +2685,22 @@ function renderAdviceBox() {
     }
   }
 
-  // 3. Cek MGMP — beri tahu jika hari ini banyak guru MGMP
+  // 3. Cek MGMP — beri tahu jika hari ini ada guru MGMP, dan cek jam spesifik guru yang dipilih
   const mgmpHariIni = getMGMPForDay(hari);
   if (mgmpHariIni.length) {
-    const mapelTerdampak = [...new Set(mgmpHariIni.map(m => m.mapel.replace('MGMP ','')))];
-    advices.push({ ico:'🏫', msg: `Hari ${HARI[hari]} ada ${mgmpHariIni.length} guru sedang MGMP (${mapelTerdampak.join(', ')}). Pastikan tidak menjadwalkan mereka di hari ini.` });
+    const infoList = mgmpHariIni.map(m => {
+      const [s, e] = getMGMPRange(m, hari);
+      const rangeTxt = (s === 1 && e === maxJamForHari(hari)) ? 'seharian' : `JP${s}–JP${e}`;
+      return `${m.guru} (${rangeTxt})`;
+    });
+    advices.push({ ico:'🏫', msg: `Hari ${HARI[hari]} ada ${mgmpHariIni.length} guru MGMP: ${infoList.join(', ')}. Di luar rentang jam itu, guru tetap bisa dijadwalkan.` });
+  }
+  const guruSedangDipilihMgmp = document.getElementById('mf-guru')?.value || '';
+  if (guruSedangDipilihMgmp && jamDipilih.length) {
+    const jamKenaMgmp = jamDipilih.filter(j => getMGMPForSlot(hari, j).some(m => m.guru === guruSedangDipilihMgmp));
+    if (jamKenaMgmp.length) {
+      advices.push({ ico:'🏫', msg: `⛔ ${guruSedangDipilihMgmp} sedang MGMP di JP${jamKenaMgmp.join(',')} hari ${HARI[hari]}. Pilih jam lain.` });
+    }
   }
 
   // 3b. Cek Custom Block (UMMI, Upacara, dll) untuk guru yang sedang dipilih di jam yang dipilih
@@ -2790,6 +2809,21 @@ function getMGMPForDay(hari) {
     } else {
       return parseInt(m.hari) === hari;
     }
+  });
+}
+// Ambil rentang jam MGMP — kosong/lama (tanpa jamMulai/jamSelesai) dianggap seharian penuh (kompatibel data lama)
+function getMGMPRange(m, hari) {
+  const max = maxJamForHari(hari);
+  const start = m.jamMulai ? parseInt(m.jamMulai) : 1;
+  const end = m.jamSelesai ? parseInt(m.jamSelesai) : max;
+  return [start, end];
+}
+// MGMP yang aktif tepat di hari+jam tertentu (bukan sekadar hari)
+function getMGMPForSlot(hari, jam) {
+  const j = parseInt(jam);
+  return getMGMPForDay(hari).filter(m => {
+    const [s, e] = getMGMPRange(m, hari);
+    return j >= s && j <= e;
   });
 }
 
@@ -3120,7 +3154,13 @@ function renderListGuru() {
   if (mgmpG.length) {
     html += `<div class="card" style="border-color:rgba(255,140,0,0.3);margin-bottom:8px;">
       <div style="font-size:10px;font-family:'Plus Jakarta Sans',sans-serif;color:var(--orange);margin-bottom:8px;">🏫 JADWAL MGMP</div>
-      ${mgmpG.map(m => `<div style="font-size:11px;color:var(--white);padding:4px 0;">${m.mapel} — ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[m.hari]+' Minggu ke-'+m.minggu}</div>`).join('')}
+      ${mgmpG.map(m => {
+        const hariRef = m.jenis==='tanggal' ? (m.tanggal ? new Date(m.tanggal).getDay()||1 : 1) : parseInt(m.hari);
+        const [s,e] = getMGMPRange(m, hariRef);
+        const max = maxJamForHari(hariRef);
+        const rangeTxt = (s===1 && e===max) ? 'Seharian' : `JP${s}–JP${e}`;
+        return `<div style="font-size:11px;color:var(--white);padding:4px 0;">${m.mapel} — ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[m.hari]+' Minggu ke-'+m.minggu} · ${rangeTxt}</div>`;
+      }).join('')}
     </div>`;
   }
   // Custom Block info (UMMI, Upacara, dll)
@@ -3160,11 +3200,10 @@ function renderRekapTable() {
   GURU_DATA.forEach((g, gi) => {
     html += `<tr><td class="rekap-no">${gi+1}</td><td class="rekap-nama">${g.nama}</td>`;
     [1,2,3,4,5,6].forEach(hari => {
-      const mgmpToday = getMGMPForDay(hari);
-      const isMGMPGuru = mgmpToday.some(m => m.guru === g.nama);
       const maxJam = maxJamForHari(hari);
       for (let jam = 1; jam <= maxJam; jam++) {
         const sepClass = (jam === 1) ? ' rekap-day-sep' : '';
+        const isMGMPGuru = getMGMPForSlot(hari, jam).some(m => m.guru === g.nama);
         // Find if this guru teaches at this hari+jam (search all kelas)
         let foundKelas = null;
         const hariData = JADWAL_DATA2[hari] || {};
@@ -3220,11 +3259,10 @@ function exportRekapPDF() {
   GURU_DATA.forEach((g, gi) => {
     rows += `<tr><td style="text-align:center;">${gi+1}</td><td style="text-align:left;white-space:nowrap;">${g.nama}</td>`;
     [1,2,3,4,5,6].forEach(hari => {
-      const mgmpToday = getMGMPForDay(hari);
-      const isMGMPGuru = mgmpToday.some(m => m.guru === g.nama);
       const maxJam = maxJamForHari(hari);
       for (let jam = 1; jam <= maxJam; jam++) {
         const sepStyle = (jam === 1) ? 'border-left:3px solid #003366;' : '';
+        const isMGMPGuru = getMGMPForSlot(hari, jam).some(m => m.guru === g.nama);
         let foundKelas = null;
         const hariData = JADWAL_DATA2[hari] || {};
         Object.entries(hariData).forEach(([kelas, jamObj]) => {
@@ -3272,17 +3310,62 @@ function exportRekapPDF() {
 }
 
 // ===== MGMP =====
+let _editingMgmpIdx = null;
 function populateMGMPGuruSel() {
   const sel = document.getElementById('mgmp-guru-sel');
   if (!sel) return;
   sel.innerHTML = GURU_DATA.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel})</option>`).join('');
+  buildMgmpJamOptions();
+}
+function getMgmpFormHari() {
+  const jenisSel = document.getElementById('mgmp-jenis');
+  const tanggalInp = document.getElementById('mgmp-tanggal');
+  const hariSel = document.getElementById('mgmp-hari');
+  if (jenisSel && jenisSel.value !== 'rutin' && tanggalInp && tanggalInp.value) {
+    return new Date(tanggalInp.value).getDay() || 1;
+  }
+  return parseInt(hariSel?.value) || 1;
+}
+function buildMgmpJamOptions() {
+  const hari = getMgmpFormHari();
+  const max = maxJamForHari(hari);
+  const mulaiSel = document.getElementById('mgmp-jam-mulai');
+  const selesaiSel = document.getElementById('mgmp-jam-selesai');
+  if (!mulaiSel || !selesaiSel) return;
+  const curMulai = mulaiSel.value, curSelesai = selesaiSel.value;
+  let opts = '';
+  for (let j = 1; j <= max; j++) opts += `<option value="${j}">JP${j} (${JAM_LABELS[j]})</option>`;
+  mulaiSel.innerHTML = opts;
+  selesaiSel.innerHTML = opts;
+  mulaiSel.value = (curMulai && curMulai <= max) ? curMulai : '1';
+  selesaiSel.value = (curSelesai && curSelesai <= max) ? curSelesai : String(max);
+  onMgmpJamChange();
+}
+function onMgmpJamChange() {
+  const mulai = parseInt(document.getElementById('mgmp-jam-mulai')?.value || 1);
+  let selesai = parseInt(document.getElementById('mgmp-jam-selesai')?.value || mulai);
+  if (selesai < mulai) {
+    selesai = mulai;
+    const selesaiSel = document.getElementById('mgmp-jam-selesai');
+    if (selesaiSel) selesaiSel.value = String(mulai);
+  }
+  const hari = getMgmpFormHari();
+  const max = maxJamForHari(hari);
+  const lbl = document.getElementById('mgmp-jam-label');
+  if (lbl) {
+    lbl.textContent = (mulai === 1 && selesai === max)
+      ? `MGMP seharian penuh (JP1–JP${max})`
+      : `MGMP JP${mulai}–JP${selesai} saja — JP lain di hari ini tetap bisa dipakai mengajar`;
+  }
 }
 document.addEventListener('change', function(e) {
   if (e.target.id === 'mgmp-jenis') {
     const isRutin = e.target.value === 'rutin';
     document.getElementById('mgmp-field-tanggal').style.display = isRutin ? 'none' : 'block';
     document.getElementById('mgmp-field-rutin').style.display = isRutin ? 'block' : 'none';
+    buildMgmpJamOptions();
   }
+  if (e.target.id === 'mgmp-hari' || e.target.id === 'mgmp-tanggal') buildMgmpJamOptions();
 });
 function tambahMGMP() {
   const guru = document.getElementById('mgmp-guru-sel')?.value;
@@ -3291,31 +3374,80 @@ function tambahMGMP() {
   const hari = document.getElementById('mgmp-hari')?.value;
   const minggu = document.getElementById('mgmp-minggu')?.value;
   const mapel = document.getElementById('mgmp-mapel')?.value.trim();
+  const jamMulai = document.getElementById('mgmp-jam-mulai')?.value;
+  const jamSelesai = document.getElementById('mgmp-jam-selesai')?.value;
   const catatan = document.getElementById('mgmp-catatan')?.value.trim();
   if (!guru || !mapel) { showToast('⚠️ Lengkapi data MGMP!', true); return; }
   if (jenis === 'tanggal' && !tanggal) { showToast('⚠️ Pilih tanggal MGMP!', true); return; }
-  mgmpData.push({ guru, jenis, tanggal, hari, minggu, mapel, catatan });
-  renderMGMPList(); renderGrid(); saveAll();
-  showToast('✅ MGMP tersimpan!');
+  const entry = { guru, jenis, tanggal, hari, minggu, mapel, jamMulai, jamSelesai, catatan };
+  if (_editingMgmpIdx !== null) {
+    mgmpData[_editingMgmpIdx] = entry;
+    showToast('✅ MGMP diperbarui!');
+    batalEditMGMP();
+  } else {
+    mgmpData.push(entry);
+    showToast('✅ MGMP tersimpan!');
+  }
+  renderMGMPList(); renderGrid(); renderRekapTable(); saveAll();
+}
+function editMGMP(i) {
+  const m = mgmpData[i];
+  if (!m) return;
+  _editingMgmpIdx = i;
+  document.getElementById('mgmp-guru-sel').value = m.guru;
+  document.getElementById('mgmp-jenis').value = m.jenis;
+  const isRutin = m.jenis === 'rutin';
+  document.getElementById('mgmp-field-tanggal').style.display = isRutin ? 'none' : 'block';
+  document.getElementById('mgmp-field-rutin').style.display = isRutin ? 'block' : 'none';
+  if (m.tanggal) document.getElementById('mgmp-tanggal').value = m.tanggal;
+  if (m.hari) document.getElementById('mgmp-hari').value = m.hari;
+  if (m.minggu) document.getElementById('mgmp-minggu').value = m.minggu;
+  document.getElementById('mgmp-mapel').value = m.mapel || '';
+  document.getElementById('mgmp-catatan').value = m.catatan || '';
+  buildMgmpJamOptions();
+  if (m.jamMulai) document.getElementById('mgmp-jam-mulai').value = m.jamMulai;
+  if (m.jamSelesai) document.getElementById('mgmp-jam-selesai').value = m.jamSelesai;
+  onMgmpJamChange();
+  document.getElementById('mgmp-save-btn').textContent = '🔄 UPDATE MGMP';
+  document.getElementById('mgmp-cancel-edit-btn').style.display = 'block';
+  document.querySelector('#jadwal-tab-mgmp .card')?.scrollIntoView({ behavior:'smooth', block:'start' });
+}
+function batalEditMGMP() {
+  _editingMgmpIdx = null;
+  document.getElementById('mgmp-mapel').value = '';
+  document.getElementById('mgmp-catatan').value = '';
+  document.getElementById('mgmp-save-btn').textContent = '💾 SIMPAN MGMP';
+  document.getElementById('mgmp-cancel-edit-btn').style.display = 'none';
+  buildMgmpJamOptions();
 }
 function renderMGMPList() {
   const el = document.getElementById('mgmp-list');
   if (!el) return;
   if (!mgmpData.length) { el.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;font-family:\'Plus Jakarta Sans\',sans-serif;">Belum ada jadwal MGMP</div>'; return; }
-  el.innerHTML = mgmpData.map((m, i) => `
+  el.innerHTML = mgmpData.map((m, i) => {
+    const hariForRange = m.jenis === 'tanggal' ? (m.tanggal ? new Date(m.tanggal).getDay()||1 : 1) : parseInt(m.hari);
+    const [s, e] = getMGMPRange(m, hariForRange);
+    const max = maxJamForHari(hariForRange);
+    const jamLabel = (s === 1 && e === max) ? 'Seharian' : `JP${s}–JP${e}`;
+    return `
     <div class="mgmp-card">
       <div class="mgmp-icon">🏫</div>
       <div class="mgmp-info">
         <div class="mgmp-nama">${m.guru}</div>
-        <div class="mgmp-detail">${m.mapel} · ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[parseInt(m.hari)]+' Minggu ke-'+m.minggu}</div>
+        <div class="mgmp-detail">${m.mapel} · ${m.jenis==='tanggal'?m.tanggal:'Rutin '+HARI[parseInt(m.hari)]+' Minggu ke-'+m.minggu} · ${jamLabel}</div>
         ${m.catatan?`<div class="mgmp-catatan">📝 ${m.catatan}</div>`:''}
       </div>
-      <button class="btn-del" onclick="hapusMGMP(${i})" style="align-self:flex-start;">🗑️</button>
-    </div>`).join('');
+      <div style="display:flex;flex-direction:column;gap:4px;align-self:flex-start;">
+        <button class="btn-edit" onclick="editMGMP(${i})">✏️</button>
+        <button class="btn-del" onclick="hapusMGMP(${i})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
 }
 function hapusMGMP(i) {
   mgmpData.splice(i, 1);
-  renderMGMPList(); renderGrid(); saveAll();
+  if (_editingMgmpIdx === i) batalEditMGMP();
+  renderMGMPList(); renderGrid(); renderRekapTable(); saveAll();
   showToast('🗑️ MGMP dihapus');
 }
 
@@ -3654,7 +3786,7 @@ function generateJadwalOtomatis() {
     if (guruBusy[`${hari}-${jam}-${guru}`]) return false;
     if (kelasBusy[`${hari}-${jam}-${kelas}`]) return false;
     if (isKelasHardBlocked(kelas, hari, jam)) return false;
-    if (getMGMPForDay(hari).some(m => m.guru === guru)) return false;
+    if (getMGMPForSlot(hari, jam).some(m => m.guru === guru)) return false;
     if (getCustomBlockForGuruSlot(guru, hari, jam).length) return false;
     return true;
   };
@@ -3674,6 +3806,54 @@ function generateJadwalOtomatis() {
 
   const HARI_URUT = [1,2,3,4,5,6];
   const shuffle = arr => { const a = [...arr]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+
+  // Lacak rentang jam terpakai per guru per hari, supaya sesi baru diusahakan berdekatan (tidak melompat jauh)
+  const guruDaySpan = {}; // guruDaySpan[guru][hari] = {min, max}
+  [1,2,3,4,5,6].forEach(hari => {
+    const hariData = JADWAL_DATA2[hari] || {};
+    Object.entries(hariData).forEach(([kelas, jamObj]) => {
+      Object.entries(jamObj).forEach(([jam, cell]) => {
+        if (!cell?.guru) return;
+        guruDaySpan[cell.guru] = guruDaySpan[cell.guru] || {};
+        const cur = guruDaySpan[cell.guru][hari];
+        const j = parseInt(jam);
+        guruDaySpan[cell.guru][hari] = cur ? { min: Math.min(cur.min, j), max: Math.max(cur.max, j) } : { min: j, max: j };
+      });
+    });
+  });
+  function markGuruSpan(guru, hari, jStart, jEnd) {
+    guruDaySpan[guru] = guruDaySpan[guru] || {};
+    const cur = guruDaySpan[guru][hari];
+    guruDaySpan[guru][hari] = cur
+      ? { min: Math.min(cur.min, jStart), max: Math.max(cur.max, jEnd) }
+      : { min: jStart, max: jEnd };
+  }
+  // Pilih posisi start terbaik untuk sebuah chunk di hari tsb — utamakan yang paling dekat dengan sesi guru yang sudah ada hari itu
+  function pickBestStart(hari, chunkSize, guru, kelas) {
+    const maxJ = maxJamForHari(hari);
+    const validStarts = [];
+    for (let start = 1; start <= maxJ - chunkSize + 1; start++) {
+      let ok = true;
+      for (let j = start; j < start + chunkSize; j++) {
+        if (!isSlotFree(hari, j, guru, kelas)) { ok = false; break; }
+      }
+      if (ok) validStarts.push(start);
+    }
+    if (!validStarts.length) return null;
+    const existing = (guruDaySpan[guru] || {})[hari];
+    if (existing) {
+      // Skor: seberapa besar rentang total (span) kalau chunk ini ditaruh di posisi start — makin kecil makin bagus (berdekatan)
+      let best = validStarts[0], bestCost = Infinity;
+      shuffle(validStarts).forEach(start => {
+        const end = start + chunkSize - 1;
+        const span = Math.max(existing.max, end) - Math.min(existing.min, start) + 1;
+        if (span < bestCost) { bestCost = span; best = start; }
+      });
+      return best;
+    }
+    // Belum ada sesi guru ini di hari tsb — pilih acak dari beberapa titik (variasi pagi/tengah/sore), tidak selalu JP1
+    return shuffle(validStarts)[0];
+  }
 
   // 3. Tentukan pembagian jam per hari (chunk) agar tersebar, tidak numpuk di 1 hari
   function buildChunks(need) {
@@ -3695,40 +3875,39 @@ function generateJadwalOtomatis() {
   tasks.forEach(task => {
     const chunks = buildChunks(task.need);
     let dayOrder = shuffle(HARI_URUT);
-    let dayPtr = 0;
     const usedDays = new Set();
 
     chunks.forEach(chunkSize => {
       let placedThisChunk = false;
-      // Coba hari yang belum dipakai dulu, baru hari yang sudah dipakai (kalau kehabisan hari)
-      let candidateDays = [...dayOrder.filter(h => !usedDays.has(h)), ...dayOrder.filter(h => usedDays.has(h))];
+      // Utamakan hari yang BELUM dipakai task ini (supaya tetap tersebar antar hari untuk mapel yg sama),
+      // tapi di antara hari-hari itu, dahulukan yang sudah ada aktivitas guru lain (supaya jadwal guru berdekatan, tidak bolong jauh).
+      // Hari yang sudah dipakai task ini jadi cadangan terakhir kalau semua hari lain penuh.
+      const belumDipakai = dayOrder.filter(h => !usedDays.has(h)).sort((a, b) => {
+        const aHas = (guruDaySpan[task.guru] || {})[a] ? 1 : 0;
+        const bHas = (guruDaySpan[task.guru] || {})[b] ? 1 : 0;
+        return bHas - aHas;
+      });
+      const sudahDipakai = dayOrder.filter(h => usedDays.has(h));
+      const candidateDays = [...belumDipakai, ...sudahDipakai];
 
       for (const hari of candidateDays) {
-        const maxJ = maxJamForHari(hari);
-        // Cari `chunkSize` jam berurutan yang kosong untuk guru & kelas ini
-        for (let start = 1; start <= maxJ - chunkSize + 1; start++) {
-          let ok = true;
-          for (let j = start; j < start + chunkSize; j++) {
-            if (!isSlotFree(hari, j, task.guru, task.kelas)) { ok = false; break; }
-          }
-          if (ok) {
-            for (let j = start; j < start + chunkSize; j++) {
-              guruBusy[`${hari}-${j}-${task.guru}`] = true;
-              kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
-              if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
-              if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
-              JADWAL_DATA2[hari][task.kelas][j] = {
-                guru: task.guru, mapel: task.mapel, ruang: task.ruang,
-                jamRange: Array.from({length: chunkSize}, (_, idx) => start + idx)
-              };
-            }
-            task.placed += chunkSize;
-            usedDays.add(hari);
-            placedThisChunk = true;
-            break;
-          }
+        const start = pickBestStart(hari, chunkSize, task.guru, task.kelas);
+        if (start === null) continue;
+        for (let j = start; j < start + chunkSize; j++) {
+          guruBusy[`${hari}-${j}-${task.guru}`] = true;
+          kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
+          if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
+          if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
+          JADWAL_DATA2[hari][task.kelas][j] = {
+            guru: task.guru, mapel: task.mapel, ruang: task.ruang,
+            jamRange: Array.from({length: chunkSize}, (_, idx) => start + idx)
+          };
         }
-        if (placedThisChunk) break;
+        markGuruSpan(task.guru, hari, start, start + chunkSize - 1);
+        task.placed += chunkSize;
+        usedDays.add(hari);
+        placedThisChunk = true;
+        break;
       }
 
       // Kalau chunk gabungan tidak muat, coba pecah jadi jam satuan sebagai fallback
@@ -3736,22 +3915,21 @@ function generateJadwalOtomatis() {
         for (let k = 0; k < chunkSize; k++) {
           let single = false;
           for (const hari of candidateDays) {
-            const maxJ = maxJamForHari(hari);
-            for (let j = 1; j <= maxJ; j++) {
-              if (isSlotFree(hari, j, task.guru, task.kelas)) {
-                guruBusy[`${hari}-${j}-${task.guru}`] = true;
-                kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
-                if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
-                if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
-                JADWAL_DATA2[hari][task.kelas][j] = { guru: task.guru, mapel: task.mapel, ruang: task.ruang, jamRange: [j] };
-                task.placed += 1;
-                usedDays.add(hari);
-                single = true;
-                break;
-              }
-            }
-            if (single) break;
+            const start = pickBestStart(hari, 1, task.guru, task.kelas);
+            if (start === null) continue;
+            const j = start;
+            guruBusy[`${hari}-${j}-${task.guru}`] = true;
+            kelasBusy[`${hari}-${j}-${task.kelas}`] = true;
+            if (!JADWAL_DATA2[hari]) JADWAL_DATA2[hari] = {};
+            if (!JADWAL_DATA2[hari][task.kelas]) JADWAL_DATA2[hari][task.kelas] = {};
+            JADWAL_DATA2[hari][task.kelas][j] = { guru: task.guru, mapel: task.mapel, ruang: task.ruang, jamRange: [j] };
+            markGuruSpan(task.guru, hari, j, j);
+            task.placed += 1;
+            usedDays.add(hari);
+            single = true;
+            break;
           }
+          if (!single) break;
         }
       }
     });

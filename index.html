@@ -3809,13 +3809,13 @@ function generateJadwalOtomatis() {
   });
 
   // 2. Occupancy map — mulai dari jadwal yang sudah ada (mode 'fill') atau kosong (mode 'reset')
-  const guruBusy = {}; // key `${hari}-${jam}-${guru}` => true
-  const kelasBusy = {}; // key `${hari}-${jam}-${kelas}` => true
+  let guruBusy = {}; // key `${hari}-${jam}-${guru}` => true
+  let kelasBusy = {}; // key `${hari}-${jam}-${kelas}` => true
   // Lacak rentang jam terpakai per guru per hari (untuk clustering) + total jam per hari (untuk batas keadilan)
   // + berapa kali guru kebagian jam terakhir (untuk rotasi adil)
-  const guruDaySpan = {};  // guruDaySpan[guru][hari] = {min, max}
-  const guruDayCount = {}; // guruDayCount[guru][hari] = jumlah jam
-  const lastPeriodCount = {}; // lastPeriodCount[guru] = berapa kali kebagian jam terakhir (non-PJOK)
+  let guruDaySpan = {};  // guruDaySpan[guru][hari] = {min, max}
+  let guruDayCount = {}; // guruDayCount[guru][hari] = jumlah jam
+  let lastPeriodCount = {}; // lastPeriodCount[guru] = berapa kali kebagian jam terakhir (non-PJOK)
   [1,2,3,4,5,6].forEach(hari => {
     const hariData = JADWAL_DATA2[hari] || {};
     Object.entries(hariData).forEach(([kelas, jamObj]) => {
@@ -3935,9 +3935,16 @@ function generateJadwalOtomatis() {
   // Rencanakan pembagian jam per sesi secara SEIMBANG (bukan asal ambil maksimal terus) —
   // supaya 4 jam jadi 2+2 (bukan 3+1), 7 jam jadi 3+2+2 (bukan 3+3+1), dst. Tidak pernah
   // menyisakan pecahan 1 jam kalau sebenarnya bisa dibagi rata jadi 2 jam atau lebih.
-  function planChunks(need) {
+  // PJOK/Penjas dikecualikan: maks 2 jam/sesi (biasanya 2 jam praktek + 1 jam teori terpisah).
+  // Mapel 3 jam/minggu SELALU dipecah 2+1 (bukan 3 langsung), sesuai kebijakan sekolah.
+  function chunkCapFor(mapel, need) {
+    if (isPjok(mapel)) return Math.min(2, MAX_CHUNK);
+    if (need === 3) return Math.min(2, MAX_CHUNK);
+    return MAX_CHUNK;
+  }
+  function planChunks(need, cap) {
     if (need <= 0) return [];
-    const nSesi = Math.ceil(need / MAX_CHUNK);
+    const nSesi = Math.ceil(need / cap);
     const plan = [];
     let remaining = need;
     for (let i = 0; i < nSesi; i++) {
@@ -3946,7 +3953,7 @@ function generateJadwalOtomatis() {
       plan.push(size);
       remaining -= size;
     }
-    return plan; // contoh (maxChunk=3): 6=>[3,3] 5=>[3,2] 4=>[2,2] 7=>[3,2,2] 8=>[3,3,2] 2=>[2] 3=>[3]
+    return plan; // contoh (cap=3): 6=>[3,3] 5=>[3,2] 4=>[2,2] 7=>[3,2,2] 8=>[3,3,2] 2=>[2] 3=>[3]
   }
 
   // Cari hari+posisi terbaik untuk sesi sebesar `desiredSize` — kalau BENAR-BENAR tidak muat di manapun,
@@ -3964,23 +3971,74 @@ function generateJadwalOtomatis() {
     return null;
   }
 
+  function candidateDaysFor(task, dayOrder, usedDays) {
+    const belumDipakai = dayOrder.filter(h => !usedDays.has(h)).sort((a, b) => {
+      const aHas = (guruDaySpan[task.guru] || {})[a] ? 1 : 0;
+      const bHas = (guruDaySpan[task.guru] || {})[b] ? 1 : 0;
+      return bHas - aHas;
+    });
+    const sudahDipakai = dayOrder.filter(h => usedDays.has(h));
+    return [...belumDipakai, ...sudahDipakai];
+  }
+
+  // Coba tempatkan SELURUH `plan` (mis. [2,2,2]) secara PERSIS ukurannya (tanpa fallback mengecilkan).
+  // Kalau salah satu sesinya gagal, semua yang sudah ditaruh dalam percobaan ini di-ROLLBACK
+  // (dikembalikan seperti semula) supaya bisa dicoba pola lain (mis. [3,3]) dari kondisi bersih.
+  function tryPlanExact(task, plan, dayOrder) {
+    const snap = {
+      guruBusy: {...guruBusy}, kelasBusy: {...kelasBusy},
+      guruDaySpan: JSON.parse(JSON.stringify(guruDaySpan)),
+      guruDayCount: JSON.parse(JSON.stringify(guruDayCount)),
+      lastPeriodCount: {...lastPeriodCount},
+      placed: task.placed,
+    };
+    const placedCells = [];
+    const usedDays = new Set();
+    let ok = true;
+    for (const desiredSize of plan) {
+      const candidateDays = candidateDaysFor(task, dayOrder, usedDays);
+      let placedThis = false;
+      for (const hari of candidateDays) {
+        const start = pickBestStart(hari, desiredSize, task.guru, task.mapel, task.kelas, true);
+        if (start !== null) {
+          placeChunk(task, hari, start, desiredSize);
+          placedCells.push({ hari, kelas: task.kelas, jams: Array.from({length: desiredSize}, (_, i) => start + i) });
+          usedDays.add(hari);
+          placedThis = true;
+          break;
+        }
+      }
+      if (!placedThis) { ok = false; break; }
+    }
+    if (!ok) {
+      // Rollback total ke kondisi sebelum percobaan ini
+      guruBusy = snap.guruBusy; kelasBusy = snap.kelasBusy;
+      guruDaySpan = snap.guruDaySpan; guruDayCount = snap.guruDayCount;
+      lastPeriodCount = snap.lastPeriodCount; task.placed = snap.placed;
+      placedCells.forEach(pc => { pc.jams.forEach(j => { delete JADWAL_DATA2[pc.hari][pc.kelas][j]; }); });
+      return false;
+    }
+    return true;
+  }
+
   tasks.forEach(task => {
     let dayOrder = shuffle(HARI_URUT);
+
+    // Kasus khusus 6 jam/minggu: utamakan 2+2+2 (lebih menyebar), fallback ke 3+3 kalau 2+2+2 tidak muat.
+    if (task.need === 6 && !isPjok(task.mapel)) {
+      const berhasil2x3 = tryPlanExact(task, [2, 2, 2], dayOrder);
+      if (berhasil2x3) return;
+      // lanjut ke fallback 3+3 di bawah lewat jalur normal (task.placed masih 0 karena sudah di-rollback)
+    }
+
     const usedDays = new Set();
-    const plan = planChunks(task.need);
+    const plan = planChunks(task.need - task.placed, chunkCapFor(task.mapel, task.need));
 
     plan.forEach(desiredSize => {
       // Utamakan hari yang BELUM dipakai task ini (supaya tetap tersebar antar hari untuk mapel yg sama),
       // tapi di antara hari-hari itu, dahulukan yang sudah ada aktivitas guru lain (supaya jadwal guru berdekatan, tidak bolong jauh).
       // Hari yang sudah dipakai task ini jadi cadangan terakhir kalau semua hari lain penuh.
-      const belumDipakai = dayOrder.filter(h => !usedDays.has(h)).sort((a, b) => {
-        const aHas = (guruDaySpan[task.guru] || {})[a] ? 1 : 0;
-        const bHas = (guruDaySpan[task.guru] || {})[b] ? 1 : 0;
-        return bHas - aHas;
-      });
-      const sudahDipakai = dayOrder.filter(h => usedDays.has(h));
-      const candidateDays = [...belumDipakai, ...sudahDipakai];
-
+      const candidateDays = candidateDaysFor(task, dayOrder, usedDays);
       const hariTerpakai = placeBestFit(task, candidateDays, desiredSize, true);
       if (hariTerpakai !== null) usedDays.add(hariTerpakai);
     });
@@ -3993,7 +4051,7 @@ function generateJadwalOtomatis() {
   tasks.forEach(task => {
     if (task.placed >= task.need) return;
     let extra = 0;
-    const remainingPlan = planChunks(task.need - task.placed);
+    const remainingPlan = planChunks(task.need - task.placed, chunkCapFor(task.mapel, task.need));
     remainingPlan.forEach(desiredSize => {
       const before = task.placed;
       placeBestFit(task, shuffle(HARI_URUT), desiredSize, false);

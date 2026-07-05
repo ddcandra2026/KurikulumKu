@@ -701,13 +701,13 @@
   .kelas-badge[data-kelas="9B"].selected { background:#EDB6E3; border-color:rgba(195,34,168,0.8); color:#620E54; }
   .kelas-badge[data-kelas="9C"].selected { background:#EDB6CD; border-color:rgba(195,34,101,0.8); color:#620E31; }
 
-  /* Badge kelas yang terkunci (hard block) — tidak bisa dipilih */
-  .kelas-badge.locked, .jam-badge.kelas-badge.locked {
+  /* Badge kelas/hari yang terkunci — tidak bisa dipilih */
+  .kelas-badge.locked, .jam-badge.locked {
     cursor: not-allowed !important; pointer-events: none;
     background: rgba(231,76,60,0.08) !important; border-color: rgba(231,76,60,0.4) !important;
     color: #e74c3c !important; opacity: 0.85; line-height: 1.3;
   }
-  .kelas-badge.locked.selected, .jam-badge.kelas-badge.locked.selected {
+  .kelas-badge.locked.selected, .jam-badge.locked.selected {
     background: rgba(231,76,60,0.16) !important; border-color: #e74c3c !important;
   }
 
@@ -1880,6 +1880,26 @@
       </div>
 
       <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.35);">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📅 GENERATE PER HARI &amp; KUNCI</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+          Kerjakan bertahap: pilih 1 hari dulu (mis. Senin), generate, cek hasilnya. Kalau sudah pas, klik <b>Kunci</b> supaya hari itu tidak pernah ikut ter-generate lagi (walau tombol generate ditekan berkali-kali). Baru lanjut ke hari berikutnya.
+        </div>
+        <div class="form-group">
+          <label class="form-label">HARI YANG DI-GENERATE SEKARANG</label>
+          <div id="auto-day-picker" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button class="btn-add" onclick="setAutoDaySelection('all')" style="font-size:9px;padding:6px 10px;">Pilih Semua</button>
+          <button class="btn-add" onclick="setAutoDaySelection('none')" style="font-size:9px;padding:6px 10px;">Kosongkan</button>
+        </div>
+        <div style="margin-top:14px;">
+          <label class="form-label">STATUS KUNCI PER HARI</label>
+          <div id="auto-lock-picker" style="display:flex;flex-wrap:wrap;gap:5px;"></div>
+          <div style="font-size:9px;color:var(--muted);margin-top:6px;">Tap hari untuk kunci/buka — hari terkunci 🔒 tidak akan pernah diubah oleh generate manapun, sampai Anda buka kuncinya lagi.</div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.35);">
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">⚙️ MODE GENERATE</div>
         <label style="display:flex;align-items:flex-start;gap:8px;font-size:10px;color:var(--white);margin-bottom:10px;cursor:pointer;">
           <input type="radio" name="auto-mode" value="fill" checked style="margin-top:2px;">
@@ -1887,7 +1907,7 @@
         </label>
         <label style="display:flex;align-items:flex-start;gap:8px;font-size:10px;color:var(--white);cursor:pointer;">
           <input type="radio" name="auto-mode" value="reset" style="margin-top:2px;">
-          <span><b>Hapus &amp; buat ulang dari nol</b> — seluruh jadwal Senin–Sabtu dihapus dulu, lalu dibuat ulang dari daftar beban mengajar. <span style="color:#e74c3c;">Tidak bisa dibatalkan!</span></span>
+          <span><b>Hapus &amp; buat ulang dari nol</b> — jadwal di HARI YANG DIPILIH di atas dihapus dulu (hari terkunci tidak ikut terhapus), lalu dibuat ulang dari daftar beban mengajar. <span style="color:#e74c3c;">Tidak bisa dibatalkan!</span></span>
         </label>
         <button class="btn-primary" onclick="generateJadwalOtomatis()" style="font-size:12px;padding:12px;margin-top:12px;">🎲 GENERATE JADWAL OTOMATIS</button>
       </div>
@@ -2443,6 +2463,10 @@ let customBlockData = [];
 // ===== BEBAN MENGAJAR (untuk Auto-Generate Jadwal) =====
 // { id, guru, mapel, kelasList:[], jamPerMinggu, ruang }
 let bebanMengajarData = [];
+// Hari yang dikunci (1-6) — tidak akan pernah disentuh oleh generate manapun sampai dibuka lagi
+let lockedDaysData = [];
+// Hari yang dipilih untuk digenerate pada sesi klik generate berikutnya (default semua)
+let autoSelectedDays = [1,2,3,4,5,6];
 
 // ===== BATAS JAM MENGAJAR PER HARI =====
 // Jumat: JP1–JP5, Sabtu: JP1–JP7, hari lain: JP1–JP9
@@ -2466,7 +2490,7 @@ function switchJadwalTab(tab, el) {
   if (tab === 'rekap') renderRekapTable();
   if (tab === 'mgmp') { populateMGMPGuruSel(); renderMGMPList(); }
   if (tab === 'block') { populateCustomBlockGuruSel(); renderCustomBlockList(); }
-  if (tab === 'auto') { populateAutoGuruSel(); renderBebanMengajarList(); }
+  if (tab === 'auto') { populateAutoGuruSel(); renderBebanMengajarList(); renderAutoDayPicker(); renderAutoLockPicker(); }
 }
 
 function switchJamTab(tab, el) {
@@ -3786,6 +3810,55 @@ function renderBebanMengajarList() {
   if (totalEl) totalEl.textContent = totalJam;
 }
 
+// ===== GENERATE PER HARI & KUNCI =====
+function renderAutoDayPicker() {
+  const el = document.getElementById('auto-day-picker');
+  if (!el) return;
+  el.innerHTML = [1,2,3,4,5,6].map(h => {
+    const isLocked = lockedDaysData.includes(h);
+    const isSelected = autoSelectedDays.includes(h) && !isLocked;
+    const cls = isLocked ? 'jam-badge locked' : `jam-badge ${isSelected ? 'selected' : ''}`;
+    const onclick = isLocked ? '' : `onclick="toggleAutoDay(${h}, this)"`;
+    return `<span class="${cls}" data-day="${h}" ${onclick} style="min-width:52px;text-align:center;" title="${isLocked ? 'Terkunci — buka dulu di bawah untuk memilih hari ini' : ''}">${HARI[h]}${isLocked ? ' 🔒' : ''}</span>`;
+  }).join('');
+}
+function toggleAutoDay(h, el) {
+  if (lockedDaysData.includes(h)) return;
+  if (autoSelectedDays.includes(h)) {
+    autoSelectedDays = autoSelectedDays.filter(x => x !== h);
+  } else {
+    autoSelectedDays.push(h);
+  }
+  saveAll();
+  renderAutoDayPicker();
+}
+function setAutoDaySelection(mode) {
+  autoSelectedDays = mode === 'all' ? [1,2,3,4,5,6].filter(h => !lockedDaysData.includes(h)) : [];
+  saveAll();
+  renderAutoDayPicker();
+}
+function renderAutoLockPicker() {
+  const el = document.getElementById('auto-lock-picker');
+  if (!el) return;
+  el.innerHTML = [1,2,3,4,5,6].map(h => {
+    const isLocked = lockedDaysData.includes(h);
+    return `<span class="jam-badge ${isLocked ? 'selected' : ''}" data-day="${h}" onclick="toggleLockDay(${h})" style="min-width:52px;text-align:center;${isLocked ? 'background:rgba(230,126,34,0.18);border-color:#e67e22;color:#e67e22;' : ''}">${isLocked ? '🔒' : '🔓'} ${HARI[h]}</span>`;
+  }).join('');
+}
+function toggleLockDay(h) {
+  if (lockedDaysData.includes(h)) {
+    lockedDaysData = lockedDaysData.filter(x => x !== h);
+    showToast(`🔓 ${HARI[h]} dibuka — bisa digenerate lagi`);
+  } else {
+    lockedDaysData.push(h);
+    autoSelectedDays = autoSelectedDays.filter(x => x !== h);
+    showToast(`🔒 ${HARI[h]} dikunci — tidak akan disentuh generate manapun`);
+  }
+  saveAll();
+  renderAutoLockPicker();
+  renderAutoDayPicker();
+}
+
 // ===== AUTO-GENERATE JADWAL — algoritma penjadwalan otomatis =====
 function generateJadwalOtomatis() {
   if (!bebanMengajarData.length) { showToast('⚠️ Tambahkan beban mengajar dulu!', true); return; }
@@ -3795,9 +3868,13 @@ function generateJadwalOtomatis() {
   const FAIR_LAST_PERIOD = document.getElementById('auto-fair-last-period')?.checked !== false;
   const isPjok = (mapel) => /pjok|penjas|olahraga/i.test(mapel || '');
 
+  // Hari target = yang dipilih di picker, dikurangi hari yang terkunci (double-proteksi)
+  const targetDays = autoSelectedDays.filter(h => !lockedDaysData.includes(h));
+  if (!targetDays.length) { showToast('⚠️ Pilih minimal 1 hari yang belum terkunci untuk digenerate!', true); return; }
+
   if (mode === 'reset') {
-    if (!confirm('⚠️ Semua jadwal Senin–Sabtu yang sudah ada akan DIHAPUS lalu dibuat ulang dari daftar beban mengajar. Lanjutkan?')) return;
-    [1,2,3,4,5,6].forEach(h => { JADWAL_DATA2[h] = {}; });
+    if (!confirm(`⚠️ Jadwal hari ${targetDays.map(h=>HARI[h]).join(', ')} akan DIHAPUS lalu dibuat ulang. Hari terkunci tidak akan ikut terhapus. Lanjutkan?`)) return;
+    targetDays.forEach(h => { JADWAL_DATA2[h] = {}; });
   }
 
   // 1. Susun daftar tugas: satu tugas per (guru, mapel, kelas)
@@ -3808,7 +3885,8 @@ function generateJadwalOtomatis() {
     });
   });
 
-  // 2. Occupancy map — mulai dari jadwal yang sudah ada (mode 'fill') atau kosong (mode 'reset')
+  // 2. Occupancy map — dibaca dari SELURUH minggu (termasuk hari terkunci) supaya guru/kelas yang
+  // sudah punya jadwal di hari lain tetap dihormati, walau penempatan baru cuma boleh di targetDays.
   let guruBusy = {}; // key `${hari}-${jam}-${guru}` => true
   let kelasBusy = {}; // key `${hari}-${jam}-${kelas}` => true
   // Lacak rentang jam terpakai per guru per hari (untuk clustering) + total jam per hari (untuk batas keadilan)
@@ -3845,10 +3923,12 @@ function generateJadwalOtomatis() {
     return true;
   };
 
-  // Hitung "domain size" (jumlah slot kosong yang tersedia) untuk urutkan tugas paling sulit dulu (heuristik CSP klasik)
+  // Hitung "domain size" (jumlah slot kosong yang tersedia DI HARI TARGET SAJA) untuk urutkan
+  // tugas paling sulit dulu (heuristik CSP klasik) — hari di luar target tidak dihitung karena
+  // tidak akan dipakai untuk penempatan baru pada sesi generate ini.
   const countDomain = (task) => {
     let n = 0;
-    [1,2,3,4,5,6].forEach(hari => {
+    targetDays.forEach(hari => {
       for (let jam = 1; jam <= maxJamForHari(hari); jam++) {
         if (isSlotFree(hari, jam, task.guru, task.kelas)) n++;
       }
@@ -3858,7 +3938,7 @@ function generateJadwalOtomatis() {
   tasks.forEach(t => { t.domain = countDomain(t); });
   tasks.sort((a, b) => a.domain - b.domain);
 
-  const HARI_URUT = [1,2,3,4,5,6];
+  const HARI_URUT = targetDays;
   const shuffle = arr => { const a = [...arr]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
 
   function markPlacement(guru, mapel, hari, jStart, jEnd) {
@@ -3883,13 +3963,16 @@ function generateJadwalOtomatis() {
   // Pilih posisi start terbaik: dekat dengan sesi guru yang sudah ada hari itu (kurangi jarak),
   // sambil menghormati batas jam/hari & meratakan giliran jam terakhir antar guru (RELATIF terhadap rata-rata,
   // supaya guru yang belum kebagian justru "ditarik" ke jam terakhir, bukan cuma menghindarinya terus-menerus).
-  function pickBestStart(hari, chunkSize, guru, mapel, kelas, respectCap) {
+  function pickBestStart(hari, chunkSize, guru, mapel, kelas, respectCap, window) {
     const maxJ = maxJamForHari(hari);
     const dayCount = (guruDayCount[guru] || {})[hari] || 0;
     if (respectCap && MAX_JAM_HARI < 9 && dayCount + chunkSize > MAX_JAM_HARI) return null;
 
+    const winMin = window ? window[0] : 1;
+    const winMax = window ? Math.min(window[1], maxJ) : maxJ;
+
     const validStarts = [];
-    for (let start = 1; start <= maxJ - chunkSize + 1; start++) {
+    for (let start = winMin; start <= winMax - chunkSize + 1; start++) {
       let ok = true;
       for (let j = start; j < start + chunkSize; j++) {
         if (!isSlotFree(hari, j, guru, kelas)) { ok = false; break; }
@@ -3932,42 +4015,33 @@ function generateJadwalOtomatis() {
     task.placed += chunkSize;
   }
 
-  // Rencanakan pembagian jam per sesi secara SEIMBANG (bukan asal ambil maksimal terus) —
-  // supaya 4 jam jadi 2+2 (bukan 3+1), 7 jam jadi 3+2+2 (bukan 3+3+1), dst. Tidak pernah
-  // menyisakan pecahan 1 jam kalau sebenarnya bisa dibagi rata jadi 2 jam atau lebih.
-  // PJOK/Penjas dikecualikan: maks 2 jam/sesi (biasanya 2 jam praktek + 1 jam teori terpisah).
-  // Mapel 3 jam/minggu SELALU dipecah 2+1 (bukan 3 langsung), sesuai kebijakan sekolah.
-  function chunkCapFor(mapel, need) {
-    if (isPjok(mapel)) return Math.min(2, MAX_CHUNK);
-    if (need === 3) return Math.min(2, MAX_CHUNK);
-    return MAX_CHUNK;
-  }
-  function planChunks(need, cap) {
-    if (need <= 0) return [];
-    const nSesi = Math.ceil(need / cap);
-    const plan = [];
-    let remaining = need;
-    for (let i = 0; i < nSesi; i++) {
-      const left = nSesi - i;
-      const size = Math.ceil(remaining / left);
-      plan.push(size);
-      remaining -= size;
+  // ===== RENCANA POLA SESI PER MAPEL =====
+  // Setiap mapel punya pola "ideal" (dicoba dulu) dan kadang pola "cadangan" (dicoba kalau ideal
+  // benar-benar tidak muat). TIDAK ADA fallback ke pecahan 1 jam kecuali memang bagian dari pola resmi
+  // (mis. PJOK 1 jam teori, atau mapel 3 jam yang polanya 2+1, atau mapel 1 jam/minggu seperti BK).
+  function getIdealPlan(mapel, need) {
+    if (isPjok(mapel) && need === 3) {
+      // PJOK: 2 jam PRAKTIK wajib di rentang JP1-4, 1 jam TEORI bebas di jam manapun.
+      return [{ size: 2, window: [1, 4] }, { size: 1, window: null }];
     }
-    return plan; // contoh (cap=3): 6=>[3,3] 5=>[3,2] 4=>[2,2] 7=>[3,2,2] 8=>[3,3,2] 2=>[2] 3=>[3]
+    if (need === 1) return [{ size: 1, window: null }];
+    if (need === 2) return [{ size: 2, window: null }];
+    if (need === 3) return [{ size: 2, window: null }, { size: 1, window: null }];
+    if (need === 4) return [{ size: 2, window: null }, { size: 2, window: null }];
+    if (need === 5) return [{ size: 3, window: null }, { size: 2, window: null }];
+    if (need === 6) return [{ size: 3, window: null }, { size: 3, window: null }]; // normal: 3+3
+    if (need === 7) return [{ size: 3, window: null }, { size: 2, window: null }, { size: 2, window: null }];
+    if (need === 8) return [{ size: 3, window: null }, { size: 3, window: null }, { size: 2, window: null }];
+    if (need === 9) return [{ size: 3, window: null }, { size: 3, window: null }, { size: 3, window: null }];
+    // Nilai lain (jarang terjadi) — bagi rata pakai chunk maks 3, minimum 2
+    const nSesi = Math.ceil(need / 3);
+    const plan = []; let remaining = need;
+    for (let i = 0; i < nSesi; i++) { const left = nSesi - i; const size = Math.ceil(remaining / left); plan.push({ size, window: null }); remaining -= size; }
+    return plan;
   }
-
-  // Cari hari+posisi terbaik untuk sesi sebesar `desiredSize` — kalau BENAR-BENAR tidak muat di manapun,
-  // baru coba ukuran lebih kecil (desiredSize-1, dst) sebagai fallback darurat, bukan strategi utama.
-  function placeBestFit(task, candidateDays, desiredSize, respectCap) {
-    for (let size = desiredSize; size >= 1; size--) {
-      for (const hari of candidateDays) {
-        const start = pickBestStart(hari, size, task.guru, task.mapel, task.kelas, respectCap);
-        if (start !== null) {
-          placeChunk(task, hari, start, size);
-          return hari;
-        }
-      }
-    }
+  function getFallbackPlan(mapel, need) {
+    // 6 jam: kalau 3+3 benar-benar tidak muat, baru coba 2+2+2 (lebih menyebar tapi tetap tanpa pecahan 1 jam)
+    if (need === 6 && !isPjok(mapel)) return [{ size: 2, window: null }, { size: 2, window: null }, { size: 2, window: null }];
     return null;
   }
 
@@ -3981,10 +4055,10 @@ function generateJadwalOtomatis() {
     return [...belumDipakai, ...sudahDipakai];
   }
 
-  // Coba tempatkan SELURUH `plan` (mis. [2,2,2]) secara PERSIS ukurannya (tanpa fallback mengecilkan).
+  // Coba tempatkan SELURUH `plan` (array {size,window}) secara PERSIS ukurannya (tanpa mengecilkan).
   // Kalau salah satu sesinya gagal, semua yang sudah ditaruh dalam percobaan ini di-ROLLBACK
-  // (dikembalikan seperti semula) supaya bisa dicoba pola lain (mis. [3,3]) dari kondisi bersih.
-  function tryPlanExact(task, plan, dayOrder) {
+  // (dikembalikan seperti semula) supaya bisa dicoba pola lain dari kondisi bersih.
+  function tryPlanExact(task, plan, dayOrder, respectCap) {
     const snap = {
       guruBusy: {...guruBusy}, kelasBusy: {...kelasBusy},
       guruDaySpan: JSON.parse(JSON.stringify(guruDaySpan)),
@@ -3995,14 +4069,14 @@ function generateJadwalOtomatis() {
     const placedCells = [];
     const usedDays = new Set();
     let ok = true;
-    for (const desiredSize of plan) {
+    for (const spec of plan) {
       const candidateDays = candidateDaysFor(task, dayOrder, usedDays);
       let placedThis = false;
       for (const hari of candidateDays) {
-        const start = pickBestStart(hari, desiredSize, task.guru, task.mapel, task.kelas, true);
+        const start = pickBestStart(hari, spec.size, task.guru, task.mapel, task.kelas, respectCap, spec.window);
         if (start !== null) {
-          placeChunk(task, hari, start, desiredSize);
-          placedCells.push({ hari, kelas: task.kelas, jams: Array.from({length: desiredSize}, (_, i) => start + i) });
+          placeChunk(task, hari, start, spec.size);
+          placedCells.push({ hari, kelas: task.kelas, jams: Array.from({length: spec.size}, (_, i) => start + i) });
           usedDays.add(hari);
           placedThis = true;
           break;
@@ -4021,43 +4095,54 @@ function generateJadwalOtomatis() {
     return true;
   }
 
-  tasks.forEach(task => {
-    let dayOrder = shuffle(HARI_URUT);
+  // Coba: pola ideal (hormati batas harian) -> pola cadangan (hormati batas) -> pola ideal (batas dilonggarkan)
+  // -> pola cadangan (batas dilonggarkan). Tidak pernah pecah ke ukuran 1 jam di luar pola resmi.
+  function scheduleTask(task) {
+    const dayOrder = shuffle(HARI_URUT);
+    const ideal = getIdealPlan(task.mapel, task.need);
+    const fallback = getFallbackPlan(task.mapel, task.need);
 
-    // Kasus khusus 6 jam/minggu: utamakan 2+2+2 (lebih menyebar), fallback ke 3+3 kalau 2+2+2 tidak muat.
-    if (task.need === 6 && !isPjok(task.mapel)) {
-      const berhasil2x3 = tryPlanExact(task, [2, 2, 2], dayOrder);
-      if (berhasil2x3) return;
-      // lanjut ke fallback 3+3 di bawah lewat jalur normal (task.placed masih 0 karena sudah di-rollback)
+    if (tryPlanExact(task, ideal, dayOrder, true)) return { ok: true, overCap: false, mismatch: false };
+    if (fallback && tryPlanExact(task, fallback, dayOrder, true)) return { ok: true, overCap: false, mismatch: false };
+    if (tryPlanExact(task, ideal, dayOrder, false)) return { ok: true, overCap: true, mismatch: false };
+    if (fallback && tryPlanExact(task, fallback, dayOrder, false)) return { ok: true, overCap: true, mismatch: false };
+    // Best-effort terakhir: pola resmi benar-benar tidak muat sama sekali. Daripada kelas ini KOSONG TOTAL,
+    // isi semaksimal mungkin (tetap dijaga minimal 2 jam per sesi kalau bisa, kecuali BK/PJOK-teori yg memang 1 jam)
+    // supaya lebih mudah ditinjau ulang manual daripada mapel-nya hilang sama sekali dari kelas itu.
+    const minFloor = (task.need === 1 || isPjok(task.mapel)) ? 1 : 2;
+    let anyPlaced = false;
+    let guardLoop = 0;
+    while (task.placed < task.need && guardLoop++ < 20) {
+      const remaining = task.need - task.placed;
+      const desiredSize = Math.min(3, remaining);
+      let placedThis = false;
+      for (let size = desiredSize; size >= Math.min(minFloor, remaining); size--) {
+        const candidateDays = shuffle(HARI_URUT);
+        for (const hari of candidateDays) {
+          const start = pickBestStart(hari, size, task.guru, task.mapel, task.kelas, false, null);
+          if (start !== null) {
+            placeChunk(task, hari, start, size);
+            placedThis = true; anyPlaced = true;
+            break;
+          }
+        }
+        if (placedThis) break;
+      }
+      if (!placedThis) break;
     }
+    return { ok: task.placed >= task.need, overCap: true, mismatch: anyPlaced };
+  }
 
-    const usedDays = new Set();
-    const plan = planChunks(task.need - task.placed, chunkCapFor(task.mapel, task.need));
-
-    plan.forEach(desiredSize => {
-      // Utamakan hari yang BELUM dipakai task ini (supaya tetap tersebar antar hari untuk mapel yg sama),
-      // tapi di antara hari-hari itu, dahulukan yang sudah ada aktivitas guru lain (supaya jadwal guru berdekatan, tidak bolong jauh).
-      // Hari yang sudah dipakai task ini jadi cadangan terakhir kalau semua hari lain penuh.
-      const candidateDays = candidateDaysFor(task, dayOrder, usedDays);
-      const hariTerpakai = placeBestFit(task, candidateDays, desiredSize, true);
-      if (hariTerpakai !== null) usedDays.add(hariTerpakai);
-    });
-  });
-
-  // Pass 2: sisa jam yang tidak muat karena batas jam/hari terlalu ketat — coba lagi TANPA batas harian,
-  // tetap mengutamakan sesi sebesar mungkin dulu (bukan langsung 1 jam), dicatat di laporan sebagai
-  // "melebihi batas ideal" biar Waka tahu perlu ditinjau.
   const overCapTasks = [];
+  const mismatchedTasks = [];
   tasks.forEach(task => {
-    if (task.placed >= task.need) return;
-    let extra = 0;
-    const remainingPlan = planChunks(task.need - task.placed, chunkCapFor(task.mapel, task.need));
-    remainingPlan.forEach(desiredSize => {
-      const before = task.placed;
-      placeBestFit(task, shuffle(HARI_URUT), desiredSize, false);
-      extra += (task.placed - before);
-    });
-    if (extra > 0) overCapTasks.push({ guru: task.guru, mapel: task.mapel, kelas: task.kelas, extra });
+    const result = scheduleTask(task);
+    if (result.ok && result.overCap && !result.mismatch) {
+      overCapTasks.push({ guru: task.guru, mapel: task.mapel, kelas: task.kelas, extra: task.placed });
+    }
+    if (result.mismatch) {
+      mismatchedTasks.push({ guru: task.guru, mapel: task.mapel, kelas: task.kelas, placed: task.placed, need: task.need });
+    }
   });
 
   const failedTasks = tasks.filter(t => t.placed < t.need);
@@ -4076,6 +4161,10 @@ function generateJadwalOtomatis() {
     if (overCapTasks.length) {
       html += `<div style="font-size:9px;color:#e67e22;margin:8px 0 4px;">⚠️ ${overCapTasks.length} tugas terpaksa melebihi batas ${MAX_JAM_HARI} jam/hari karena tidak ada slot lain yang cocok — pertimbangkan tinjau ulang beban mengajarnya:</div>`;
       html += overCapTasks.map(t => `<div style="font-size:10px;color:var(--white);padding:3px 0;">🔸 ${t.guru} — ${t.mapel} — Kelas ${t.kelas}: ${t.extra} jam melebihi batas harian</div>`).join('');
+    }
+    if (mismatchedTasks.length) {
+      html += `<div style="font-size:9px;color:#e74c3c;margin:8px 0 4px;">🔺 ${mismatchedTasks.length} tugas TIDAK bisa dapat pola resmi (mis. 3+3/2+2/2+1) sama sekali — diisi seadanya (kemungkinan pecah tidak rapi) daripada kelasnya kosong total. WAJIB ditinjau ulang manual di GRID:</div>`;
+      html += mismatchedTasks.map(t => `<div style="font-size:10px;color:var(--white);padding:3px 0;">🔺 ${t.guru} — ${t.mapel} — Kelas ${t.kelas}: ${t.placed}/${t.need} jam (pola darurat)</div>`).join('');
     }
     if (failedTasks.length) {
       html += `<div style="font-size:9px;color:var(--muted);margin:8px 0 4px;">Jam berikut tetap tidak muat dijadwalkan (kemungkinan guru/kelas terlalu penuh atau banyak jam terkunci). Silakan isi manual lewat tab GRID:</div>`;
@@ -5175,6 +5264,7 @@ function backupData() {
       mgmp: mgmpData,
       customBlock: customBlockData,
       bebanMengajar: bebanMengajarData,
+      lockedDays: lockedDaysData,
       late: lateRecords,
       notulen: notulenRecords.map(n => ({ ...n, teks: n.teks?.substring(0, 2000) })), // trim large teks
       planning: planSnap,
@@ -5234,6 +5324,7 @@ function restoreData(input) {
       // Restore Custom Block
       if (data.customBlock) customBlockData = data.customBlock;
       if (data.bebanMengajar) bebanMengajarData = data.bebanMengajar;
+      if (data.lockedDays) lockedDaysData = data.lockedDays;
       // Restore keterlambatan
       if (data.late) lateRecords = data.late;
       // Restore notulen
@@ -5800,6 +5891,7 @@ const LS_KEYS = {
   mgmp:      'kuriku_mgmp',
   customBlock: 'kuriku_custom_block',
   bebanMengajar: 'kuriku_beban_mengajar',
+  lockedDays: 'kuriku_locked_days',
   late:      'kuriku_late',
   notulen:   'kuriku_notulen',
   planning:  'kuriku_planning',
@@ -5816,6 +5908,7 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
     localStorage.setItem(LS_KEYS.customBlock, JSON.stringify(customBlockData));
     localStorage.setItem(LS_KEYS.bebanMengajar, JSON.stringify(bebanMengajarData));
+    localStorage.setItem(LS_KEYS.lockedDays, JSON.stringify(lockedDaysData));
     localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
     localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
     localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
@@ -5850,6 +5943,9 @@ function loadAll() {
     // Beban Mengajar
     const bm = localStorage.getItem(LS_KEYS.bebanMengajar);
     if (bm) bebanMengajarData = JSON.parse(bm);
+    // Hari terkunci (generate per hari)
+    const ld = localStorage.getItem(LS_KEYS.lockedDays);
+    if (ld) lockedDaysData = JSON.parse(ld);
     // Keterlambatan
     const l = localStorage.getItem(LS_KEYS.late);
     if (l) lateRecords = JSON.parse(l);

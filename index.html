@@ -3989,10 +3989,10 @@ function generateJadwalOtomatis() {
   // Pilih posisi start terbaik: dekat dengan sesi guru yang sudah ada hari itu (kurangi jarak),
   // sambil menghormati batas jam/hari & meratakan giliran jam terakhir antar guru (RELATIF terhadap rata-rata,
   // supaya guru yang belum kebagian justru "ditarik" ke jam terakhir, bukan cuma menghindarinya terus-menerus).
-  function pickBestStart(hari, chunkSize, guru, mapel, kelas, respectCap, window) {
+  function pickBestStart(hari, chunkSize, guru, mapel, kelas, capValue, window) {
     const maxJ = maxJamForHari(hari);
     const dayCount = (guruDayCount[guru] || {})[hari] || 0;
-    if (respectCap && MAX_JAM_HARI < 9 && dayCount + chunkSize > MAX_JAM_HARI) return null;
+    if (capValue !== null && dayCount + chunkSize > capValue) return null;
 
     const winMin = window ? window[0] : 1;
     const winMax = window ? Math.min(window[1], maxJ) : maxJ;
@@ -4071,8 +4071,17 @@ function generateJadwalOtomatis() {
     return null;
   }
 
-  function candidateDaysFor(task, dayOrder, usedDays) {
+  // Saat hormat batas harian (capValue ketat): kelompokkan ke hari yang SUDAH ada aktivitas guru
+  // ini (mengurangi jarak/gap dalam sehari — aman karena batas jam tetap membatasi totalnya).
+  // Saat mode darurat (capValue longgar/emergency): JANGAN mengelompokkan — sebaliknya utamakan
+  // hari yang PALING SEDIKIT jamnya untuk guru ini, supaya tidak menumpuk 8-9 jam di 1 hari yang sama.
+  function candidateDaysFor(task, dayOrder, usedDays, spreadMode) {
     const belumDipakai = dayOrder.filter(h => !usedDays.has(h)).sort((a, b) => {
+      if (spreadMode) {
+        const aCount = (guruDayCount[task.guru] || {})[a] || 0;
+        const bCount = (guruDayCount[task.guru] || {})[b] || 0;
+        return aCount - bCount;
+      }
       const aHas = (guruDaySpan[task.guru] || {})[a] ? 1 : 0;
       const bHas = (guruDaySpan[task.guru] || {})[b] ? 1 : 0;
       return bHas - aHas;
@@ -4084,7 +4093,8 @@ function generateJadwalOtomatis() {
   // Coba tempatkan SELURUH `plan` (array {size,window}) secara PERSIS ukurannya (tanpa mengecilkan).
   // Kalau salah satu sesinya gagal, semua yang sudah ditaruh dalam percobaan ini di-ROLLBACK
   // (dikembalikan seperti semula) supaya bisa dicoba pola lain dari kondisi bersih.
-  function tryPlanExact(task, plan, dayOrder, respectCap) {
+  function tryPlanExact(task, plan, dayOrder, capValue) {
+    const spreadMode = (capValue === null || capValue > MAX_JAM_HARI);
     const snap = {
       guruBusy: {...guruBusy}, kelasBusy: {...kelasBusy},
       guruDaySpan: JSON.parse(JSON.stringify(guruDaySpan)),
@@ -4096,10 +4106,10 @@ function generateJadwalOtomatis() {
     const usedDays = new Set();
     let ok = true;
     for (const spec of plan) {
-      const candidateDays = candidateDaysFor(task, dayOrder, usedDays);
+      const candidateDays = candidateDaysFor(task, dayOrder, usedDays, spreadMode);
       let placedThis = false;
       for (const hari of candidateDays) {
-        const start = pickBestStart(hari, spec.size, task.guru, task.mapel, task.kelas, respectCap, spec.window);
+        const start = pickBestStart(hari, spec.size, task.guru, task.mapel, task.kelas, capValue, spec.window);
         if (start !== null) {
           placeChunk(task, hari, start, spec.size);
           placedCells.push({ hari, kelas: task.kelas, jams: Array.from({length: spec.size}, (_, i) => start + i) });
@@ -4121,20 +4131,26 @@ function generateJadwalOtomatis() {
     return true;
   }
 
-  // Coba: pola ideal (hormati batas harian) -> pola cadangan (hormati batas) -> pola ideal (batas dilonggarkan)
-  // -> pola cadangan (batas dilonggarkan). Tidak pernah pecah ke ukuran 1 jam di luar pola resmi.
+  // Batas darurat: kalau pola resmi benar-benar tidak muat dalam batas ideal (MAX_JAM_HARI),
+  // baru dilonggarkan sedikit (maks +2 jam) — TIDAK PERNAH benar-benar tanpa batas (mencegah 1 guru
+  // ketiban 8-9 jam nonstop dalam sehari).
+  const EMERGENCY_CAP = Math.min(9, MAX_JAM_HARI + 2);
+
+  // Coba: pola ideal (hormati batas harian) -> pola cadangan (hormati batas) -> pola ideal (batas darurat +2)
+  // -> pola cadangan (batas darurat +2). Tidak pernah benar-benar tanpa batas, dan tidak pernah pecah
+  // ke ukuran 1 jam di luar pola resmi.
   function scheduleTask(task) {
     const dayOrder = shuffle(HARI_URUT);
     const ideal = getIdealPlan(task.mapel, task.need);
     const fallback = getFallbackPlan(task.mapel, task.need);
 
-    if (tryPlanExact(task, ideal, dayOrder, true)) return { ok: true, overCap: false, mismatch: false };
-    if (fallback && tryPlanExact(task, fallback, dayOrder, true)) return { ok: true, overCap: false, mismatch: false };
-    if (tryPlanExact(task, ideal, dayOrder, false)) return { ok: true, overCap: true, mismatch: false };
-    if (fallback && tryPlanExact(task, fallback, dayOrder, false)) return { ok: true, overCap: true, mismatch: false };
+    if (tryPlanExact(task, ideal, dayOrder, MAX_JAM_HARI)) return { ok: true, overCap: false, mismatch: false };
+    if (fallback && tryPlanExact(task, fallback, dayOrder, MAX_JAM_HARI)) return { ok: true, overCap: false, mismatch: false };
+    if (tryPlanExact(task, ideal, dayOrder, EMERGENCY_CAP)) return { ok: true, overCap: true, mismatch: false };
+    if (fallback && tryPlanExact(task, fallback, dayOrder, EMERGENCY_CAP)) return { ok: true, overCap: true, mismatch: false };
     // Best-effort terakhir: pola resmi benar-benar tidak muat sama sekali. Daripada kelas ini KOSONG TOTAL,
     // isi semaksimal mungkin (tetap dijaga minimal 2 jam per sesi kalau bisa, kecuali BK/PJOK-teori yg memang 1 jam)
-    // supaya lebih mudah ditinjau ulang manual daripada mapel-nya hilang sama sekali dari kelas itu.
+    // — TETAP dibatasi EMERGENCY_CAP dan diprioritaskan ke hari yang PALING KOSONG (tidak menumpuk 1 hari).
     const minFloor = (task.need === 1 || isPjok(task.mapel)) ? 1 : 2;
     let anyPlaced = false;
     let guardLoop = 0;
@@ -4143,9 +4159,9 @@ function generateJadwalOtomatis() {
       const desiredSize = Math.min(3, remaining);
       let placedThis = false;
       for (let size = desiredSize; size >= Math.min(minFloor, remaining); size--) {
-        const candidateDays = shuffle(HARI_URUT);
+        const candidateDays = candidateDaysFor(task, shuffle(HARI_URUT), new Set(), true);
         for (const hari of candidateDays) {
-          const start = pickBestStart(hari, size, task.guru, task.mapel, task.kelas, false, null);
+          const start = pickBestStart(hari, size, task.guru, task.mapel, task.kelas, EMERGENCY_CAP, null);
           if (start !== null) {
             placeChunk(task, hari, start, size);
             placedThis = true; anyPlaced = true;

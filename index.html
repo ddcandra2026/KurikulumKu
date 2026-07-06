@@ -1879,6 +1879,14 @@
         </label>
       </div>
 
+      <div class="card" style="margin-bottom:12px;border-color:rgba(230,126,34,0.4);">
+        <div style="font-size:10px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🧹 MULAI BERSIH (KECUALI UMMI)</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+          Hapus semua jadwal mapel reguler (MTK, IPA, dst) di SELURUH minggu untuk mulai dari nol — tapi <b>sel UMMI/ASATIDZ tidak akan ikut terhapus</b>. MGMP, Blokir (Upacara, Kegiatan Informal, dll), dan daftar Beban Mengajar juga tidak berubah sama sekali.
+        </div>
+        <button class="btn-cancel" onclick="kosongkanJadwalKecualiUMMI()" style="font-size:11px;padding:10px;width:100%;color:#e67e22;border-color:#e67e22;">🧹 KOSONGKAN JADWAL (KECUALI UMMI)</button>
+      </div>
+
       <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.35);">
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📅 GENERATE PER HARI &amp; KUNCI</div>
         <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
@@ -3857,6 +3865,24 @@ function toggleLockDay(h) {
   saveAll();
   renderAutoLockPicker();
   renderAutoDayPicker();
+}
+
+// Hapus semua sel jadwal reguler di seluruh minggu, TAPI pertahankan sel UMMI.
+// MGMP dan Blokir (customBlockData) tidak disentuh sama sekali karena disimpan terpisah.
+function kosongkanJadwalKecualiUMMI() {
+  if (!confirm('⚠️ Semua jadwal mapel reguler (MTK, IPA, dst) di SELURUH minggu akan DIHAPUS. Sel UMMI tidak akan ikut terhapus. MGMP & Blokir tidak berubah. Lanjutkan?')) return;
+  let removed = 0, kept = 0;
+  [1,2,3,4,5,6].forEach(hari => {
+    const hariData = JADWAL_DATA2[hari] || {};
+    Object.entries(hariData).forEach(([kelas, jamObj]) => {
+      Object.entries(jamObj).forEach(([jam, cell]) => {
+        if (cell && cell.mapel === 'UMMI') { kept++; }
+        else { delete jamObj[jam]; removed++; }
+      });
+    });
+  });
+  renderGrid(); renderRekapTable(); saveAll();
+  showToast(`🧹 ${removed} sel jadwal dihapus, ${kept} sel UMMI dipertahankan`);
 }
 
 // ===== AUTO-GENERATE JADWAL — algoritma penjadwalan otomatis =====

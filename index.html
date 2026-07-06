@@ -3952,14 +3952,26 @@ function generateJadwalOtomatis() {
   // Hitung "domain size" (jumlah slot kosong yang tersedia DI HARI TARGET SAJA) untuk urutkan
   // tugas paling sulit dulu (heuristik CSP klasik) — hari di luar target tidak dihitung karena
   // tidak akan dipakai untuk penempatan baru pada sesi generate ini.
+  // PENTING: kalau mapel punya sesi dengan window sempit (mis. PJOK praktik cuma boleh JP1-4),
+  // domain dihitung berdasar window TERSEMPIT itu — supaya tugas seperti ini dianggap sesulit
+  // aslinya dan diproses LEBIH DULU (kebagian slot JP1-4 duluan), bukan belakangan setelah
+  // mapel lain yang lebih leluasa keburu menghabiskan slot JP1-4 tersebut.
   const countDomain = (task) => {
-    let n = 0;
-    targetDays.forEach(hari => {
-      for (let jam = 1; jam <= maxJamForHari(hari); jam++) {
-        if (isSlotFree(hari, jam, task.guru, task.kelas)) n++;
-      }
+    const plan = getIdealPlan(task.mapel, task.need);
+    let minDomain = Infinity;
+    plan.forEach(spec => {
+      let n = 0;
+      targetDays.forEach(hari => {
+        const maxJ = maxJamForHari(hari);
+        const winMin = spec.window ? spec.window[0] : 1;
+        const winMax = spec.window ? Math.min(spec.window[1], maxJ) : maxJ;
+        for (let jam = winMin; jam <= winMax; jam++) {
+          if (isSlotFree(hari, jam, task.guru, task.kelas)) n++;
+        }
+      });
+      if (n < minDomain) minDomain = n;
     });
-    return n;
+    return minDomain === Infinity ? 0 : minDomain;
   };
   tasks.forEach(t => { t.domain = countDomain(t); });
   tasks.sort((a, b) => a.domain - b.domain);

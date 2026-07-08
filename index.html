@@ -953,6 +953,21 @@
   .rpe-event-actions { display: flex; gap: 6px; flex: 0 0 auto; }
   .rpe-event-actions span { cursor: pointer; font-size: 13px; }
 
+  .rpe-mapel-card {
+    background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
+    padding: 14px; margin-bottom: 12px;
+  }
+  .rpe-mapel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .rpe-mapel-name { font-size: 13px; font-weight: 800; color: var(--white); font-family: 'Plus Jakarta Sans', sans-serif; }
+  .rpe-mapel-jp { font-size: 9.5px; color: var(--cyan); margin-top: 2px; }
+  .rpe-mapel-actions { display: flex; gap: 8px; flex: 0 0 auto; }
+  .rpe-mapel-actions span { cursor: pointer; font-size: 14px; }
+  .rpe-jp-block { background: var(--slate2); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
+  .rpe-jp-block-title { font-size: 10px; font-weight: 800; color: var(--cyan); letter-spacing: 0.5px; margin-bottom: 6px; }
+  .rpe-jp-formula { font-size: 11px; color: var(--white); font-weight: 700; margin-bottom: 6px; }
+  .rpe-jp-row { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); padding: 3px 0; border-bottom: 1px dashed var(--border); }
+  .rpe-jp-row:last-child { border-bottom: none; font-weight: 800; color: var(--green2); }
+
   /* Recording status bar */
   .rec-status {
     font-size: 10px; font-weight: 600; padding: 5px 12px;
@@ -1656,6 +1671,7 @@
       <div class="notulen-tab active" id="rpetab-rekap" onclick="switchRpeTab('rekap',this)">📊 REKAP</div>
       <div class="notulen-tab" id="rpetab-kalender" onclick="switchRpeTab('kalender',this)">📅 KALENDER</div>
       <div class="notulen-tab" id="rpetab-keterangan" onclick="switchRpeTab('keterangan',this)">📖 KETERANGAN</div>
+      <div class="notulen-tab" id="rpetab-jammapel" onclick="switchRpeTab('jammapel',this)">📐 JAM MAPEL</div>
     </div>
 
     <!-- TAB REKAP -->
@@ -1708,6 +1724,22 @@
         <div style="font-size:12px;font-weight:700;color:var(--white);margin-top:24px;" id="rpe-sign-nama">Bambang Youiswanto NH. S.Pd,M.Pd</div>
         <div style="font-size:10px;color:var(--muted);" id="rpe-sign-nip">NIP. 197906132005011009</div>
       </div>
+    </div>
+
+    <!-- TAB JAM MAPEL -->
+    <div id="rpe-tab-jammapel" class="notulen-content">
+      <div class="card" style="margin-bottom:12px;" onclick="openRpeAlokasiForm()">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div style="font-size:11px;font-weight:800;color:var(--white);">⚙️ RINCIAN ALOKASI (JP)</div>
+            <div style="font-size:9.5px;color:var(--muted);margin-top:3px;" id="rpe-alokasi-sub">Formatif 3 · Tengah Smt 3 · Akhir 3 · Kokurikuler 12</div>
+          </div>
+          <span style="font-size:16px;color:var(--cyan);">✏️</span>
+        </div>
+      </div>
+      <p style="font-size:9.5px;color:var(--muted);margin-bottom:8px;">Jam Efektif dihitung dari Pekan Efektif (tab REKAP) × JP/minggu tiap mapel. Sesuaikan JP/minggu sesuai struktur kurikulum sekolah Anda — nilainya berbeda per mapel & jenjang.</p>
+      <button class="btn-add" style="width:100%;margin-bottom:10px;" onclick="openRpeMapelForm()">＋ Tambah Mata Pelajaran</button>
+      <div id="rpe-mapel-list"></div>
     </div>
 
     <div class="watermark">Developed by D.D Candra © 2026</div>
@@ -3260,9 +3292,34 @@ function onGuruChange() {
   renderAdviceBox();
 }
 
+// Perbarui "lokasi asli" (orig*) di context supaya selalu mengikuti hari/kelas/jam yang SEDANG
+// aktif di form — bukan cuma yang pertama kali dibuka. Ini mencegah bug: ganti kelas/hari di
+// dalam form yang sama lalu simpan, tapi sistem masih menghapus cell di lokasi lama yang salah
+// (karena origKelas/origGuru/origJams tidak ikut diperbarui).
+function refreshOrigContext() {
+  const ctx = _jadwalFormCtx;
+  if (!ctx) return;
+  const jams = getSelectedJams();
+  const jam = jams.length ? jams[0] : 1;
+  const existing = (JADWAL_DATA2[ctx.hari]?.[ctx.kelas]?.[jam]) || {};
+  let preSelected = [jam];
+  if (existing.guru) {
+    const kelasData = JADWAL_DATA2[ctx.hari]?.[ctx.kelas] || {};
+    preSelected = Object.entries(kelasData)
+      .filter(([j, c]) => c.guru === existing.guru)
+      .map(([j]) => parseInt(j));
+    if (!preSelected.includes(jam)) preSelected = [jam];
+  }
+  ctx.origHari = ctx.hari;
+  ctx.origKelas = ctx.kelas;
+  ctx.origGuru = existing.guru || null;
+  ctx.origJams = existing.guru ? preSelected.slice() : [];
+}
+
 function toggleFormJam(j, el) {
   el.classList.toggle('selected');
   updateJamRangeLabel();
+  refreshOrigContext();
   checkGuruConflictLive();
   renderAdviceBox();
   refreshKelasPickerLock();
@@ -3307,6 +3364,7 @@ function setFormHari(h, el) {
       </span>`).join('');
     updateJamRangeLabel();
   }
+  refreshOrigContext();
   refreshKelasPickerLock();
   checkGuruConflictLive();
   renderAdviceBox();
@@ -3315,6 +3373,7 @@ function setFormKelas(k, el) {
   document.querySelectorAll('.kelas-badge').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   _jadwalFormCtx.kelas = k;
+  refreshOrigContext();
   rebuildGuruOptions();
   checkGuruConflictLive();
   renderAdviceBox();
@@ -6160,7 +6219,11 @@ let RPE_DATA = {
     {start:'2027-06-01', end:'2027-06-01', code:'LHB', label:'Hari Lahir Pancasila'},
     {start:'2027-06-06', end:'2027-06-06', code:'LHB', label:'Tahun Baru Hijriyah 1449H'},
     {start:'2027-06-21', end:'2027-07-11', code:'LS2', label:'Libur Semester 2'}
-  ]
+  ],
+  jamEfektif: {
+    formatif: 3, tengahSemester: 3, akhir: 3, kokurikuler: 12,
+    mapelList: []
+  }
 };
 
 let rpeCurrentMonthIdx = 0;
@@ -6205,6 +6268,7 @@ function renderRpeAll() {
   renderRpeCalendar(rpeCurrentMonthIdx);
   renderRpeEventList();
   renderRpeKeterangan();
+  renderRpeMapelList();
 }
 
 function switchRpeTab(tab, el) {
@@ -6418,6 +6482,168 @@ function openRpeMetaForm() {
   document.getElementById('rpe-modal').classList.add('open');
 }
 
+// ---- JAM EFEKTIF PER MAPEL ----
+function rpeGetPekanEfektif() {
+  const t1 = rpeSemTotals(RPE_DATA.rekap.semester1);
+  const t2 = rpeSemTotals(RPE_DATA.rekap.semester2);
+  return { s1: t1.eff, s2: t2.eff };
+}
+function renderRpeMapelList() {
+  const je = RPE_DATA.jamEfektif;
+  document.getElementById('rpe-alokasi-sub').textContent =
+    `Formatif ${je.formatif} · Tengah Smt ${je.tengahSemester} · Akhir ${je.akhir} · Kokurikuler ${je.kokurikuler}`;
+  const pe = rpeGetPekanEfektif();
+  const fixedSum = je.formatif + je.tengahSemester + je.akhir + je.kokurikuler;
+  const list = document.getElementById('rpe-mapel-list');
+  if (!je.mapelList.length) {
+    list.innerHTML = `<div style="font-size:11px;color:var(--muted);text-align:center;padding:16px;">Belum ada mata pelajaran. Ketuk "＋ Tambah Mata Pelajaran" untuk mulai.</div>`;
+    return;
+  }
+  list.innerHTML = je.mapelList.map((mp, i) => {
+    const totS1 = pe.s1 * mp.jp, totS2 = pe.s2 * mp.jp;
+    const tmS1 = totS1 - fixedSum, tmS2 = totS2 - fixedSum;
+    const block = (sem, pekan, tot, tm, akhirLabel) => `
+      <div class="rpe-jp-block">
+        <div class="rpe-jp-block-title">JUMLAH JAM EFEKTIF ${sem}</div>
+        <div class="rpe-jp-formula">${pekan} X ${mp.jp} = ${tot} Jam Pelajaran</div>
+        <div class="rpe-jp-row"><span>Penilaian Formatif</span><span>${je.formatif}</span></div>
+        <div class="rpe-jp-row"><span>Penilaian Tengah Semester</span><span>${je.tengahSemester}</span></div>
+        <div class="rpe-jp-row"><span>${akhirLabel}</span><span>${je.akhir}</span></div>
+        <div class="rpe-jp-row"><span>Kokurikuler</span><span>${je.kokurikuler}</span></div>
+        <div class="rpe-jp-row"><span>Tatap Muka</span><span>${tm}</span></div>
+      </div>`;
+    return `<div class="rpe-mapel-card">
+        <div class="rpe-mapel-head">
+          <div>
+            <div class="rpe-mapel-name">${mp.nama}</div>
+            <div class="rpe-mapel-jp">${mp.jp} JP / minggu</div>
+          </div>
+          <div class="rpe-mapel-actions">
+            <span onclick="cetakJamMapel(${i})">🖨️</span>
+            <span onclick="openRpeMapelForm(${i})">✏️</span>
+            <span onclick="deleteRpeMapel(${i})">🗑️</span>
+          </div>
+        </div>
+        ${block('SEMESTER 1', pe.s1, totS1, tmS1, 'Penilaian Akhir Semester')}
+        ${block('SEMESTER 2', pe.s2, totS2, tmS2, 'Penilaian Akhir Tahun')}
+      </div>`;
+  }).join('');
+}
+function openRpeAlokasiForm() {
+  const je = RPE_DATA.jamEfektif;
+  document.getElementById('rpe-modal-title').textContent = '⚙️ RINCIAN ALOKASI (JP)';
+  document.getElementById('rpe-modal-body').innerHTML = `
+    <div class="form-group"><label class="form-label">PENILAIAN FORMATIF (JP)</label><input type="number" min="0" class="form-input" id="rpe-f-formatif" value="${je.formatif}"></div>
+    <div class="form-group"><label class="form-label">PENILAIAN TENGAH SEMESTER (JP)</label><input type="number" min="0" class="form-input" id="rpe-f-tengah" value="${je.tengahSemester}"></div>
+    <div class="form-group"><label class="form-label">PENILAIAN AKHIR SEMESTER/TAHUN (JP)</label><input type="number" min="0" class="form-input" id="rpe-f-akhir" value="${je.akhir}"></div>
+    <div class="form-group"><label class="form-label">KOKURIKULER (JP)</label><input type="number" min="0" class="form-input" id="rpe-f-koku" value="${je.kokurikuler}"></div>
+    <p style="font-size:9px;color:var(--muted);line-height:1.5;">Nilai ini berlaku sama untuk semua mapel. Sisa JP setelah dikurangi keempat komponen ini otomatis dihitung sebagai Tatap Muka.</p>`;
+  document.getElementById('rpe-modal-save-btn').onclick = function () {
+    je.formatif = parseInt(document.getElementById('rpe-f-formatif').value) || 0;
+    je.tengahSemester = parseInt(document.getElementById('rpe-f-tengah').value) || 0;
+    je.akhir = parseInt(document.getElementById('rpe-f-akhir').value) || 0;
+    je.kokurikuler = parseInt(document.getElementById('rpe-f-koku').value) || 0;
+    renderRpeMapelList(); closeRpeModal(); saveAll();
+    showToast('✅ Rincian alokasi diperbarui');
+  };
+  document.getElementById('rpe-modal').classList.add('open');
+}
+function openRpeMapelForm(idx = -1) {
+  const mp = idx >= 0 ? RPE_DATA.jamEfektif.mapelList[idx] : null;
+  document.getElementById('rpe-modal-title').textContent = mp ? '✏️ EDIT MATA PELAJARAN' : '＋ TAMBAH MATA PELAJARAN';
+  document.getElementById('rpe-modal-body').innerHTML = `
+    <div class="form-group"><label class="form-label">NAMA MATA PELAJARAN</label><input type="text" class="form-input" id="rpe-f-mapel" placeholder="Contoh: Ilmu Pengetahuan Alam" value="${mp ? mp.nama : ''}"></div>
+    <div class="form-group"><label class="form-label">JP / MINGGU</label><input type="number" min="1" class="form-input" id="rpe-f-jp" placeholder="Contoh: 3" value="${mp ? mp.jp : ''}"></div>
+    <p style="font-size:9px;color:var(--muted);line-height:1.5;">JP/minggu mengikuti struktur kurikulum resmi sekolah — berbeda tiap mapel & jenjang (mis. Bhs. Indonesia 6, Matematika/IPA 5, IPS/Bhs. Inggris 4, PJOK/PAI/PPKn umumnya 3).</p>
+    ${idx >= 0 ? `<button class="btn-cancel" style="width:100%;margin-top:4px;" onclick="deleteRpeMapel(${idx})">🗑️ Hapus Mapel Ini</button>` : ''}`;
+  document.getElementById('rpe-modal-save-btn').onclick = function () {
+    const nama = document.getElementById('rpe-f-mapel').value.trim();
+    const jp = parseInt(document.getElementById('rpe-f-jp').value) || 0;
+    if (!nama || jp <= 0) { showToast('⚠️ Nama mapel & JP/minggu wajib diisi'); return; }
+    if (idx >= 0) RPE_DATA.jamEfektif.mapelList[idx] = { nama, jp };
+    else RPE_DATA.jamEfektif.mapelList.push({ nama, jp });
+    renderRpeMapelList(); closeRpeModal(); saveAll();
+    showToast('✅ Mata pelajaran disimpan');
+  };
+  document.getElementById('rpe-modal').classList.add('open');
+}
+function deleteRpeMapel(idx) {
+  if (!confirm('Hapus mata pelajaran ini?')) return;
+  RPE_DATA.jamEfektif.mapelList.splice(idx, 1);
+  renderRpeMapelList(); closeRpeModal(); saveAll();
+  showToast('🗑️ Mata pelajaran dihapus');
+}
+
+function cetakJamMapel(idx) {
+  const mp = RPE_DATA.jamEfektif.mapelList[idx];
+  const je = RPE_DATA.jamEfektif;
+  const pe = rpeGetPekanEfektif();
+  const fixedSum = je.formatif + je.tengahSemester + je.akhir + je.kokurikuler;
+  const totS1 = pe.s1 * mp.jp, totS2 = pe.s2 * mp.jp;
+  const tmS1 = totS1 - fixedSum, tmS2 = totS2 - fixedSum;
+  const m = RPE_DATA.meta;
+  const semBlock = (title, pekan, tot, tm, akhirLabel) => `
+    <table class="je-table">
+      <tr><th colspan="2">JUMLAH JAM EFEKTIF ${title}</th></tr>
+      <tr><td colspan="2" class="je-formula">${pekan} X ${mp.jp} &nbsp;=&nbsp; ${tot} Jam Pelajaran</td></tr>
+      <tr><td colspan="2" class="je-sub">Rincian Pekan Efektif (JP)</td></tr>
+      <tr><td>Penilaian Formatif</td><td>${je.formatif}</td></tr>
+      <tr><td>Penilaian Tengah Semester</td><td>${je.tengahSemester}</td></tr>
+      <tr><td>${akhirLabel}</td><td>${je.akhir}</td></tr>
+      <tr><td>Kokurikuler</td><td>${je.kokurikuler}</td></tr>
+      <tr class="je-tm"><td>Tatap Muka</td><td>${tm}</td></tr>
+    </table>`;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Jam Efektif — ${mp.nama}</title>
+  <style>
+    @media print { body { -webkit-print-color-adjust: exact; } }
+    body { font-family: 'Times New Roman', serif; padding: 36px; max-width: 720px; margin: 0 auto; font-size: 13px; color:#1a2035; }
+    .kop { text-align: center; border-bottom: 3px double #003366; padding-bottom: 12px; margin-bottom: 18px; }
+    .kop h2 { font-size: 18px; color: #003366; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 1px; }
+    .kop p { font-size: 11px; color: #555; margin: 2px 0; }
+    .title { text-align: center; font-size: 16px; font-weight: bold; color: #003366; text-decoration: underline; margin: 14px 0 4px; text-transform: uppercase; }
+    .subtitle { text-align: center; font-size: 12px; color: #555; margin-bottom: 18px; }
+    .mapel-name { text-align:center; font-size:14px; font-weight:bold; color:#0090C7; margin-bottom:20px; }
+    .je-wrap { display:flex; gap:18px; }
+    .je-table { flex:1; width: 50%; border-collapse: collapse; font-size: 12px; }
+    .je-table th { background:#003366; color:#fff; padding:8px 10px; font-size:12px; text-align:center; border:1px solid #003366; }
+    .je-table td { border: 1px solid #b9c2d0; padding: 7px 10px; }
+    .je-table td:last-child { text-align:center; width:50px; font-weight:bold; }
+    .je-formula { text-align:center !important; font-weight:bold; font-size:13px; background:#eef6fb; }
+    .je-sub { font-weight:bold; background:#f4f6fa; }
+    .je-tm td { font-weight:bold; background:#eafaf1; color:#008F5B; }
+    .footer { margin-top: 36px; display: flex; justify-content: flex-end; font-size: 11px; }
+    .sign-box { text-align: center; }
+    .sign-line { width: 160px; border-bottom: 1px solid #333; margin: 55px auto 4px; }
+    .watermark { margin-top: 30px; text-align: center; font-size: 9px; color: #aaa; border-top: 1px solid #eee; padding-top: 8px; }
+    @media (max-width:600px) { .je-wrap { flex-direction: column; } .je-table { width:100%; } }
+  </style></head><body>
+  <div class="kop">
+    <h2>🏫 ${currentSetting?.schoolName || 'SMP / MTs — KURIKULUM MERDEKA'}</h2>
+    <p>Waka Kurikulum Dashboard — KURIKU © 2026</p>
+  </div>
+  <div class="title">Rincian Jam Efektif Mata Pelajaran</div>
+  <div class="subtitle">Tahun Ajaran ${m.tahunAjaran}</div>
+  <div class="mapel-name">${mp.nama} &nbsp;·&nbsp; ${mp.jp} JP / Minggu</div>
+  <div class="je-wrap">
+    ${semBlock('SEMESTER 1', pe.s1, totS1, tmS1, 'Penilaian Akhir Semester')}
+    ${semBlock('SEMESTER 2', pe.s2, totS2, tmS2, 'Penilaian Akhir Tahun')}
+  </div>
+  <div class="footer">
+    <div class="sign-box">
+      <div style="font-size:11px;color:#333;">${m.tempatTanggal}</div>
+      <div style="font-size:11px;color:#333;margin-top:8px;">Ketua,</div>
+      <div class="sign-line"></div>
+      <div style="font-size:12px;font-weight:bold;">${m.namaKetua}</div>
+      <div style="font-size:11px;">NIP. ${m.nip}</div>
+    </div>
+  </div>
+  <div class="watermark">Developed by D.D Candra © 2026 | Dicetak: ${new Date().toLocaleString('id-ID')}</div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 500);
+}
+
 function closeRpeModal() { document.getElementById('rpe-modal').classList.remove('open'); }
 
 // ===== LOCALSTORAGE PERSISTENCE =====
@@ -6501,6 +6727,7 @@ function loadAll() {
     // RPE
     const rp = localStorage.getItem(LS_KEYS.rpe);
     if (rp) RPE_DATA = JSON.parse(rp);
+    if (!RPE_DATA.jamEfektif) RPE_DATA.jamEfektif = { formatif: 3, tengahSemester: 3, akhir: 3, kokurikuler: 12, mapelList: [] };
     // Planning DOM
     const pl = localStorage.getItem(LS_KEYS.planning);
     if (pl) {

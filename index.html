@@ -3299,6 +3299,10 @@ function onGuruChange() {
 function refreshOrigContext() {
   const ctx = _jadwalFormCtx;
   if (!ctx) return;
+  // Saat form dibuka dari REKAP untuk sel yang KOSONG, kelas yang tampil di awal cuma
+  // placeholder (bukan kelas asli) — jangan rekam "lokasi asli" apapun sampai user
+  // benar-benar memilih kelas tujuannya lewat picker (lihat setFormKelas).
+  if (ctx.rekapNewEntry) return;
   const jams = getSelectedJams();
   const jam = jams.length ? jams[0] : 1;
   const existing = (JADWAL_DATA2[ctx.hari]?.[ctx.kelas]?.[jam]) || {};
@@ -3373,6 +3377,7 @@ function setFormKelas(k, el) {
   document.querySelectorAll('.kelas-badge').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   _jadwalFormCtx.kelas = k;
+  _jadwalFormCtx.rekapNewEntry = false;
   refreshOrigContext();
   rebuildGuruOptions();
   checkGuruConflictLive();
@@ -3520,6 +3525,17 @@ function renderRekapTable() {
 function openRekapCell(guruNama, hari, jam, existingKelas) {
   const kelas = existingKelas || KELAS_LIST[0];
   openJadwalFormCell(hari, kelas, jam);
+  if (!existingKelas && _jadwalFormCtx) {
+    // Sel ini KOSONG untuk guru ini — kelas di atas ('7A') cuma placeholder tampilan,
+    // BUKAN lokasi asli guru ini. Tandai supaya sistem tidak salah anggap data yang
+    // sudah ada di 7A (milik guru lain) sebagai "data lama" yang harus dihapus.
+    // Lihat juga refreshOrigContext() & setFormKelas().
+    _jadwalFormCtx.rekapNewEntry = true;
+    _jadwalFormCtx.origHari = null;
+    _jadwalFormCtx.origKelas = null;
+    _jadwalFormCtx.origGuru = null;
+    _jadwalFormCtx.origJams = [];
+  }
   // Override guru selection setelah form terbuka
   setTimeout(() => {
     const sel = document.getElementById('mf-guru');
@@ -6666,28 +6682,40 @@ const LS_KEYS = {
 };
 
 function saveAll() {
+  // Simpan tiap key SECARA TERPISAH — kalau satu key gagal (mis. penyimpanan browser
+  // penuh), key lainnya tetap tersimpan. Sebelumnya semua dibungkus 1 try/catch besar,
+  // jadi kalau 1 key gagal, SEMUA key setelahnya ikut gagal tersimpan tanpa Anda sadari.
+  const failed = [];
+  const save1 = (key, val) => {
+    try { localStorage.setItem(key, val); }
+    catch (e) { failed.push(key); console.warn('Gagal simpan', key, e); }
+  };
+  save1(LS_KEYS.screen,  currentScreen);
+  save1(LS_KEYS.guru,    JSON.stringify(GURU_DATA));
+  save1(LS_KEYS.jadwal,  JSON.stringify(JADWAL_DATA));
+  save1(LS_KEYS.jadwal2, JSON.stringify(JADWAL_DATA2));
+  save1(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
+  save1(LS_KEYS.customBlock, JSON.stringify(customBlockData));
+  save1(LS_KEYS.bebanMengajar, JSON.stringify(bebanMengajarData));
+  save1(LS_KEYS.lockedDays, JSON.stringify(lockedDaysData));
+  save1(LS_KEYS.late,    JSON.stringify(lateRecords));
+  save1(LS_KEYS.notulen, JSON.stringify(notulenRecords));
+  save1(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
+  save1(LS_KEYS.kelasTujuan, JSON.stringify(KELAS_TUJUAN));
+  save1(LS_KEYS.rpe, JSON.stringify(RPE_DATA));
+  // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
   try {
-    localStorage.setItem(LS_KEYS.screen,  currentScreen);
-    localStorage.setItem(LS_KEYS.guru,    JSON.stringify(GURU_DATA));
-    localStorage.setItem(LS_KEYS.jadwal,  JSON.stringify(JADWAL_DATA));
-    localStorage.setItem(LS_KEYS.jadwal2, JSON.stringify(JADWAL_DATA2));
-    localStorage.setItem(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
-    localStorage.setItem(LS_KEYS.customBlock, JSON.stringify(customBlockData));
-    localStorage.setItem(LS_KEYS.bebanMengajar, JSON.stringify(bebanMengajarData));
-    localStorage.setItem(LS_KEYS.lockedDays, JSON.stringify(lockedDaysData));
-    localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
-    localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
-    localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
-    localStorage.setItem(LS_KEYS.kelasTujuan, JSON.stringify(KELAS_TUJUAN));
-    localStorage.setItem(LS_KEYS.rpe, JSON.stringify(RPE_DATA));
-    // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
     const planSnap = {};
     ['pendek','menengah','panjang'].forEach(j => {
       const card = document.getElementById('plan-' + j)?.querySelector('.card');
       if (card) planSnap[j] = card.innerHTML;
     });
-    localStorage.setItem(LS_KEYS.planning, JSON.stringify(planSnap));
-  } catch(e) { console.warn('Save gagal:', e); }
+    save1(LS_KEYS.planning, JSON.stringify(planSnap));
+  } catch (e) { failed.push(LS_KEYS.planning); console.warn('Gagal simpan planning:', e); }
+
+  if (failed.length) {
+    showToast('⚠️ Sebagian data GAGAL tersimpan (penyimpanan browser penuh?). Segera export/backup manual!', true);
+  }
 }
 
 function loadAll() {

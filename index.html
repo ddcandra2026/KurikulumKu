@@ -4130,15 +4130,48 @@ function generateJadwalOtomatis() {
   if (!targetDays.length) { showToast('⚠️ Pilih minimal 1 hari yang belum terkunci untuk digenerate!', true); return; }
 
   if (mode === 'reset') {
-    if (!confirm(`⚠️ Jadwal hari ${targetDays.map(h=>HARI[h]).join(', ')} akan DIHAPUS lalu dibuat ulang. Hari terkunci tidak akan ikut terhapus. Lanjutkan?`)) return;
-    targetDays.forEach(h => { JADWAL_DATA2[h] = {}; });
+    if (!confirm(`⚠️ Jadwal hari ${targetDays.map(h=>HARI[h]).join(', ')} akan DIHAPUS lalu dibuat ulang. Sel UMMI & hari terkunci TIDAK akan ikut terhapus. Lanjutkan?`)) return;
+    // Sel UMMI (jam ngaji Asatidz) TIDAK ikut dihapus — sama seperti proteksi di
+    // kosongkanJadwalKecualiUMMI(). Sebelumnya reset mode menghapus SEMUA isi hari
+    // termasuk UMMI, dan karena UMMI tidak terdaftar di Beban Mengajar, jam itu tidak
+    // pernah tergenerate ulang — hilang permanen.
+    targetDays.forEach(h => {
+      const hariData = JADWAL_DATA2[h] || {};
+      const kept = {};
+      Object.entries(hariData).forEach(([kelas, jamObj]) => {
+        Object.entries(jamObj).forEach(([jam, cell]) => {
+          if (cell && cell.mapel === 'UMMI') {
+            kept[kelas] = kept[kelas] || {};
+            kept[kelas][jam] = cell;
+          }
+        });
+      });
+      JADWAL_DATA2[h] = kept;
+    });
   }
 
-  // 1. Susun daftar tugas: satu tugas per (guru, mapel, kelas)
+  // 1. Susun daftar tugas: satu tugas per (guru, mapel, kelas). `placed` diisi dari jam yang
+  // SUDAH ADA di jadwal (hari manapun, termasuk hari di luar targetDays) — bukan selalu mulai
+  // dari 0. Ini penting untuk pemakaian "generate per hari" bertahap: kalau Senin sudah digenerate
+  // duluan dan sebuah mapel 6 JP/minggu sudah kebagian 3 jam di sana, saat generate Selasa sistem
+  // hanya akan mencari SISA 3 jam-nya (bukan 6 jam penuh lagi) — mencegah 1 mapel numpuk lebih dari
+  // total mingguan yang diminta, dan mencegah 1 hari "dipaksa" menampung seluruh kebutuhan minggu itu.
+  const countExistingPlaced = (guru, mapel, kelas) => {
+    let n = 0;
+    for (let h = 1; h <= 6; h++) {
+      const kd = (JADWAL_DATA2[h] || {})[kelas];
+      if (!kd) continue;
+      Object.values(kd).forEach(cell => { if (cell.guru === guru && cell.mapel === mapel) n++; });
+    }
+    return n;
+  };
   let tasks = [];
   bebanMengajarData.forEach(b => {
     b.kelasList.forEach(kelas => {
-      tasks.push({ guru: b.guru, mapel: b.mapel, kelas, ruang: b.ruang || '', need: b.jamPerMinggu, placed: 0 });
+      const already = countExistingPlaced(b.guru, b.mapel, kelas);
+      const need = b.jamPerMinggu;
+      if (already >= need) return; // sudah lengkap dari hari lain, tidak perlu tugas baru
+      tasks.push({ guru: b.guru, mapel: b.mapel, kelas, ruang: b.ruang || '', need, placed: already, alreadyHad: already });
     });
   });
 
@@ -4205,7 +4238,12 @@ function generateJadwalOtomatis() {
     return minDomain === Infinity ? 0 : minDomain;
   };
   tasks.forEach(t => { t.domain = countDomain(t); });
-  tasks.sort((a, b) => a.domain - b.domain);
+  // Urutkan: tugas dengan kebutuhan jam KECIL (2-3 JP, seperti Bahasa Madura, BK) diproses LEBIH
+  // DULU. Alasannya: tugas kecil biasanya cuma perlu 1 blok utuh tanpa pola cadangan (lihat
+  // getFallbackPlan) — begitu minggu makin penuh oleh mapel besar (BIN 6 JP, IPA 5 JP, dst),
+  // tugas kecil ini kehabisan tempat karena TIDAK PUNYA cara "menyusut" seperti mapel besar yang
+  // masih bisa dapat sebagian jamnya. Domain size dipakai sebagai tie-breaker saja.
+  tasks.sort((a, b) => (a.need - b.need) || (a.domain - b.domain));
 
   const HARI_URUT = targetDays;
   const shuffle = arr => { const a = [...arr]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
@@ -4318,7 +4356,7 @@ function generateJadwalOtomatis() {
   // ini (mengurangi jarak/gap dalam sehari — aman karena batas jam tetap membatasi totalnya).
   // Saat mode darurat (capValue longgar/emergency): JANGAN mengelompokkan — sebaliknya utamakan
   // hari yang PALING SEDIKIT jamnya untuk guru ini, supaya tidak menumpuk 8-9 jam di 1 hari yang sama.
-  function candidateDaysFor(task, dayOrder, usedDays, spreadMode) {
+  function candidateDaysFor(task, dayOrder, usedDays, spreadMode, allowReuse = true) {
     const belumDipakai = dayOrder.filter(h => !usedDays.has(h)).sort((a, b) => {
       if (spreadMode) {
         const aCount = (guruDayCount[task.guru] || {})[a] || 0;
@@ -4329,6 +4367,13 @@ function generateJadwalOtomatis() {
       const bHas = (guruDaySpan[task.guru] || {})[b] ? 1 : 0;
       return bHas - aHas;
     });
+    // allowReuse=false: JANGAN pakai hari yang sudah kepakai sesi LAIN dari mapel yang sama di
+    // percobaan ini — mencegah 2 sesi mapel yang sama (mis. Matematika pagi & sore) numpuk di
+    // hari yang sama hanya karena hari lain di target kebetulan tidak tersedia. Kalau memang
+    // tidak ada hari lain, biarkan sesi ini GAGAL untuk percobaan normal (nanti dicoba lagi via
+    // pola cadangan/darurat, atau ditinggal untuk digenerate di hari lain lain waktu) — daripada
+    // diam-diam menumpuk di 1 hari sampai jam 1-9 penuh semua.
+    if (!allowReuse) return belumDipakai;
     const sudahDipakai = dayOrder.filter(h => usedDays.has(h));
     return [...belumDipakai, ...sudahDipakai];
   }
@@ -4352,7 +4397,9 @@ function generateJadwalOtomatis() {
     const usedDays = new Set();
     let ok = true;
     for (const spec of plan) {
-      const candidateDays = candidateDaysFor(task, dayOrder, usedDays, spreadMode);
+      // allowReuse=false di sini: tiap sesi dari mapel yang SAMA wajib beda hari selama masih
+      // dalam percobaan "normal" ini (bukan best-effort darurat di scheduleTask).
+      const candidateDays = candidateDaysFor(task, dayOrder, usedDays, spreadMode, false);
       let placedThis = false;
       for (const hari of candidateDays) {
         const start = pickBestStart(hari, spec.size, task.guru, task.mapel, task.kelas, capValue, spec.window);
@@ -4387,8 +4434,11 @@ function generateJadwalOtomatis() {
   // ke ukuran 1 jam di luar pola resmi.
   function scheduleTask(task) {
     const dayOrder = shuffle(HARI_URUT);
-    const ideal = getIdealPlan(task.mapel, task.need);
-    const fallback = getFallbackPlan(task.mapel, task.need);
+    // Rencana sesi dibuat dari SISA kebutuhan (need - yang sudah ada dari hari lain), bukan dari
+    // total mingguan asli — supaya generate bertahap per hari tidak menambah jam melebihi target.
+    const remaining = task.need - (task.alreadyHad || 0);
+    const ideal = getIdealPlan(task.mapel, remaining);
+    const fallback = getFallbackPlan(task.mapel, remaining);
 
     if (tryPlanExact(task, ideal, dayOrder, MAX_JAM_HARI)) return { ok: true, overCap: false, mismatch: false };
     if (fallback && tryPlanExact(task, fallback, dayOrder, MAX_JAM_HARI)) return { ok: true, overCap: false, mismatch: false };

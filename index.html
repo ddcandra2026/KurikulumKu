@@ -4238,12 +4238,22 @@ function generateJadwalOtomatis() {
     return minDomain === Infinity ? 0 : minDomain;
   };
   tasks.forEach(t => { t.domain = countDomain(t); });
-  // Urutkan: tugas dengan kebutuhan jam KECIL (2-3 JP, seperti Bahasa Madura, BK) diproses LEBIH
-  // DULU. Alasannya: tugas kecil biasanya cuma perlu 1 blok utuh tanpa pola cadangan (lihat
-  // getFallbackPlan) — begitu minggu makin penuh oleh mapel besar (BIN 6 JP, IPA 5 JP, dst),
-  // tugas kecil ini kehabisan tempat karena TIDAK PUNYA cara "menyusut" seperti mapel besar yang
-  // masih bisa dapat sebagian jamnya. Domain size dipakai sebagai tie-breaker saja.
-  tasks.sort((a, b) => (a.need - b.need) || (a.domain - b.domain));
+  // Hitung "keluasan" tiap guru: berapa banyak tugas (kelas) berbeda yang harus dipegang guru yang
+  // sama. Guru dengan tugas tersebar ke BANYAK kelas (mis. Bahasa Madura: 1 guru x 9 kelas) bersaing
+  // dengan DIRINYA SENDIRI di banyak slot berbeda — domain per-tugas yang dihitung sendiri-sendiri
+  // tidak menangkap ini. Makanya domain diberi sedikit "diskon" sesuai jumlah tugas guru itu.
+  const taskCountByGuru = {};
+  tasks.forEach(t => { taskCountByGuru[t.guru] = (taskCountByGuru[t.guru] || 0) + 1; });
+  // Urutkan dari yang PALING SULIT (domain efektif terkecil) ke yang paling leluasa. Domain asli
+  // (yang sudah memperhitungkan window seperti PJOK jam1-4) tetap jadi sinyal utama — supaya mapel
+  // besar (MTK/IPA 5 JP) TIDAK dikorbankan begitu saja hanya karena JP-nya besar (percobaan
+  // sebelumnya: urutkan berdasar "need kecil dulu" ternyata menggusur MTK/IPA ke antrean belakang
+  // dan bikin gurunya kosong total — sudah diuji & terbukti buruk, makanya diganti pendekatan ini).
+  tasks.sort((a, b) => {
+    const effA = a.domain - Math.min(taskCountByGuru[a.guru] - 1, 6) * 1.5;
+    const effB = b.domain - Math.min(taskCountByGuru[b.guru] - 1, 6) * 1.5;
+    return effA - effB;
+  });
 
   const HARI_URUT = targetDays;
   const shuffle = arr => { const a = [...arr]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
@@ -4447,7 +4457,11 @@ function generateJadwalOtomatis() {
     // Best-effort terakhir: pola resmi benar-benar tidak muat sama sekali. Daripada kelas ini KOSONG TOTAL,
     // isi semaksimal mungkin (tetap dijaga minimal 2 jam per sesi kalau bisa, kecuali BK/PJOK-teori yg memang 1 jam)
     // — TETAP dibatasi EMERGENCY_CAP dan diprioritaskan ke hari yang PALING KOSONG (tidak menumpuk 1 hari).
+    // PENTING: kalau mapelnya PJOK, window jam 1-4 tetap WAJIB dihormati di sini juga — sebelumnya jalur
+    // darurat ini memakai window:null (bebas taruh di jam berapapun) sehingga PJOK bisa nongol di JP5+,
+    // padahal aturan sekolahnya praktik olahraga cuma boleh jam 1-4.
     const minFloor = (task.need === 1 || isPjok(task.mapel)) ? 1 : 2;
+    const emergencyWindow = isPjok(task.mapel) ? [1, 4] : null;
     let anyPlaced = false;
     let guardLoop = 0;
     while (task.placed < task.need && guardLoop++ < 20) {
@@ -4457,7 +4471,7 @@ function generateJadwalOtomatis() {
       for (let size = desiredSize; size >= Math.min(minFloor, remaining); size--) {
         const candidateDays = candidateDaysFor(task, shuffle(HARI_URUT), new Set(), true);
         for (const hari of candidateDays) {
-          const start = pickBestStart(hari, size, task.guru, task.mapel, task.kelas, EMERGENCY_CAP, null);
+          const start = pickBestStart(hari, size, task.guru, task.mapel, task.kelas, EMERGENCY_CAP, emergencyWindow);
           if (start !== null) {
             placeChunk(task, hari, start, size);
             placedThis = true; anyPlaced = true;

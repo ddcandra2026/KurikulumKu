@@ -893,81 +893,6 @@
   .notulen-content { display: none; }
   .notulen-content.active { display: block; }
 
-  /* ===== RPE (RINCIAN PEKAN EFEKTIF) ===== */
-  .rpe-sem-title {
-    font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 12px;
-    color: var(--white); background: rgba(0,144,199,0.08); border: 1px solid var(--border);
-    border-radius: 10px; padding: 8px 12px; margin: 4px 0 8px; letter-spacing: 0.5px;
-  }
-  .rpe-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .rpe-table th, .rpe-table td { border: 1px solid var(--border); padding: 7px 5px; text-align: center; }
-  .rpe-table th { background: rgba(0,144,199,0.1); color: var(--cyan); font-size: 9.5px; letter-spacing: 0.3px; }
-  .rpe-table td.rpe-bulan { text-align: left; font-weight: 600; color: var(--white); }
-  .rpe-table tr.rpe-jumlah td { font-weight: 800; background: rgba(0,168,107,0.08); color: var(--green); }
-  .rpe-table td.rpe-editable { color: var(--cyan); cursor: pointer; text-decoration: underline dotted; }
-  .rpe-table td.rpe-efektif { font-weight: 700; color: var(--green2); }
-
-  .rpe-month-chips { display: flex; gap: 6px; margin-bottom: 10px; overflow-x: auto; padding-bottom: 4px; }
-  .rpe-month-chip {
-    flex: 0 0 auto; padding: 7px 12px; border-radius: 10px; font-size: 10.5px; font-weight: 700;
-    background: var(--slate2); border: 1px solid var(--border); color: var(--muted); cursor: pointer;
-    white-space: nowrap; font-family: 'Plus Jakarta Sans', sans-serif; transition: all 0.2s;
-  }
-  .rpe-month-chip.active { background: rgba(0,144,199,0.15); border-color: var(--cyan); color: var(--cyan); }
-
-  .rpe-cal-dow { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; margin-bottom: 4px; }
-  .rpe-cal-dow div { text-align: center; font-size: 9px; font-weight: 700; color: var(--muted); letter-spacing: 0.5px; }
-  .rpe-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
-  .rpe-cal-cell {
-    aspect-ratio: 1; border-radius: 8px; display: flex; flex-direction: column;
-    align-items: center; justify-content: center; font-size: 10.5px; font-weight: 700;
-    cursor: pointer; border: 1px solid var(--border); background: var(--card-bg); color: var(--white);
-    position: relative; padding: 2px;
-  }
-  .rpe-cal-cell.rpe-blank { visibility: hidden; cursor: default; }
-  .rpe-cal-cell .rpe-code { font-size: 8.5px; letter-spacing: 0.2px; }
-  .rpe-cal-cell.code-LU { background: #DC2640; border-color: #DC2640; color: #fff; }
-  .rpe-cal-cell.code-LHB { background: #E0660A; border-color: #E0660A; color: #fff; }
-  .rpe-cal-cell.code-LS1, .rpe-cal-cell.code-LS2 { background: #8892B0; border-color: #8892B0; color: #fff; }
-  .rpe-cal-cell.code-KTS { background: #7FC97F; border-color: #7FC97F; color: #12331b; }
-  .rpe-cal-cell.code-CB { background: #F2C744; border-color: #F2C744; color: #4a3900; }
-  .rpe-cal-cell.code-KPP { background: #F2E244; border-color: #F2E244; color: #4a4600; }
-  .rpe-cal-cell.code-LHR { background: #E8B4C8; border-color: #E8B4C8; color: #5c1e37; }
-  .rpe-cal-cell.code-PRA { background: #C9CEDB; border-color: #C9CEDB; color: #1A2035; }
-  .rpe-cal-cell.has-note::after {
-    content: ''; position: absolute; top: 3px; right: 3px; width: 5px; height: 5px;
-    border-radius: 50%; background: var(--purple);
-  }
-
-  .rpe-legend-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 10px; margin-bottom: 4px; }
-  .rpe-legend-item { display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: var(--white); }
-  .rpe-legend-swatch { width: 20px; height: 16px; border-radius: 4px; flex: 0 0 auto; font-size: 8px; font-weight: 800; display:flex; align-items:center; justify-content:center; color:#fff; }
-
-  .rpe-event-item {
-    display: flex; align-items: center; justify-content: space-between; gap: 8px;
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px;
-    padding: 9px 12px; margin-bottom: 6px;
-  }
-  .rpe-event-main { font-size: 11px; color: var(--white); font-weight: 600; }
-  .rpe-event-sub { font-size: 9.5px; color: var(--muted); margin-top: 2px; }
-  .rpe-event-actions { display: flex; gap: 6px; flex: 0 0 auto; }
-  .rpe-event-actions span { cursor: pointer; font-size: 13px; }
-
-  .rpe-mapel-card {
-    background: var(--card-bg); border: 1px solid var(--border); border-radius: 14px;
-    padding: 14px; margin-bottom: 12px;
-  }
-  .rpe-mapel-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-  .rpe-mapel-name { font-size: 13px; font-weight: 800; color: var(--white); font-family: 'Plus Jakarta Sans', sans-serif; }
-  .rpe-mapel-jp { font-size: 9.5px; color: var(--cyan); margin-top: 2px; }
-  .rpe-mapel-actions { display: flex; gap: 8px; flex: 0 0 auto; }
-  .rpe-mapel-actions span { cursor: pointer; font-size: 14px; }
-  .rpe-jp-block { background: var(--slate2); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; }
-  .rpe-jp-block-title { font-size: 10px; font-weight: 800; color: var(--cyan); letter-spacing: 0.5px; margin-bottom: 6px; }
-  .rpe-jp-formula { font-size: 11px; color: var(--white); font-weight: 700; margin-bottom: 6px; }
-  .rpe-jp-row { display: flex; justify-content: space-between; font-size: 10.5px; color: var(--muted); padding: 3px 0; border-bottom: 1px dashed var(--border); }
-  .rpe-jp-row:last-child { border-bottom: none; font-weight: 800; color: var(--green2); }
-
   /* Recording status bar */
   .rec-status {
     font-size: 10px; font-weight: 600; padding: 5px 12px;
@@ -1018,6 +943,28 @@
     background: var(--slate2); color: var(--cyan); font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 8px; position: sticky; top: 0; z-index: 3; border-bottom: 2px solid var(--border);
   }
+
+  /* ===== RPE TABLE ===== */
+  .rpe-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+  .rpe-table th, .rpe-table td {
+    border: 1px solid var(--border); padding: 8px 6px; text-align: center;
+  }
+  .rpe-table thead th {
+    background: var(--slate2); color: var(--cyan); font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 9px; letter-spacing: 0.5px;
+  }
+  .rpe-table tbody td:first-child { text-align: left; color: var(--white); font-weight: 600; }
+  .rpe-table input {
+    width: 48px; text-align: center; background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--white); font-size: 11px; padding: 4px 2px; font-family: 'Inter', sans-serif;
+  }
+  .rpe-table input:focus { outline: none; border-color: var(--cyan); }
+  .rpe-table .rpe-efektif { font-weight: 700; color: var(--cyan); }
+  .rpe-table tfoot td {
+    background: rgba(0,144,199,0.08); font-weight: 800; color: var(--white);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .rpe-table tfoot .rpe-efektif { color: var(--cyan); }
   .rekap-table .rekap-hari-header {
     background: rgba(0,144,199,0.15); color: var(--cyan); font-weight: 700;
     font-size: 8px; letter-spacing: 0.5px;
@@ -1065,9 +1012,14 @@
   .jadwal-cell {
     background: rgba(0,144,199,0.08); border: 1px solid rgba(0,144,199,0.2);
     border-radius: 6px; padding: 4px 5px; cursor: pointer;
-    transition: all 0.15s; position: relative;
+    transition: all 0.15s; position: relative; cursor: grab;
   }
   .jadwal-cell:active { transform: scale(0.96); }
+  .jadwal-cell.dragging { opacity: 0.35; cursor: grabbing; }
+  .jadwal-cell.drag-over, .td-empty.drag-over {
+    outline: 2px dashed var(--cyan) !important; outline-offset: -2px;
+    background: rgba(0,144,199,0.22) !important;
+  }
   .jadwal-cell .jc-guru { font-size: 10px; font-weight: 700; color: var(--white); line-height: 1.3; }
   .jadwal-cell .jc-mapel { font-size: 9px; color: var(--cyan); }
   .jadwal-cell .jc-ruang { font-size: 8px; color: var(--muted); }
@@ -1330,7 +1282,7 @@
         <div class="menu-sub">Update Otomatis</div>
       </div>
       <div class="menu-item" onclick="switchScreen('rpe')">
-        <span class="menu-icon">🗓️</span>
+        <span class="menu-icon">📊</span>
         <div class="menu-label">RPE</div>
         <div class="menu-sub">Rincian Pekan Efektif</div>
       </div>
@@ -1651,100 +1603,6 @@
   </div>
 
   <!-- ===== SCREEN: REGULASI ===== -->
-  <!-- ===== SCREEN: RPE (RINCIAN PEKAN EFEKTIF) ===== -->
-  <div class="screen" id="screen-rpe">
-    <div class="section-header">
-      <p class="section-title">🗓️ RPE — RINCIAN PEKAN EFEKTIF</p>
-    </div>
-
-    <div class="card" style="margin-bottom:12px;" id="rpe-meta-card" onclick="openRpeMetaForm()">
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <div>
-          <div style="font-size:13px;font-weight:800;color:var(--white);" id="rpe-meta-tahun">Tahun Ajaran 2026/2027</div>
-          <div style="font-size:10px;color:var(--muted);margin-top:3px;" id="rpe-meta-sub">Ganjil: 139 hari / 24 pekan · Genap: 123 hari / 24 pekan</div>
-        </div>
-        <span style="font-size:16px;color:var(--cyan);">✏️</span>
-      </div>
-    </div>
-
-    <div class="notulen-tabs">
-      <div class="notulen-tab active" id="rpetab-rekap" onclick="switchRpeTab('rekap',this)">📊 REKAP</div>
-      <div class="notulen-tab" id="rpetab-kalender" onclick="switchRpeTab('kalender',this)">📅 KALENDER</div>
-      <div class="notulen-tab" id="rpetab-keterangan" onclick="switchRpeTab('keterangan',this)">📖 KETERANGAN</div>
-      <div class="notulen-tab" id="rpetab-jammapel" onclick="switchRpeTab('jammapel',this)">📐 JAM MAPEL</div>
-    </div>
-
-    <!-- TAB REKAP -->
-    <div id="rpe-tab-rekap" class="notulen-content active">
-      <p style="font-size:9.5px;color:var(--muted);margin-bottom:8px;">Ketuk angka pada tabel untuk mengubah nilai Pekan / Pekan Tidak Efektif.</p>
-      <div id="rpe-rekap-container"></div>
-    </div>
-
-    <!-- TAB KALENDER -->
-    <div id="rpe-tab-kalender" class="notulen-content">
-      <div class="rpe-month-chips" id="rpe-month-chips"></div>
-      <div class="card">
-        <div class="rpe-cal-dow"><div>Min</div><div>Sen</div><div>Sel</div><div>Rab</div><div>Kam</div><div>Jum</div><div>Sab</div></div>
-        <div class="rpe-cal-grid" id="rpe-cal-grid"></div>
-      </div>
-      <p style="font-size:9px;color:var(--muted);margin:8px 0;">Ketuk tanggal untuk menandai/mengubah keterangan (Libur, KTS, dll). Nomor menunjukkan urutan hari efektif.</p>
-      <button class="btn-add" style="width:100%;" onclick="openRpeEventForm()">＋ Tambah Keterangan / Libur</button>
-      <p class="section-title" style="margin-top:16px;">DAFTAR KETERANGAN TERSIMPAN</p>
-      <div id="rpe-event-list"></div>
-    </div>
-
-    <!-- TAB KETERANGAN -->
-    <div id="rpe-tab-keterangan" class="notulen-content">
-      <p class="section-title">KODE KETERANGAN</p>
-      <div class="card">
-        <div class="rpe-legend-grid">
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#DC2640;">LU</span> Libur Umum (Minggu)</div>
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#E0660A;">LHB</span> Libur Hari Besar</div>
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#8892B0;">LS1</span> Libur Semester 1*</div>
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#8892B0;">LS2</span> Libur Semester 2*</div>
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#F2C744;color:#4a3900;">CB</span> Cuti Bersama</div>
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#7FC97F;color:#12331b;">KTS</span> Kegiatan Tengah Semester</div>
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#F2E244;color:#4a4600;">KPP</span> Kegiatan Permulaan Puasa</div>
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#E8B4C8;color:#5c1e37;">LHR</span> Libur Sekitar Hari Raya</div>
-          <div class="rpe-legend-item"><span class="rpe-legend-swatch" style="background:#C9CEDB;color:#1A2035;">PRA</span> Pra Masuk Sekolah / MPLS</div>
-        </div>
-        <div style="font-size:9px;color:var(--muted);margin-top:8px;font-style:italic;">* Libur Semester untuk Murid</div>
-      </div>
-
-      <p class="section-title" style="margin-top:14px;">RINGKASAN HARI EFEKTIF</p>
-      <div class="card" id="rpe-summary-card"></div>
-
-      <p class="section-title" style="margin-top:14px;">HARI LIBUR NASIONAL / KEAGAMAAN</p>
-      <div id="rpe-holiday-list"></div>
-
-      <p class="section-title" style="margin-top:14px;">PENGESAHAN</p>
-      <div class="card" id="rpe-sign-card" onclick="openRpeMetaForm()">
-        <div style="font-size:10px;color:var(--muted);" id="rpe-sign-tempat">Sampang, 6 Juli 2026</div>
-        <div style="font-size:10px;color:var(--muted);margin-top:10px;">Ketua,</div>
-        <div style="font-size:12px;font-weight:700;color:var(--white);margin-top:24px;" id="rpe-sign-nama">Bambang Youiswanto NH. S.Pd,M.Pd</div>
-        <div style="font-size:10px;color:var(--muted);" id="rpe-sign-nip">NIP. 197906132005011009</div>
-      </div>
-    </div>
-
-    <!-- TAB JAM MAPEL -->
-    <div id="rpe-tab-jammapel" class="notulen-content">
-      <div class="card" style="margin-bottom:12px;" onclick="openRpeAlokasiForm()">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <div style="font-size:11px;font-weight:800;color:var(--white);">⚙️ RINCIAN ALOKASI (JP)</div>
-            <div style="font-size:9.5px;color:var(--muted);margin-top:3px;" id="rpe-alokasi-sub">Formatif 3 · Tengah Smt 3 · Akhir 3 · Kokurikuler 12</div>
-          </div>
-          <span style="font-size:16px;color:var(--cyan);">✏️</span>
-        </div>
-      </div>
-      <p style="font-size:9.5px;color:var(--muted);margin-bottom:8px;">Jam Efektif dihitung dari Pekan Efektif (tab REKAP) × JP/minggu tiap mapel. Sesuaikan JP/minggu sesuai struktur kurikulum sekolah Anda — nilainya berbeda per mapel & jenjang.</p>
-      <button class="btn-add" style="width:100%;margin-bottom:10px;" onclick="openRpeMapelForm()">＋ Tambah Mata Pelajaran</button>
-      <div id="rpe-mapel-list"></div>
-    </div>
-
-    <div class="watermark">Developed by D.D Candra © 2026</div>
-  </div>
-
   <div class="screen" id="screen-regulasi">
     <p class="section-title">📰 INFO & REGULASI PENDIDIKAN</p>
     <div class="card glow-purple" style="margin-bottom:12px;">
@@ -2274,6 +2132,45 @@
     <div class="watermark">Developed by D.D Candra © 2026</div>
   </div>
 
+  <!-- SCREEN: RPE -->
+  <div class="screen" id="screen-rpe">
+    <div class="section-header">
+      <p class="section-title">📊 RPE (RINCIAN PEKAN EFEKTIF)</p>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;">
+      <div class="form-group" style="margin-bottom:0;">
+        <label class="form-label">TAHUN AJARAN</label>
+        <input type="text" class="form-input" id="rpe-tahun-ajaran" value="2026/2027" oninput="onRpeTahunAjaranChange()" placeholder="Contoh: 2026/2027">
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:12px;">
+      <button class="btn-add" onclick="exportRPEExcel()" style="font-size:10px;padding:6px 10px;">📊 Export Excel</button>
+      <button class="btn-add" onclick="exportRPEPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
+    </div>
+
+    <p class="section-title" style="font-size:12px;">SEMESTER 1 (GANJIL)</p>
+    <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">
+      <table class="rpe-table" id="rpe-table-sem1"></table>
+    </div>
+
+    <p class="section-title" style="font-size:12px;">SEMESTER 2 (GENAP)</p>
+    <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">
+      <table class="rpe-table" id="rpe-table-sem2"></table>
+    </div>
+
+    <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.3);">
+      <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">ℹ️ CARA HITUNG</div>
+      <div style="font-size:10px;color:var(--muted);line-height:1.7;">
+        <b>Pekan Efektif = Pekan − Pekan Tidak Efektif</b><br>
+        Isi kolom "Pekan" (total minggu kalender bulan itu) dan "Pekan Tidak Efektif" (minggu libur/tidak belajar) sesuai kalender pendidikan sekolah Anda — kolom Efektif & Jumlah dihitung otomatis.
+      </div>
+    </div>
+
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
 </div><!-- end #app -->
 
 <!-- BOTTOM NAV -->
@@ -2402,19 +2299,6 @@
     <div class="modal-form-actions">
       <button class="btn-cancel" onclick="closeModalForm()">✕ BATAL</button>
       <button class="btn-save" onclick="saveModalForm()">💾 SIMPAN</button>
-    </div>
-  </div>
-</div>
-
-<!-- MODAL RPE -->
-<div class="modal-form-overlay" id="rpe-modal" onclick="if(event.target===this)closeRpeModal()">
-  <div class="modal-form-sheet">
-    <div class="modal-handle"></div>
-    <div class="modal-form-title" id="rpe-modal-title">RPE</div>
-    <div id="rpe-modal-body"></div>
-    <div class="modal-form-actions">
-      <button class="btn-cancel" onclick="closeRpeModal()">✕ BATAL</button>
-      <button class="btn-save" id="rpe-modal-save-btn" onclick="">💾 SIMPAN</button>
     </div>
   </div>
 </div>
@@ -2560,7 +2444,7 @@ function switchScreen(name) {
   if (name === 'home') renderMiniSchedule();
   if (name === 'notulen') renderNotulenList();
   if (name === 'siswa') renderSiswaList();
-  if (name === 'rpe') renderRpeAll();
+  if (name === 'rpe') renderRPE();
 }
 
 // ===== PLANNING TABS =====
@@ -2840,7 +2724,12 @@ function renderGrid() {
           : '';
         const titleAttr = isKelasConflict ? `title="⚠️ Kelas ${kelas} seharusnya terkunci: ${kelasBlockHit[0].label}. Jadwal ini bentrok!"`
           : (isBlocked ? `title="⚠️ ${cell.guru} sedang diblokir: ${blockInfo.label}"` : '');
-        html += `<td><div class="${cellClass}" onclick="editJadwalCell(${hari},'${kelas}',${jam})" ${titleAttr}>
+        html += `<td><div class="${cellClass}" draggable="true"
+          ondragstart="onCellDragStart(${hari},'${kelas}',${jam},event)"
+          ondragover="onCellDragOver(event)"
+          ondragleave="onCellDragLeave(event)"
+          ondrop="onCellDrop(${hari},'${kelas}',${jam},event)"
+          onclick="editJadwalCell(${hari},'${kelas}',${jam})" ${titleAttr}>
           <span class="jc-del" onclick="event.stopPropagation();hapusJadwalCell(${hari},'${kelas}',${jam})">✕</span>
           ${isBentrok || isKelasConflict ? '<span class="jc-bentrok" title="Bentrok!">⚠️</span>' : ''}
           <div class="jc-guru">${isMGMP ? '🏫 MGMP' : (isBlocked ? '🔒 '+blockInfo.label : shortName)}</div>
@@ -2854,7 +2743,11 @@ function renderGrid() {
         if (kelasBlockHit.length) {
           html += `<td style="background:rgba(231,76,60,0.08);"><div class="td-empty td-locked" title="🔒 Terkunci: ${kelasBlockHit[0].label} — kelas ${kelas} tidak bisa diisi jam ini">🔒<div style="font-size:7px;line-height:1.2;margin-top:2px;">${kelasBlockHit[0].label}</div></div></td>`;
         } else {
-          html += `<td style="background:${c.bg}08;"><div class="td-empty" onclick="openJadwalFormCell(${hari},'${kelas}',${jam})" title="Tap untuk isi">＋</div></td>`;
+          html += `<td style="background:${c.bg}08;"><div class="td-empty"
+            ondragover="onCellDragOver(event)"
+            ondragleave="onCellDragLeave(event)"
+            ondrop="onCellDrop(${hari},'${kelas}',${jam},event)"
+            onclick="openJadwalFormCell(${hari},'${kelas}',${jam})" title="Tap untuk isi, atau seret jadwal ke sini">＋</div></td>`;
         }
       }
     });
@@ -3292,38 +3185,9 @@ function onGuruChange() {
   renderAdviceBox();
 }
 
-// Perbarui "lokasi asli" (orig*) di context supaya selalu mengikuti hari/kelas/jam yang SEDANG
-// aktif di form — bukan cuma yang pertama kali dibuka. Ini mencegah bug: ganti kelas/hari di
-// dalam form yang sama lalu simpan, tapi sistem masih menghapus cell di lokasi lama yang salah
-// (karena origKelas/origGuru/origJams tidak ikut diperbarui).
-function refreshOrigContext() {
-  const ctx = _jadwalFormCtx;
-  if (!ctx) return;
-  // Saat form dibuka dari REKAP untuk sel yang KOSONG, kelas yang tampil di awal cuma
-  // placeholder (bukan kelas asli) — jangan rekam "lokasi asli" apapun sampai user
-  // benar-benar memilih kelas tujuannya lewat picker (lihat setFormKelas).
-  if (ctx.rekapNewEntry) return;
-  const jams = getSelectedJams();
-  const jam = jams.length ? jams[0] : 1;
-  const existing = (JADWAL_DATA2[ctx.hari]?.[ctx.kelas]?.[jam]) || {};
-  let preSelected = [jam];
-  if (existing.guru) {
-    const kelasData = JADWAL_DATA2[ctx.hari]?.[ctx.kelas] || {};
-    preSelected = Object.entries(kelasData)
-      .filter(([j, c]) => c.guru === existing.guru)
-      .map(([j]) => parseInt(j));
-    if (!preSelected.includes(jam)) preSelected = [jam];
-  }
-  ctx.origHari = ctx.hari;
-  ctx.origKelas = ctx.kelas;
-  ctx.origGuru = existing.guru || null;
-  ctx.origJams = existing.guru ? preSelected.slice() : [];
-}
-
 function toggleFormJam(j, el) {
   el.classList.toggle('selected');
   updateJamRangeLabel();
-  refreshOrigContext();
   checkGuruConflictLive();
   renderAdviceBox();
   refreshKelasPickerLock();
@@ -3368,7 +3232,6 @@ function setFormHari(h, el) {
       </span>`).join('');
     updateJamRangeLabel();
   }
-  refreshOrigContext();
   refreshKelasPickerLock();
   checkGuruConflictLive();
   renderAdviceBox();
@@ -3377,8 +3240,6 @@ function setFormKelas(k, el) {
   document.querySelectorAll('.kelas-badge').forEach(b => b.classList.remove('selected'));
   el.classList.add('selected');
   _jadwalFormCtx.kelas = k;
-  _jadwalFormCtx.rekapNewEntry = false;
-  refreshOrigContext();
   rebuildGuruOptions();
   checkGuruConflictLive();
   renderAdviceBox();
@@ -3399,7 +3260,195 @@ function hapusJadwalCell(hari, kelas, jam) {
   showToast('🗑️ Jadwal dihapus');
 }
 
-// ===== LIST PER GURU =====
+// ===== DRAG & DROP JADWAL (GRID) =====
+let _dragSrc = null;      // {hari, kelas, jam}
+let _dragOverEl = null;   // elemen yg lagi di-hover drag, buat kelola class drag-over
+let _pendingDrag = null;  // state sementara saat modal konflik drag terbuka
+
+function onCellDragStart(hari, kelas, jam, ev) {
+  _dragSrc = { hari, kelas, jam };
+  ev.dataTransfer.effectAllowed = 'move';
+  try { ev.dataTransfer.setData('text/plain', `${hari}|${kelas}|${jam}`); } catch(e) {}
+  ev.currentTarget.classList.add('dragging');
+}
+function onCellDragOver(ev) {
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = 'move';
+  if (_dragOverEl && _dragOverEl !== ev.currentTarget) _dragOverEl.classList.remove('drag-over');
+  ev.currentTarget.classList.add('drag-over');
+  _dragOverEl = ev.currentTarget;
+}
+function onCellDragLeave(ev) {
+  ev.currentTarget.classList.remove('drag-over');
+}
+function clearDragVisuals() {
+  document.querySelectorAll('.jadwal-cell.dragging').forEach(el => el.classList.remove('dragging'));
+  document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+  _dragOverEl = null;
+}
+
+function onCellDrop(targetHari, targetKelas, targetJam, ev) {
+  ev.preventDefault();
+  clearDragVisuals();
+  const src = _dragSrc;
+  _dragSrc = null;
+  if (!src) return;
+  if (src.hari === targetHari && src.kelas === targetKelas && src.jam === targetJam) return; // taruh di tempat sendiri
+
+  const srcCell = JADWAL_DATA2[src.hari]?.[src.kelas]?.[src.jam];
+  if (!srcCell) { showToast('⚠️ Data yang diseret sudah tidak ada, coba lagi.', true); return; }
+
+  if (isKelasHardBlocked(targetKelas, targetHari, targetJam)) {
+    showToast(`🔒 Kelas ${targetKelas} terkunci blokir di jam ini, tidak bisa ditaruh di sini.`, true);
+    return;
+  }
+
+  const srcRange = (srcCell.jamRange && srcCell.jamRange.length) ? [...srcCell.jamRange] : [src.jam];
+  const chunkSize = srcRange.length;
+  const shift = targetJam - src.jam;
+  const newRange = srcRange.map(j => j + shift);
+  const maxJ = maxJamForHari(targetHari);
+
+  if (newRange.some(j => j < 1 || j > maxJ)) {
+    showToast(`⚠️ Tidak muat — sesi ini ${chunkSize} jam, hasil geser keluar dari batas hari (JP1–${maxJ}).`, true);
+    return;
+  }
+  if (newRange.some(j => isKelasHardBlocked(targetKelas, targetHari, j))) {
+    showToast(`🔒 Sebagian jam tujuan (JP${newRange[0]}–JP${newRange[newRange.length-1]}) terkunci blokir.`, true);
+    return;
+  }
+
+  const targetKelasData = JADWAL_DATA2[targetHari]?.[targetKelas] || {};
+  // Kumpulkan sel yang akan "tergeser" di tujuan (kecuali kalau itu bagian dari sel sumber sendiri —
+  // misal geser dalam kelas & hari yg sama dengan rentang yg tumpang tindih)
+  const displacedJams = [...new Set(newRange.filter(j => {
+    const existing = targetKelasData[j];
+    if (!existing) return false;
+    if (src.hari === targetHari && src.kelas === targetKelas && srcRange.includes(j)) return false;
+    return true;
+  }))];
+
+  if (!displacedJams.length) {
+    performCellMove(src, srcRange, targetHari, targetKelas, newRange, srcCell);
+    renderGrid(); saveAll();
+    if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
+    showToast('✅ Jadwal dipindah!');
+    return;
+  }
+
+  // Tujuan terisi guru lain -> tanya mau ditaruh dimana yang lama
+  const displacedCell = targetKelasData[displacedJams[0]];
+  const displacedRange = (displacedCell.jamRange && displacedCell.jamRange.length) ? [...displacedCell.jamRange] : displacedJams;
+  _pendingDrag = { src, srcRange, srcCell, targetHari, targetKelas, newRange, displacedCell, displacedRange };
+  openDragConflictModal();
+}
+
+function performCellMove(src, srcRange, targetHari, targetKelas, newRange, cellData) {
+  // Hapus dari posisi asal
+  srcRange.forEach(j => {
+    if (JADWAL_DATA2[src.hari]?.[src.kelas]?.[j]) delete JADWAL_DATA2[src.hari][src.kelas][j];
+  });
+  // Tulis ke posisi baru
+  if (!JADWAL_DATA2[targetHari]) JADWAL_DATA2[targetHari] = {};
+  if (!JADWAL_DATA2[targetHari][targetKelas]) JADWAL_DATA2[targetHari][targetKelas] = {};
+  newRange.forEach(j => {
+    JADWAL_DATA2[targetHari][targetKelas][j] = { guru: cellData.guru, mapel: cellData.mapel, ruang: cellData.ruang, jamRange: newRange };
+  });
+}
+
+function openDragConflictModal() {
+  const p = _pendingDrag;
+  if (!p) return;
+  const sameSizeSwap = p.displacedRange.length === p.srcRange.length;
+  const overlay = document.createElement('div');
+  overlay.id = 'drag-conflict-overlay';
+  overlay.className = 'modal-form-overlay open';
+  overlay.onclick = (e) => { if (e.target === overlay) cancelDragConflict(); };
+  overlay.innerHTML = `
+    <div class="modal-form-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-form-title">🔀 Sel Tujuan Sudah Terisi</div>
+      <div style="padding:0 4px 12px;">
+        <div style="font-size:11px;color:var(--white);margin-bottom:6px;line-height:1.6;">
+          Anda memindah <b>${p.srcCell.guru}</b> (${p.srcCell.mapel||''}) ke kelas <b>${p.targetKelas}</b> hari ${HARI[p.targetHari]} JP${p.newRange[0]}${p.newRange.length>1?'–JP'+p.newRange[p.newRange.length-1]:''}.
+        </div>
+        <div style="font-size:11px;color:var(--orange);margin-bottom:14px;line-height:1.6;">
+          Slot itu sudah dipakai <b>${p.displacedCell.guru}</b> (${p.displacedCell.mapel||''}). Mau diapakan yang lama?
+        </div>
+        <button class="btn-primary" onclick="resolveDragSwap()" style="font-size:11px;padding:10px;margin-bottom:8px;width:100%;" ${sameSizeSwap?'':'disabled title="Ukuran sesi beda, tidak bisa tukar langsung"'}>
+          🔄 Tukar Posisi (${p.displacedCell.guru.split(' ').slice(-1)} pindah ke slot lama ${p.srcCell.guru.split(' ').slice(-1)})
+        </button>
+        <button class="btn-primary" onclick="resolveDragRelocate()" style="font-size:11px;padding:10px;margin-bottom:8px;width:100%;background:linear-gradient(135deg,var(--purple),var(--cyan));">
+          📍 Pilih Sendiri Lokasi Baru untuk ${p.displacedCell.guru.split(' ').slice(-1)}
+        </button>
+        <button class="btn-cancel" onclick="cancelDragConflict()" style="width:100%;">✕ Batalkan Pemindahan</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+}
+function closeDragConflictModal() {
+  document.getElementById('drag-conflict-overlay')?.remove();
+}
+function cancelDragConflict() {
+  _pendingDrag = null;
+  closeDragConflictModal();
+  showToast('Pemindahan dibatalkan, tidak ada yang berubah.');
+}
+function resolveDragSwap() {
+  const p = _pendingDrag;
+  if (!p) return;
+  // PENTING: hapus KEDUA posisi asal dulu, baru tulis kedua nya — supaya kalau posisinya tumpang
+  // tindih (mis. tukar jam yang sama beda kelas), penulisan yang satu tidak menghapus yang lain.
+  p.srcRange.forEach(j => { if (JADWAL_DATA2[p.src.hari]?.[p.src.kelas]?.[j]) delete JADWAL_DATA2[p.src.hari][p.src.kelas][j]; });
+  p.displacedRange.forEach(j => { if (JADWAL_DATA2[p.targetHari]?.[p.targetKelas]?.[j]) delete JADWAL_DATA2[p.targetHari][p.targetKelas][j]; });
+
+  if (!JADWAL_DATA2[p.targetHari]) JADWAL_DATA2[p.targetHari] = {};
+  if (!JADWAL_DATA2[p.targetHari][p.targetKelas]) JADWAL_DATA2[p.targetHari][p.targetKelas] = {};
+  p.newRange.forEach(j => {
+    JADWAL_DATA2[p.targetHari][p.targetKelas][j] = { guru: p.srcCell.guru, mapel: p.srcCell.mapel, ruang: p.srcCell.ruang, jamRange: p.newRange };
+  });
+
+  if (!JADWAL_DATA2[p.src.hari]) JADWAL_DATA2[p.src.hari] = {};
+  if (!JADWAL_DATA2[p.src.hari][p.src.kelas]) JADWAL_DATA2[p.src.hari][p.src.kelas] = {};
+  p.srcRange.forEach(j => {
+    JADWAL_DATA2[p.src.hari][p.src.kelas][j] = { guru: p.displacedCell.guru, mapel: p.displacedCell.mapel, ruang: p.displacedCell.ruang, jamRange: p.srcRange };
+  });
+
+  _pendingDrag = null;
+  closeDragConflictModal();
+  renderGrid(); saveAll();
+  if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
+  showToast('✅ Posisi ditukar!');
+}
+function resolveDragRelocate() {
+  const p = _pendingDrag;
+  if (!p) return;
+  // Commit dulu pemindahan sumber ke tujuan (menimpa yang lama)
+  performCellMove(p.src, p.srcRange, p.targetHari, p.targetKelas, p.newRange, p.srcCell);
+  closeDragConflictModal();
+  renderGrid(); saveAll();
+  showToast(`📍 ${p.srcCell.guru} dipindah. Sekarang pilih lokasi baru untuk ${p.displacedCell.guru}...`);
+  // Buka form isi jadwal biasa, pre-filled dengan data yang tergeser, di lokasi asal tujuan (kelas/hari yg sama)
+  // supaya user tinggal ganti hari/kelas/jam yang diinginkan lewat picker yang sudah ada.
+  openRelocateForm(p.displacedCell, p.targetHari, p.targetKelas, p.displacedRange[0]);
+  _pendingDrag = null;
+}
+// Buka form isi jadwal standar, pre-filled dengan data yang perlu direlokasi setelah drag
+function openRelocateForm(cellData, hari, kelas, jam) {
+  openJadwalFormCell(hari, kelas, jam);
+  setTimeout(() => {
+    const guruSel = document.getElementById('mf-guru');
+    if (guruSel) { guruSel.value = cellData.guru; onGuruChange(); }
+    const mapelInp = document.getElementById('mf-mapel');
+    if (mapelInp) mapelInp.value = cellData.mapel || '';
+    const ruangInp = document.getElementById('mf-ruang');
+    if (ruangInp) ruangInp.value = cellData.ruang || '';
+    const titleEl = document.getElementById('modal-form-title');
+    if (titleEl) titleEl.textContent = `📍 RELOKASI — ${cellData.guru}, pilih hari/kelas/jam baru`;
+  }, 50);
+}
+
+
 function populateListGuruSel() {
   const sel = document.getElementById('list-guru-sel');
   if (!sel) return;
@@ -3525,17 +3574,6 @@ function renderRekapTable() {
 function openRekapCell(guruNama, hari, jam, existingKelas) {
   const kelas = existingKelas || KELAS_LIST[0];
   openJadwalFormCell(hari, kelas, jam);
-  if (!existingKelas && _jadwalFormCtx) {
-    // Sel ini KOSONG untuk guru ini — kelas di atas ('7A') cuma placeholder tampilan,
-    // BUKAN lokasi asli guru ini. Tandai supaya sistem tidak salah anggap data yang
-    // sudah ada di 7A (milik guru lain) sebagai "data lama" yang harus dihapus.
-    // Lihat juga refreshOrigContext() & setFormKelas().
-    _jadwalFormCtx.rekapNewEntry = true;
-    _jadwalFormCtx.origHari = null;
-    _jadwalFormCtx.origKelas = null;
-    _jadwalFormCtx.origGuru = null;
-    _jadwalFormCtx.origJams = [];
-  }
   // Override guru selection setelah form terbuka
   setTimeout(() => {
     const sel = document.getElementById('mf-guru');
@@ -4130,48 +4168,15 @@ function generateJadwalOtomatis() {
   if (!targetDays.length) { showToast('⚠️ Pilih minimal 1 hari yang belum terkunci untuk digenerate!', true); return; }
 
   if (mode === 'reset') {
-    if (!confirm(`⚠️ Jadwal hari ${targetDays.map(h=>HARI[h]).join(', ')} akan DIHAPUS lalu dibuat ulang. Sel UMMI & hari terkunci TIDAK akan ikut terhapus. Lanjutkan?`)) return;
-    // Sel UMMI (jam ngaji Asatidz) TIDAK ikut dihapus — sama seperti proteksi di
-    // kosongkanJadwalKecualiUMMI(). Sebelumnya reset mode menghapus SEMUA isi hari
-    // termasuk UMMI, dan karena UMMI tidak terdaftar di Beban Mengajar, jam itu tidak
-    // pernah tergenerate ulang — hilang permanen.
-    targetDays.forEach(h => {
-      const hariData = JADWAL_DATA2[h] || {};
-      const kept = {};
-      Object.entries(hariData).forEach(([kelas, jamObj]) => {
-        Object.entries(jamObj).forEach(([jam, cell]) => {
-          if (cell && cell.mapel === 'UMMI') {
-            kept[kelas] = kept[kelas] || {};
-            kept[kelas][jam] = cell;
-          }
-        });
-      });
-      JADWAL_DATA2[h] = kept;
-    });
+    if (!confirm(`⚠️ Jadwal hari ${targetDays.map(h=>HARI[h]).join(', ')} akan DIHAPUS lalu dibuat ulang. Hari terkunci tidak akan ikut terhapus. Lanjutkan?`)) return;
+    targetDays.forEach(h => { JADWAL_DATA2[h] = {}; });
   }
 
-  // 1. Susun daftar tugas: satu tugas per (guru, mapel, kelas). `placed` diisi dari jam yang
-  // SUDAH ADA di jadwal (hari manapun, termasuk hari di luar targetDays) — bukan selalu mulai
-  // dari 0. Ini penting untuk pemakaian "generate per hari" bertahap: kalau Senin sudah digenerate
-  // duluan dan sebuah mapel 6 JP/minggu sudah kebagian 3 jam di sana, saat generate Selasa sistem
-  // hanya akan mencari SISA 3 jam-nya (bukan 6 jam penuh lagi) — mencegah 1 mapel numpuk lebih dari
-  // total mingguan yang diminta, dan mencegah 1 hari "dipaksa" menampung seluruh kebutuhan minggu itu.
-  const countExistingPlaced = (guru, mapel, kelas) => {
-    let n = 0;
-    for (let h = 1; h <= 6; h++) {
-      const kd = (JADWAL_DATA2[h] || {})[kelas];
-      if (!kd) continue;
-      Object.values(kd).forEach(cell => { if (cell.guru === guru && cell.mapel === mapel) n++; });
-    }
-    return n;
-  };
+  // 1. Susun daftar tugas: satu tugas per (guru, mapel, kelas)
   let tasks = [];
   bebanMengajarData.forEach(b => {
     b.kelasList.forEach(kelas => {
-      const already = countExistingPlaced(b.guru, b.mapel, kelas);
-      const need = b.jamPerMinggu;
-      if (already >= need) return; // sudah lengkap dari hari lain, tidak perlu tugas baru
-      tasks.push({ guru: b.guru, mapel: b.mapel, kelas, ruang: b.ruang || '', need, placed: already, alreadyHad: already });
+      tasks.push({ guru: b.guru, mapel: b.mapel, kelas, ruang: b.ruang || '', need: b.jamPerMinggu, placed: 0 });
     });
   });
 
@@ -4238,22 +4243,7 @@ function generateJadwalOtomatis() {
     return minDomain === Infinity ? 0 : minDomain;
   };
   tasks.forEach(t => { t.domain = countDomain(t); });
-  // Hitung "keluasan" tiap guru: berapa banyak tugas (kelas) berbeda yang harus dipegang guru yang
-  // sama. Guru dengan tugas tersebar ke BANYAK kelas (mis. Bahasa Madura: 1 guru x 9 kelas) bersaing
-  // dengan DIRINYA SENDIRI di banyak slot berbeda — domain per-tugas yang dihitung sendiri-sendiri
-  // tidak menangkap ini. Makanya domain diberi sedikit "diskon" sesuai jumlah tugas guru itu.
-  const taskCountByGuru = {};
-  tasks.forEach(t => { taskCountByGuru[t.guru] = (taskCountByGuru[t.guru] || 0) + 1; });
-  // Urutkan dari yang PALING SULIT (domain efektif terkecil) ke yang paling leluasa. Domain asli
-  // (yang sudah memperhitungkan window seperti PJOK jam1-4) tetap jadi sinyal utama — supaya mapel
-  // besar (MTK/IPA 5 JP) TIDAK dikorbankan begitu saja hanya karena JP-nya besar (percobaan
-  // sebelumnya: urutkan berdasar "need kecil dulu" ternyata menggusur MTK/IPA ke antrean belakang
-  // dan bikin gurunya kosong total — sudah diuji & terbukti buruk, makanya diganti pendekatan ini).
-  tasks.sort((a, b) => {
-    const effA = a.domain - Math.min(taskCountByGuru[a.guru] - 1, 6) * 1.5;
-    const effB = b.domain - Math.min(taskCountByGuru[b.guru] - 1, 6) * 1.5;
-    return effA - effB;
-  });
+  tasks.sort((a, b) => a.domain - b.domain);
 
   const HARI_URUT = targetDays;
   const shuffle = arr => { const a = [...arr]; for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
@@ -4366,7 +4356,7 @@ function generateJadwalOtomatis() {
   // ini (mengurangi jarak/gap dalam sehari — aman karena batas jam tetap membatasi totalnya).
   // Saat mode darurat (capValue longgar/emergency): JANGAN mengelompokkan — sebaliknya utamakan
   // hari yang PALING SEDIKIT jamnya untuk guru ini, supaya tidak menumpuk 8-9 jam di 1 hari yang sama.
-  function candidateDaysFor(task, dayOrder, usedDays, spreadMode, allowReuse = true) {
+  function candidateDaysFor(task, dayOrder, usedDays, spreadMode) {
     const belumDipakai = dayOrder.filter(h => !usedDays.has(h)).sort((a, b) => {
       if (spreadMode) {
         const aCount = (guruDayCount[task.guru] || {})[a] || 0;
@@ -4377,13 +4367,6 @@ function generateJadwalOtomatis() {
       const bHas = (guruDaySpan[task.guru] || {})[b] ? 1 : 0;
       return bHas - aHas;
     });
-    // allowReuse=false: JANGAN pakai hari yang sudah kepakai sesi LAIN dari mapel yang sama di
-    // percobaan ini — mencegah 2 sesi mapel yang sama (mis. Matematika pagi & sore) numpuk di
-    // hari yang sama hanya karena hari lain di target kebetulan tidak tersedia. Kalau memang
-    // tidak ada hari lain, biarkan sesi ini GAGAL untuk percobaan normal (nanti dicoba lagi via
-    // pola cadangan/darurat, atau ditinggal untuk digenerate di hari lain lain waktu) — daripada
-    // diam-diam menumpuk di 1 hari sampai jam 1-9 penuh semua.
-    if (!allowReuse) return belumDipakai;
     const sudahDipakai = dayOrder.filter(h => usedDays.has(h));
     return [...belumDipakai, ...sudahDipakai];
   }
@@ -4407,9 +4390,7 @@ function generateJadwalOtomatis() {
     const usedDays = new Set();
     let ok = true;
     for (const spec of plan) {
-      // allowReuse=false di sini: tiap sesi dari mapel yang SAMA wajib beda hari selama masih
-      // dalam percobaan "normal" ini (bukan best-effort darurat di scheduleTask).
-      const candidateDays = candidateDaysFor(task, dayOrder, usedDays, spreadMode, false);
+      const candidateDays = candidateDaysFor(task, dayOrder, usedDays, spreadMode);
       let placedThis = false;
       for (const hari of candidateDays) {
         const start = pickBestStart(hari, spec.size, task.guru, task.mapel, task.kelas, capValue, spec.window);
@@ -4444,11 +4425,8 @@ function generateJadwalOtomatis() {
   // ke ukuran 1 jam di luar pola resmi.
   function scheduleTask(task) {
     const dayOrder = shuffle(HARI_URUT);
-    // Rencana sesi dibuat dari SISA kebutuhan (need - yang sudah ada dari hari lain), bukan dari
-    // total mingguan asli — supaya generate bertahap per hari tidak menambah jam melebihi target.
-    const remaining = task.need - (task.alreadyHad || 0);
-    const ideal = getIdealPlan(task.mapel, remaining);
-    const fallback = getFallbackPlan(task.mapel, remaining);
+    const ideal = getIdealPlan(task.mapel, task.need);
+    const fallback = getFallbackPlan(task.mapel, task.need);
 
     if (tryPlanExact(task, ideal, dayOrder, MAX_JAM_HARI)) return { ok: true, overCap: false, mismatch: false };
     if (fallback && tryPlanExact(task, fallback, dayOrder, MAX_JAM_HARI)) return { ok: true, overCap: false, mismatch: false };
@@ -4457,11 +4435,7 @@ function generateJadwalOtomatis() {
     // Best-effort terakhir: pola resmi benar-benar tidak muat sama sekali. Daripada kelas ini KOSONG TOTAL,
     // isi semaksimal mungkin (tetap dijaga minimal 2 jam per sesi kalau bisa, kecuali BK/PJOK-teori yg memang 1 jam)
     // — TETAP dibatasi EMERGENCY_CAP dan diprioritaskan ke hari yang PALING KOSONG (tidak menumpuk 1 hari).
-    // PENTING: kalau mapelnya PJOK, window jam 1-4 tetap WAJIB dihormati di sini juga — sebelumnya jalur
-    // darurat ini memakai window:null (bebas taruh di jam berapapun) sehingga PJOK bisa nongol di JP5+,
-    // padahal aturan sekolahnya praktik olahraga cuma boleh jam 1-4.
     const minFloor = (task.need === 1 || isPjok(task.mapel)) ? 1 : 2;
-    const emergencyWindow = isPjok(task.mapel) ? [1, 4] : null;
     let anyPlaced = false;
     let guardLoop = 0;
     while (task.placed < task.need && guardLoop++ < 20) {
@@ -4471,7 +4445,7 @@ function generateJadwalOtomatis() {
       for (let size = desiredSize; size >= Math.min(minFloor, remaining); size--) {
         const candidateDays = candidateDaysFor(task, shuffle(HARI_URUT), new Set(), true);
         for (const hari of candidateDays) {
-          const start = pickBestStart(hari, size, task.guru, task.mapel, task.kelas, EMERGENCY_CAP, emergencyWindow);
+          const start = pickBestStart(hari, size, task.guru, task.mapel, task.kelas, EMERGENCY_CAP, null);
           if (start !== null) {
             placeChunk(task, hari, start, size);
             placedThis = true; anyPlaced = true;
@@ -5617,6 +5591,7 @@ function backupData() {
       customBlock: customBlockData,
       bebanMengajar: bebanMengajarData,
       lockedDays: lockedDaysData,
+      rpe: RPE_DATA,
       late: lateRecords,
       notulen: notulenRecords.map(n => ({ ...n, teks: n.teks?.substring(0, 2000) })), // trim large teks
       planning: planSnap,
@@ -5677,6 +5652,7 @@ function restoreData(input) {
       if (data.customBlock) customBlockData = data.customBlock;
       if (data.bebanMengajar) bebanMengajarData = data.bebanMengajar;
       if (data.lockedDays) lockedDaysData = data.lockedDays;
+      if (data.rpe) RPE_DATA = data.rpe;
       // Restore keterlambatan
       if (data.late) lateRecords = data.late;
       // Restore notulen
@@ -5718,6 +5694,133 @@ function restoreData(input) {
 
 // ===== DATA SISWA & NAIK KELAS =====
 let SISWA_DATA = [];        // [{id, nama, kelas, nisn, nis, status: 'naik'|'tidak'|null, kelasBaru: null}]
+
+// ===== RPE (RINCIAN PEKAN EFEKTIF) =====
+// Default sesuai kalender pendidikan contoh (bisa diedit bebas oleh user)
+let RPE_DATA = {
+  tahunAjaran: '2026/2027',
+  sem1: [
+    { bulan: 'Juli',      pekan: 4, tidakEfektif: 2 },
+    { bulan: 'Agustus',   pekan: 4, tidakEfektif: 0 },
+    { bulan: 'September', pekan: 4, tidakEfektif: 0 },
+    { bulan: 'Oktober',   pekan: 5, tidakEfektif: 0 },
+    { bulan: 'November',  pekan: 4, tidakEfektif: 0 },
+    { bulan: 'Desember',  pekan: 4, tidakEfektif: 2 },
+  ],
+  sem2: [
+    { bulan: 'Januari',  pekan: 4, tidakEfektif: 0 },
+    { bulan: 'Februari', pekan: 4, tidakEfektif: 0 },
+    { bulan: 'Maret',    pekan: 4, tidakEfektif: 1 },
+    { bulan: 'April',    pekan: 5, tidakEfektif: 2 },
+    { bulan: 'Mei',      pekan: 4, tidakEfektif: 0 },
+    { bulan: 'Juni',     pekan: 4, tidakEfektif: 2 },
+  ],
+};
+
+function onRpeTahunAjaranChange() {
+  RPE_DATA.tahunAjaran = document.getElementById('rpe-tahun-ajaran')?.value || '';
+  saveAll();
+}
+function onRpeInputChange(sem, idx, field, value) {
+  const v = Math.max(0, parseInt(value) || 0);
+  RPE_DATA[sem][idx][field] = v;
+  renderRPE();
+  saveAll();
+}
+function buildRpeTableHtml(sem) {
+  const rows = RPE_DATA[sem];
+  const totalPekan = rows.reduce((s, r) => s + r.pekan, 0);
+  const totalTdk = rows.reduce((s, r) => s + r.tidakEfektif, 0);
+  const totalEfektif = totalPekan - totalTdk;
+  let html = `<thead><tr>
+    <th>BULAN</th><th>PEKAN</th><th>PEKAN TDK<br>EFEKTIF</th><th>PEKAN<br>EFEKTIF</th>
+  </tr></thead><tbody>`;
+  rows.forEach((r, idx) => {
+    const efektif = r.pekan - r.tidakEfektif;
+    html += `<tr>
+      <td>${r.bulan}</td>
+      <td><input type="number" min="0" value="${r.pekan}" onchange="onRpeInputChange('${sem}',${idx},'pekan',this.value)"></td>
+      <td><input type="number" min="0" value="${r.tidakEfektif}" onchange="onRpeInputChange('${sem}',${idx},'tidakEfektif',this.value)"></td>
+      <td class="rpe-efektif">${efektif}</td>
+    </tr>`;
+  });
+  html += `</tbody><tfoot><tr>
+    <td>JUMLAH</td><td>${totalPekan}</td><td>${totalTdk}</td><td class="rpe-efektif">${totalEfektif}</td>
+  </tr></tfoot>`;
+  return html;
+}
+function renderRPE() {
+  const tahunEl = document.getElementById('rpe-tahun-ajaran');
+  if (tahunEl && tahunEl.value !== RPE_DATA.tahunAjaran) tahunEl.value = RPE_DATA.tahunAjaran;
+  const t1 = document.getElementById('rpe-table-sem1');
+  const t2 = document.getElementById('rpe-table-sem2');
+  if (t1) t1.innerHTML = buildRpeTableHtml('sem1');
+  if (t2) t2.innerHTML = buildRpeTableHtml('sem2');
+}
+function exportRPEExcel() {
+  const wb = XLSX.utils.book_new();
+  ['sem1', 'sem2'].forEach((sem, si) => {
+    const rows = RPE_DATA[sem];
+    const totalPekan = rows.reduce((s, r) => s + r.pekan, 0);
+    const totalTdk = rows.reduce((s, r) => s + r.tidakEfektif, 0);
+    const aoa = [
+      [`RINCIAN PEKAN EFEKTIF — SEMESTER ${si + 1} — TAHUN AJARAN ${RPE_DATA.tahunAjaran}`],
+      ['BULAN', 'PEKAN', 'PEKAN TIDAK EFEKTIF', 'PEKAN EFEKTIF'],
+      ...rows.map(r => [r.bulan, r.pekan, r.tidakEfektif, r.pekan - r.tidakEfektif]),
+      ['JUMLAH', totalPekan, totalTdk, totalPekan - totalTdk],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:14},{wch:10},{wch:18},{wch:14}];
+    XLSX.utils.book_append_sheet(wb, ws, `Semester ${si + 1}`);
+  });
+  XLSX.writeFile(wb, `RPE-${RPE_DATA.tahunAjaran.replace('/','-')}.xlsx`);
+  showToast('📊 Excel RPE berhasil diunduh!');
+}
+function exportRPEPDF() {
+  const schoolName = (typeof currentSetting !== 'undefined' && currentSetting.schoolName) || '';
+  const buildTable = (sem, label) => {
+    const rows = RPE_DATA[sem];
+    const totalPekan = rows.reduce((s, r) => s + r.pekan, 0);
+    const totalTdk = rows.reduce((s, r) => s + r.tidakEfektif, 0);
+    const totalEfektif = totalPekan - totalTdk;
+    return `
+      <h3 style="margin-top:24px;">${label}</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:#003366;color:#fff;">
+          <th style="padding:6px;border:1px solid #ccc;">BULAN</th>
+          <th style="padding:6px;border:1px solid #ccc;">PEKAN</th>
+          <th style="padding:6px;border:1px solid #ccc;">PEKAN TIDAK EFEKTIF</th>
+          <th style="padding:6px;border:1px solid #ccc;">PEKAN EFEKTIF</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => `<tr>
+            <td style="padding:6px;border:1px solid #ccc;">${r.bulan}</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${r.pekan}</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${r.tidakEfektif}</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;font-weight:bold;">${r.pekan - r.tidakEfektif}</td>
+          </tr>`).join('')}
+          <tr style="background:#eef;font-weight:bold;">
+            <td style="padding:6px;border:1px solid #ccc;">JUMLAH</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${totalPekan}</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${totalTdk}</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${totalEfektif}</td>
+          </tr>
+        </tbody>
+      </table>`;
+  };
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html><head><title>RPE ${RPE_DATA.tahunAjaran}</title></head>
+    <body style="font-family:Arial,sans-serif;padding:24px;">
+      <h2 style="text-align:center;margin-bottom:2px;">${schoolName}</h2>
+      <h3 style="text-align:center;margin-top:0;">RINCIAN PEKAN EFEKTIF (RPE)</h3>
+      <p style="text-align:center;">Tahun Ajaran ${RPE_DATA.tahunAjaran}</p>
+      ${buildTable('sem1', 'SEMESTER 1 (GANJIL)')}
+      ${buildTable('sem2', 'SEMESTER 2 (GENAP)')}
+    </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
 let KELAS_TUJUAN = [];      // [{nama: '9A', kuota: 32}, ...]
 
 function switchSiswaTab(tab, el) {
@@ -6233,499 +6336,6 @@ function resetSemuaData() {
   setTimeout(() => location.reload(), 1500);
 }
 
-// ===== RPE (RINCIAN PEKAN EFEKTIF) =====
-let RPE_DATA = {
-  meta: {
-    tahunAjaran: '2026/2027',
-    hariEfektifGanjil: 139, pekanGanjil: 24,
-    hariEfektifGenap: 123, pekanGenap: 24,
-    hariEfektifFakultatif: 3,
-    ktsHari: 3,
-    tempatTanggal: 'Sampang, 6 Juli 2026',
-    namaKetua: 'Bambang Youiswanto NH. S.Pd,M.Pd',
-    nip: '197906132005011009'
-  },
-  rekap: {
-    semester1: [
-      {bulan:'Juli 2026', pekan:4, tdk:2},
-      {bulan:'Agustus 2026', pekan:4, tdk:0},
-      {bulan:'September 2026', pekan:4, tdk:0},
-      {bulan:'Oktober 2026', pekan:5, tdk:0},
-      {bulan:'Nopember 2026', pekan:4, tdk:0},
-      {bulan:'Desember 2026', pekan:4, tdk:2}
-    ],
-    semester2: [
-      {bulan:'Januari 2027', pekan:4, tdk:0},
-      {bulan:'Februari 2027', pekan:4, tdk:0},
-      {bulan:'Maret 2027', pekan:4, tdk:1},
-      {bulan:'April 2027', pekan:5, tdk:2},
-      {bulan:'Mei 2027', pekan:4, tdk:0},
-      {bulan:'Juni 2027', pekan:4, tdk:2}
-    ]
-  },
-  months: [
-    {y:2026,m:6,label:"Juli’26"}, {y:2026,m:7,label:"Agustus’26"}, {y:2026,m:8,label:"September’26"},
-    {y:2026,m:9,label:"Oktober’26"}, {y:2026,m:10,label:"Nopember’26"}, {y:2026,m:11,label:"Desember’26"},
-    {y:2027,m:0,label:"Januari’27"}, {y:2027,m:1,label:"Februari’27"}, {y:2027,m:2,label:"Maret’27"},
-    {y:2027,m:3,label:"April’27"}, {y:2027,m:4,label:"Mei’27"}, {y:2027,m:5,label:"Juni’27"},
-    {y:2027,m:6,label:"Juli’27"}
-  ],
-  semester1Start: '2026-07-13',
-  semester1End:   '2026-12-23',
-  semester2Start: '2027-01-04',
-  semester2End:   '2027-06-19',
-  events: [
-    {start:'2026-07-11', end:'2026-07-11', code:'PRA', label:'Pra Masuk Sekolah'},
-    {start:'2026-08-17', end:'2026-08-17', code:'LHB', label:'Proklamasi Kemerdekaan RI'},
-    {start:'2026-08-25', end:'2026-08-25', code:'LHB', label:'Maulid Nabi Muhammad SAW'},
-    {start:'2026-10-01', end:'2026-10-03', code:'KTS', label:'Kegiatan Tengah Semester'},
-    {start:'2026-12-24', end:'2026-12-24', code:'CB',  label:'Cuti Bersama'},
-    {start:'2026-12-25', end:'2026-12-25', code:'LHB', label:'Hari Raya Natal'},
-    {start:'2026-12-26', end:'2027-01-02', code:'LS1', label:'Libur Semester 1'},
-    {start:'2027-01-01', end:'2027-01-01', code:'LHB', label:'Tahun Baru Masehi'},
-    {start:'2027-01-05', end:'2027-01-05', code:'LHB', label:"Isro' Mi'raj 1447 H"},
-    {start:'2027-02-06', end:'2027-02-06', code:'LHB', label:'Tahun Baru Imlek 25768'},
-    {start:'2027-02-08', end:'2027-02-10', code:'KPP', label:'Kegiatan Permulaan Puasa'},
-    {start:'2027-03-08', end:'2027-03-08', code:'LHR', label:'Libur Sekitar Hari Raya'},
-    {start:'2027-03-09', end:'2027-03-09', code:'LHB', label:'Hari Raya Nyepi'},
-    {start:'2027-03-10', end:'2027-03-11', code:'LHB', label:'Hari Raya Idul Fitri 1448 H'},
-    {start:'2027-03-12', end:'2027-03-13', code:'LHR', label:'Libur Sekitar Hari Raya'},
-    {start:'2027-03-26', end:'2027-03-26', code:'LHB', label:'Wafat Isa Almasih'},
-    {start:'2027-03-28', end:'2027-03-28', code:'LHB', label:'Hari Paskah'},
-    {start:'2027-05-01', end:'2027-05-01', code:'LHB', label:'Hari Buruh Internasional'},
-    {start:'2027-05-06', end:'2027-05-06', code:'LHB', label:'Kenaikan Isa Almasih'},
-    {start:'2027-05-17', end:'2027-05-17', code:'LHB', label:'Hari Raya Idul Adha 1448 H'},
-    {start:'2027-05-20', end:'2027-05-20', code:'LHB', label:'Hari Raya Waisak'},
-    {start:'2027-06-01', end:'2027-06-01', code:'LHB', label:'Hari Lahir Pancasila'},
-    {start:'2027-06-06', end:'2027-06-06', code:'LHB', label:'Tahun Baru Hijriyah 1449H'},
-    {start:'2027-06-21', end:'2027-07-11', code:'LS2', label:'Libur Semester 2'}
-  ],
-  jamEfektif: {
-    formatif: 3, tengahSemester: 3, akhir: 3, kokurikuler: 12,
-    mapelList: []
-  }
-};
-
-let rpeCurrentMonthIdx = 0;
-let rpeEffMap = {};
-
-function rpePad2(n) { return String(n).padStart(2, '0'); }
-function rpeDateStr(y, m, d) { return `${y}-${rpePad2(m + 1)}-${rpePad2(d)}`; }
-function rpeFindEvent(ds) { return RPE_DATA.events.find(e => ds >= e.start && ds <= e.end); }
-
-function rpeBuildEffMap() {
-  const map = {};
-  function fill(startStr, endStr) {
-    if (!startStr || !endStr) return;
-    let counter = 0;
-    let cur = new Date(startStr + 'T00:00:00');
-    const end = new Date(endStr + 'T00:00:00');
-    while (cur <= end) {
-      const ds = rpeDateStr(cur.getFullYear(), cur.getMonth(), cur.getDate());
-      if (cur.getDay() !== 0 && !rpeFindEvent(ds)) { counter++; map[ds] = counter; }
-      cur.setDate(cur.getDate() + 1);
-    }
-  }
-  fill(RPE_DATA.semester1Start, RPE_DATA.semester1End);
-  fill(RPE_DATA.semester2Start, RPE_DATA.semester2End);
-  return map;
-}
-
-function rpeFmtDate(ds) {
-  const [y, m, d] = ds.split('-').map(Number);
-  const bln = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
-  return `${d} ${bln[m - 1]} ${y}`;
-}
-
-function renderRpeAll() {
-  rpeEffMap = rpeBuildEffMap();
-  const m = RPE_DATA.meta;
-  document.getElementById('rpe-meta-tahun').textContent = 'Tahun Ajaran ' + m.tahunAjaran;
-  document.getElementById('rpe-meta-sub').textContent =
-    `Ganjil: ${m.hariEfektifGanjil} hari / ${m.pekanGanjil} pekan · Genap: ${m.hariEfektifGenap} hari / ${m.pekanGenap} pekan`;
-  renderRpeRekap();
-  renderRpeMonthChips();
-  renderRpeCalendar(rpeCurrentMonthIdx);
-  renderRpeEventList();
-  renderRpeKeterangan();
-  renderRpeMapelList();
-}
-
-function switchRpeTab(tab, el) {
-  document.querySelectorAll('#screen-rpe .notulen-tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('#screen-rpe .notulen-content').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('rpe-tab-' + tab).classList.add('active');
-}
-
-// ---- REKAP ----
-function rpeSemTotals(arr) {
-  return arr.reduce((a, x) => ({ pekan: a.pekan + x.pekan, tdk: a.tdk + x.tdk, eff: a.eff + (x.pekan - x.tdk) }), { pekan: 0, tdk: 0, eff: 0 });
-}
-function renderRpeRekap() {
-  const s1 = RPE_DATA.rekap.semester1, s2 = RPE_DATA.rekap.semester2;
-  const t1 = rpeSemTotals(s1), t2 = rpeSemTotals(s2);
-  const row = (it, sem, i) => `<tr>
-      <td class="rpe-bulan">${it.bulan}</td>
-      <td class="rpe-editable" onclick="openRpeRekapForm('${sem}',${i})">${it.pekan}</td>
-      <td class="rpe-editable" onclick="openRpeRekapForm('${sem}',${i})">${it.tdk}</td>
-      <td class="rpe-efektif">${it.pekan - it.tdk}</td>
-    </tr>`;
-  const table = (title, arr, sem, tot) => `
-    <div class="rpe-sem-title">${title}</div>
-    <table class="rpe-table" style="margin-bottom:14px;">
-      <thead><tr><th>Bulan</th><th>Pekan</th><th>Pekan Tdk<br>Efektif</th><th>Pekan<br>Efektif</th></tr></thead>
-      <tbody>
-        ${arr.map((it, i) => row(it, sem, i)).join('')}
-        <tr class="rpe-jumlah"><td class="rpe-bulan">Jumlah</td><td>${tot.pekan}</td><td>${tot.tdk}</td><td>${tot.eff}</td></tr>
-      </tbody>
-    </table>`;
-  document.getElementById('rpe-rekap-container').innerHTML =
-    table('SEMESTER 1', s1, 'semester1', t1) + table('SEMESTER 2', s2, 'semester2', t2);
-}
-function openRpeRekapForm(sem, idx) {
-  const item = RPE_DATA.rekap[sem][idx];
-  document.getElementById('rpe-modal-title').textContent = '✏️ EDIT ' + item.bulan.toUpperCase();
-  document.getElementById('rpe-modal-body').innerHTML = `
-    <div class="form-group"><label class="form-label">JUMLAH PEKAN</label>
-      <input type="number" min="0" class="form-input" id="rpe-f-pekan" value="${item.pekan}"></div>
-    <div class="form-group"><label class="form-label">PEKAN TIDAK EFEKTIF</label>
-      <input type="number" min="0" class="form-input" id="rpe-f-tdk" value="${item.tdk}"></div>`;
-  document.getElementById('rpe-modal-save-btn').onclick = function () {
-    item.pekan = parseInt(document.getElementById('rpe-f-pekan').value) || 0;
-    item.tdk = parseInt(document.getElementById('rpe-f-tdk').value) || 0;
-    renderRpeRekap(); closeRpeModal(); saveAll();
-    showToast('✅ Rekap diperbarui');
-  };
-  document.getElementById('rpe-modal').classList.add('open');
-}
-
-// ---- KALENDER ----
-function renderRpeMonthChips() {
-  document.getElementById('rpe-month-chips').innerHTML = RPE_DATA.months.map((mo, i) =>
-    `<div class="rpe-month-chip ${i === rpeCurrentMonthIdx ? 'active' : ''}" onclick="selectRpeMonth(${i})">${mo.label}</div>`
-  ).join('');
-}
-function selectRpeMonth(i) { rpeCurrentMonthIdx = i; renderRpeMonthChips(); renderRpeCalendar(i); }
-
-function renderRpeCalendar(i) {
-  const mo = RPE_DATA.months[i];
-  const y = mo.y, m = mo.m;
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-  const firstDow = new Date(y, m, 1).getDay();
-  let cells = '';
-  for (let b = 0; b < firstDow; b++) cells += `<div class="rpe-cal-cell rpe-blank"></div>`;
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ds = rpeDateStr(y, m, d);
-    const dow = new Date(y, m, d).getDay();
-    let code = '', label = '';
-    if (dow === 0) { code = 'LU'; }
-    else { const ev = rpeFindEvent(ds); if (ev) { code = ev.code; label = ev.label || ''; } }
-    let inner, cls = 'rpe-cal-cell';
-    if (code) { cls += ' code-' + code; inner = `<div>${d}</div><div class="rpe-code">${code}</div>`; }
-    else if (rpeEffMap[ds]) { inner = `<div>${d}</div><div class="rpe-code">${rpeEffMap[ds]}</div>`; }
-    else { inner = `<div>${d}</div>`; }
-    cells += `<div class="${cls}" onclick="openRpeDayForm('${ds}')" title="${label.replace(/"/g,'')}">${inner}</div>`;
-  }
-  document.getElementById('rpe-cal-grid').innerHTML = cells;
-}
-
-function openRpeDayForm(ds) {
-  const ev = rpeFindEvent(ds);
-  const idx = ev ? RPE_DATA.events.indexOf(ev) : -1;
-  openRpeEventForm(idx, ds);
-}
-
-const RPE_CODES = [
-  { v: 'LHB', t: 'LHB — Libur Hari Besar' },
-  { v: 'LS1', t: 'LS1 — Libur Semester 1' },
-  { v: 'LS2', t: 'LS2 — Libur Semester 2' },
-  { v: 'CB',  t: 'CB — Cuti Bersama' },
-  { v: 'KTS', t: 'KTS — Kegiatan Tengah Semester' },
-  { v: 'KPP', t: 'KPP — Kegiatan Permulaan Puasa' },
-  { v: 'LHR', t: 'LHR — Libur Sekitar Hari Raya' },
-  { v: 'PRA', t: 'PRA — Pra Masuk Sekolah / MPLS' }
-];
-
-function openRpeEventForm(idx = -1, defaultDate = null) {
-  const ev = idx >= 0 ? RPE_DATA.events[idx] : null;
-  document.getElementById('rpe-modal-title').textContent = ev ? '✏️ EDIT KETERANGAN' : '＋ TAMBAH KETERANGAN';
-  document.getElementById('rpe-modal-body').innerHTML = `
-    <div class="form-group"><label class="form-label">TANGGAL MULAI</label>
-      <input type="date" class="form-input" id="rpe-f-start" value="${ev ? ev.start : (defaultDate || '')}"></div>
-    <div class="form-group"><label class="form-label">TANGGAL SELESAI</label>
-      <input type="date" class="form-input" id="rpe-f-end" value="${ev ? ev.end : (defaultDate || '')}"></div>
-    <div class="form-group"><label class="form-label">KODE</label>
-      <select class="form-select" id="rpe-f-code">
-        ${RPE_CODES.map(c => `<option value="${c.v}" ${ev && ev.code === c.v ? 'selected' : ''}>${c.t}</option>`).join('')}
-      </select></div>
-    <div class="form-group"><label class="form-label">KETERANGAN</label>
-      <input type="text" class="form-input" id="rpe-f-label" placeholder="Contoh: Hari Raya Idul Fitri" value="${ev ? (ev.label || '') : ''}"></div>
-    ${idx >= 0 ? `<button class="btn-cancel" style="width:100%;margin-top:4px;" onclick="deleteRpeEvent(${idx})">🗑️ Hapus Keterangan Ini</button>` : ''}`;
-  document.getElementById('rpe-modal-save-btn').onclick = function () {
-    const start = document.getElementById('rpe-f-start').value;
-    const end = document.getElementById('rpe-f-end').value || start;
-    const code = document.getElementById('rpe-f-code').value;
-    const label = document.getElementById('rpe-f-label').value.trim();
-    if (!start) { showToast('⚠️ Tanggal mulai wajib diisi'); return; }
-    if (idx >= 0) RPE_DATA.events[idx] = { start, end, code, label };
-    else RPE_DATA.events.push({ start, end, code, label });
-    RPE_DATA.events.sort((a, b) => a.start.localeCompare(b.start));
-    rpeEffMap = rpeBuildEffMap();
-    renderRpeCalendar(rpeCurrentMonthIdx);
-    renderRpeEventList();
-    renderRpeKeterangan();
-    closeRpeModal(); saveAll();
-    showToast('✅ Keterangan disimpan');
-  };
-  document.getElementById('rpe-modal').classList.add('open');
-}
-
-function deleteRpeEvent(idx) {
-  if (!confirm('Hapus keterangan ini?')) return;
-  RPE_DATA.events.splice(idx, 1);
-  rpeEffMap = rpeBuildEffMap();
-  renderRpeCalendar(rpeCurrentMonthIdx);
-  renderRpeEventList();
-  renderRpeKeterangan();
-  closeRpeModal(); saveAll();
-  showToast('🗑️ Keterangan dihapus');
-}
-
-function renderRpeEventList() {
-  const sorted = [...RPE_DATA.events].sort((a, b) => a.start.localeCompare(b.start));
-  document.getElementById('rpe-event-list').innerHTML = sorted.map(ev => {
-    const idx = RPE_DATA.events.indexOf(ev);
-    const rangeTxt = ev.start === ev.end ? rpeFmtDate(ev.start) : `${rpeFmtDate(ev.start)} – ${rpeFmtDate(ev.end)}`;
-    return `<div class="rpe-event-item">
-        <div>
-          <div class="rpe-event-main">${ev.code}${ev.label ? ' — ' + ev.label : ''}</div>
-          <div class="rpe-event-sub">${rangeTxt}</div>
-        </div>
-        <div class="rpe-event-actions">
-          <span onclick="openRpeEventForm(${idx})">✏️</span>
-          <span onclick="deleteRpeEvent(${idx})">🗑️</span>
-        </div>
-      </div>`;
-  }).join('') || `<div style="font-size:11px;color:var(--muted);text-align:center;padding:12px;">Belum ada keterangan tambahan</div>`;
-}
-
-// ---- KETERANGAN TAB ----
-function renderRpeKeterangan() {
-  const m = RPE_DATA.meta;
-  document.getElementById('rpe-summary-card').innerHTML = `
-    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;"><span style="color:var(--muted);">Hari Efektif Semester Ganjil</span><b>${m.hariEfektifGanjil} hari / ${m.pekanGanjil} pekan</b></div>
-    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;"><span style="color:var(--muted);">Hari Efektif Semester Genap</span><b>${m.hariEfektifGenap} hari / ${m.pekanGenap} pekan</b></div>
-    <div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:11px;"><span style="color:var(--muted);">Hari Efektif Fakultatif</span><b>${m.hariEfektifFakultatif} hari</b></div>
-    <div style="display:flex;justify-content:space-between;padding:6px 0;font-size:11px;"><span style="color:var(--muted);">KTS</span><b>${m.ktsHari} hari</b></div>`;
-  const holidays = RPE_DATA.events.filter(e => e.code === 'LHB').sort((a, b) => a.start.localeCompare(b.start));
-  document.getElementById('rpe-holiday-list').innerHTML = `<div class="card">` + (holidays.map(h =>
-    `<div style="display:flex;justify-content:space-between;gap:8px;padding:5px 0;font-size:10.5px;border-bottom:1px solid var(--border);"><span style="color:var(--muted);white-space:nowrap;">${h.start === h.end ? rpeFmtDate(h.start) : rpeFmtDate(h.start) + ' – ' + rpeFmtDate(h.end)}</span><span style="color:var(--white);font-weight:600;text-align:right;">${h.label}</span></div>`
-  ).join('') || `<div style="font-size:11px;color:var(--muted);text-align:center;padding:8px;">Belum ada data</div>`) + `</div>`;
-  document.getElementById('rpe-sign-tempat').textContent = m.tempatTanggal;
-  document.getElementById('rpe-sign-nama').textContent = m.namaKetua;
-  document.getElementById('rpe-sign-nip').textContent = 'NIP. ' + m.nip;
-}
-
-function openRpeMetaForm() {
-  const m = RPE_DATA.meta;
-  document.getElementById('rpe-modal-title').textContent = '✏️ EDIT INFO RPE';
-  document.getElementById('rpe-modal-body').innerHTML = `
-    <div class="form-group"><label class="form-label">TAHUN AJARAN</label><input type="text" class="form-input" id="rpe-f-tahun" value="${m.tahunAjaran}"></div>
-    <div class="form-group"><label class="form-label">HARI EFEKTIF SEMESTER GANJIL</label><input type="number" class="form-input" id="rpe-f-hg" value="${m.hariEfektifGanjil}"></div>
-    <div class="form-group"><label class="form-label">PEKAN SEMESTER GANJIL</label><input type="number" class="form-input" id="rpe-f-pg" value="${m.pekanGanjil}"></div>
-    <div class="form-group"><label class="form-label">HARI EFEKTIF SEMESTER GENAP</label><input type="number" class="form-input" id="rpe-f-he" value="${m.hariEfektifGenap}"></div>
-    <div class="form-group"><label class="form-label">PEKAN SEMESTER GENAP</label><input type="number" class="form-input" id="rpe-f-pe" value="${m.pekanGenap}"></div>
-    <div class="form-group"><label class="form-label">HARI EFEKTIF FAKULTATIF</label><input type="number" class="form-input" id="rpe-f-hf" value="${m.hariEfektifFakultatif}"></div>
-    <div class="form-group"><label class="form-label">KTS (HARI)</label><input type="number" class="form-input" id="rpe-f-kts" value="${m.ktsHari}"></div>
-    <div class="form-group"><label class="form-label">TEMPAT, TANGGAL PENGESAHAN</label><input type="text" class="form-input" id="rpe-f-tempat" value="${m.tempatTanggal}"></div>
-    <div class="form-group"><label class="form-label">NAMA KETUA</label><input type="text" class="form-input" id="rpe-f-nama" value="${m.namaKetua}"></div>
-    <div class="form-group"><label class="form-label">NIP</label><input type="text" class="form-input" id="rpe-f-nip" value="${m.nip}"></div>`;
-  document.getElementById('rpe-modal-save-btn').onclick = function () {
-    m.tahunAjaran = document.getElementById('rpe-f-tahun').value.trim();
-    m.hariEfektifGanjil = parseInt(document.getElementById('rpe-f-hg').value) || 0;
-    m.pekanGanjil = parseInt(document.getElementById('rpe-f-pg').value) || 0;
-    m.hariEfektifGenap = parseInt(document.getElementById('rpe-f-he').value) || 0;
-    m.pekanGenap = parseInt(document.getElementById('rpe-f-pe').value) || 0;
-    m.hariEfektifFakultatif = parseInt(document.getElementById('rpe-f-hf').value) || 0;
-    m.ktsHari = parseInt(document.getElementById('rpe-f-kts').value) || 0;
-    m.tempatTanggal = document.getElementById('rpe-f-tempat').value.trim();
-    m.namaKetua = document.getElementById('rpe-f-nama').value.trim();
-    m.nip = document.getElementById('rpe-f-nip').value.trim();
-    document.getElementById('rpe-meta-tahun').textContent = 'Tahun Ajaran ' + m.tahunAjaran;
-    document.getElementById('rpe-meta-sub').textContent =
-      `Ganjil: ${m.hariEfektifGanjil} hari / ${m.pekanGanjil} pekan · Genap: ${m.hariEfektifGenap} hari / ${m.pekanGenap} pekan`;
-    renderRpeKeterangan();
-    closeRpeModal(); saveAll();
-    showToast('✅ Info RPE diperbarui');
-  };
-  document.getElementById('rpe-modal').classList.add('open');
-}
-
-// ---- JAM EFEKTIF PER MAPEL ----
-function rpeGetPekanEfektif() {
-  const t1 = rpeSemTotals(RPE_DATA.rekap.semester1);
-  const t2 = rpeSemTotals(RPE_DATA.rekap.semester2);
-  return { s1: t1.eff, s2: t2.eff };
-}
-function renderRpeMapelList() {
-  const je = RPE_DATA.jamEfektif;
-  document.getElementById('rpe-alokasi-sub').textContent =
-    `Formatif ${je.formatif} · Tengah Smt ${je.tengahSemester} · Akhir ${je.akhir} · Kokurikuler ${je.kokurikuler}`;
-  const pe = rpeGetPekanEfektif();
-  const fixedSum = je.formatif + je.tengahSemester + je.akhir + je.kokurikuler;
-  const list = document.getElementById('rpe-mapel-list');
-  if (!je.mapelList.length) {
-    list.innerHTML = `<div style="font-size:11px;color:var(--muted);text-align:center;padding:16px;">Belum ada mata pelajaran. Ketuk "＋ Tambah Mata Pelajaran" untuk mulai.</div>`;
-    return;
-  }
-  list.innerHTML = je.mapelList.map((mp, i) => {
-    const totS1 = pe.s1 * mp.jp, totS2 = pe.s2 * mp.jp;
-    const tmS1 = totS1 - fixedSum, tmS2 = totS2 - fixedSum;
-    const block = (sem, pekan, tot, tm, akhirLabel) => `
-      <div class="rpe-jp-block">
-        <div class="rpe-jp-block-title">JUMLAH JAM EFEKTIF ${sem}</div>
-        <div class="rpe-jp-formula">${pekan} X ${mp.jp} = ${tot} Jam Pelajaran</div>
-        <div class="rpe-jp-row"><span>Penilaian Formatif</span><span>${je.formatif}</span></div>
-        <div class="rpe-jp-row"><span>Penilaian Tengah Semester</span><span>${je.tengahSemester}</span></div>
-        <div class="rpe-jp-row"><span>${akhirLabel}</span><span>${je.akhir}</span></div>
-        <div class="rpe-jp-row"><span>Kokurikuler</span><span>${je.kokurikuler}</span></div>
-        <div class="rpe-jp-row"><span>Tatap Muka</span><span>${tm}</span></div>
-      </div>`;
-    return `<div class="rpe-mapel-card">
-        <div class="rpe-mapel-head">
-          <div>
-            <div class="rpe-mapel-name">${mp.nama}</div>
-            <div class="rpe-mapel-jp">${mp.jp} JP / minggu</div>
-          </div>
-          <div class="rpe-mapel-actions">
-            <span onclick="cetakJamMapel(${i})">🖨️</span>
-            <span onclick="openRpeMapelForm(${i})">✏️</span>
-            <span onclick="deleteRpeMapel(${i})">🗑️</span>
-          </div>
-        </div>
-        ${block('SEMESTER 1', pe.s1, totS1, tmS1, 'Penilaian Akhir Semester')}
-        ${block('SEMESTER 2', pe.s2, totS2, tmS2, 'Penilaian Akhir Tahun')}
-      </div>`;
-  }).join('');
-}
-function openRpeAlokasiForm() {
-  const je = RPE_DATA.jamEfektif;
-  document.getElementById('rpe-modal-title').textContent = '⚙️ RINCIAN ALOKASI (JP)';
-  document.getElementById('rpe-modal-body').innerHTML = `
-    <div class="form-group"><label class="form-label">PENILAIAN FORMATIF (JP)</label><input type="number" min="0" class="form-input" id="rpe-f-formatif" value="${je.formatif}"></div>
-    <div class="form-group"><label class="form-label">PENILAIAN TENGAH SEMESTER (JP)</label><input type="number" min="0" class="form-input" id="rpe-f-tengah" value="${je.tengahSemester}"></div>
-    <div class="form-group"><label class="form-label">PENILAIAN AKHIR SEMESTER/TAHUN (JP)</label><input type="number" min="0" class="form-input" id="rpe-f-akhir" value="${je.akhir}"></div>
-    <div class="form-group"><label class="form-label">KOKURIKULER (JP)</label><input type="number" min="0" class="form-input" id="rpe-f-koku" value="${je.kokurikuler}"></div>
-    <p style="font-size:9px;color:var(--muted);line-height:1.5;">Nilai ini berlaku sama untuk semua mapel. Sisa JP setelah dikurangi keempat komponen ini otomatis dihitung sebagai Tatap Muka.</p>`;
-  document.getElementById('rpe-modal-save-btn').onclick = function () {
-    je.formatif = parseInt(document.getElementById('rpe-f-formatif').value) || 0;
-    je.tengahSemester = parseInt(document.getElementById('rpe-f-tengah').value) || 0;
-    je.akhir = parseInt(document.getElementById('rpe-f-akhir').value) || 0;
-    je.kokurikuler = parseInt(document.getElementById('rpe-f-koku').value) || 0;
-    renderRpeMapelList(); closeRpeModal(); saveAll();
-    showToast('✅ Rincian alokasi diperbarui');
-  };
-  document.getElementById('rpe-modal').classList.add('open');
-}
-function openRpeMapelForm(idx = -1) {
-  const mp = idx >= 0 ? RPE_DATA.jamEfektif.mapelList[idx] : null;
-  document.getElementById('rpe-modal-title').textContent = mp ? '✏️ EDIT MATA PELAJARAN' : '＋ TAMBAH MATA PELAJARAN';
-  document.getElementById('rpe-modal-body').innerHTML = `
-    <div class="form-group"><label class="form-label">NAMA MATA PELAJARAN</label><input type="text" class="form-input" id="rpe-f-mapel" placeholder="Contoh: Ilmu Pengetahuan Alam" value="${mp ? mp.nama : ''}"></div>
-    <div class="form-group"><label class="form-label">JP / MINGGU</label><input type="number" min="1" class="form-input" id="rpe-f-jp" placeholder="Contoh: 3" value="${mp ? mp.jp : ''}"></div>
-    <p style="font-size:9px;color:var(--muted);line-height:1.5;">JP/minggu mengikuti struktur kurikulum resmi sekolah — berbeda tiap mapel & jenjang (mis. Bhs. Indonesia 6, Matematika/IPA 5, IPS/Bhs. Inggris 4, PJOK/PAI/PPKn umumnya 3).</p>
-    ${idx >= 0 ? `<button class="btn-cancel" style="width:100%;margin-top:4px;" onclick="deleteRpeMapel(${idx})">🗑️ Hapus Mapel Ini</button>` : ''}`;
-  document.getElementById('rpe-modal-save-btn').onclick = function () {
-    const nama = document.getElementById('rpe-f-mapel').value.trim();
-    const jp = parseInt(document.getElementById('rpe-f-jp').value) || 0;
-    if (!nama || jp <= 0) { showToast('⚠️ Nama mapel & JP/minggu wajib diisi'); return; }
-    if (idx >= 0) RPE_DATA.jamEfektif.mapelList[idx] = { nama, jp };
-    else RPE_DATA.jamEfektif.mapelList.push({ nama, jp });
-    renderRpeMapelList(); closeRpeModal(); saveAll();
-    showToast('✅ Mata pelajaran disimpan');
-  };
-  document.getElementById('rpe-modal').classList.add('open');
-}
-function deleteRpeMapel(idx) {
-  if (!confirm('Hapus mata pelajaran ini?')) return;
-  RPE_DATA.jamEfektif.mapelList.splice(idx, 1);
-  renderRpeMapelList(); closeRpeModal(); saveAll();
-  showToast('🗑️ Mata pelajaran dihapus');
-}
-
-function cetakJamMapel(idx) {
-  const mp = RPE_DATA.jamEfektif.mapelList[idx];
-  const je = RPE_DATA.jamEfektif;
-  const pe = rpeGetPekanEfektif();
-  const fixedSum = je.formatif + je.tengahSemester + je.akhir + je.kokurikuler;
-  const totS1 = pe.s1 * mp.jp, totS2 = pe.s2 * mp.jp;
-  const tmS1 = totS1 - fixedSum, tmS2 = totS2 - fixedSum;
-  const m = RPE_DATA.meta;
-  const semBlock = (title, pekan, tot, tm, akhirLabel) => `
-    <table class="je-table">
-      <tr><th colspan="2">JUMLAH JAM EFEKTIF ${title}</th></tr>
-      <tr><td colspan="2" class="je-formula">${pekan} X ${mp.jp} &nbsp;=&nbsp; ${tot} Jam Pelajaran</td></tr>
-      <tr><td colspan="2" class="je-sub">Rincian Pekan Efektif (JP)</td></tr>
-      <tr><td>Penilaian Formatif</td><td>${je.formatif}</td></tr>
-      <tr><td>Penilaian Tengah Semester</td><td>${je.tengahSemester}</td></tr>
-      <tr><td>${akhirLabel}</td><td>${je.akhir}</td></tr>
-      <tr><td>Kokurikuler</td><td>${je.kokurikuler}</td></tr>
-      <tr class="je-tm"><td>Tatap Muka</td><td>${tm}</td></tr>
-    </table>`;
-  const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html><head><title>Jam Efektif — ${mp.nama}</title>
-  <style>
-    @media print { body { -webkit-print-color-adjust: exact; } }
-    body { font-family: 'Times New Roman', serif; padding: 36px; max-width: 720px; margin: 0 auto; font-size: 13px; color:#1a2035; }
-    .kop { text-align: center; border-bottom: 3px double #003366; padding-bottom: 12px; margin-bottom: 18px; }
-    .kop h2 { font-size: 18px; color: #003366; margin: 0 0 4px; text-transform: uppercase; letter-spacing: 1px; }
-    .kop p { font-size: 11px; color: #555; margin: 2px 0; }
-    .title { text-align: center; font-size: 16px; font-weight: bold; color: #003366; text-decoration: underline; margin: 14px 0 4px; text-transform: uppercase; }
-    .subtitle { text-align: center; font-size: 12px; color: #555; margin-bottom: 18px; }
-    .mapel-name { text-align:center; font-size:14px; font-weight:bold; color:#0090C7; margin-bottom:20px; }
-    .je-wrap { display:flex; gap:18px; }
-    .je-table { flex:1; width: 50%; border-collapse: collapse; font-size: 12px; }
-    .je-table th { background:#003366; color:#fff; padding:8px 10px; font-size:12px; text-align:center; border:1px solid #003366; }
-    .je-table td { border: 1px solid #b9c2d0; padding: 7px 10px; }
-    .je-table td:last-child { text-align:center; width:50px; font-weight:bold; }
-    .je-formula { text-align:center !important; font-weight:bold; font-size:13px; background:#eef6fb; }
-    .je-sub { font-weight:bold; background:#f4f6fa; }
-    .je-tm td { font-weight:bold; background:#eafaf1; color:#008F5B; }
-    .footer { margin-top: 36px; display: flex; justify-content: flex-end; font-size: 11px; }
-    .sign-box { text-align: center; }
-    .sign-line { width: 160px; border-bottom: 1px solid #333; margin: 55px auto 4px; }
-    .watermark { margin-top: 30px; text-align: center; font-size: 9px; color: #aaa; border-top: 1px solid #eee; padding-top: 8px; }
-    @media (max-width:600px) { .je-wrap { flex-direction: column; } .je-table { width:100%; } }
-  </style></head><body>
-  <div class="kop">
-    <h2>🏫 ${currentSetting?.schoolName || 'SMP / MTs — KURIKULUM MERDEKA'}</h2>
-    <p>Waka Kurikulum Dashboard — KURIKU © 2026</p>
-  </div>
-  <div class="title">Rincian Jam Efektif Mata Pelajaran</div>
-  <div class="subtitle">Tahun Ajaran ${m.tahunAjaran}</div>
-  <div class="mapel-name">${mp.nama} &nbsp;·&nbsp; ${mp.jp} JP / Minggu</div>
-  <div class="je-wrap">
-    ${semBlock('SEMESTER 1', pe.s1, totS1, tmS1, 'Penilaian Akhir Semester')}
-    ${semBlock('SEMESTER 2', pe.s2, totS2, tmS2, 'Penilaian Akhir Tahun')}
-  </div>
-  <div class="footer">
-    <div class="sign-box">
-      <div style="font-size:11px;color:#333;">${m.tempatTanggal}</div>
-      <div style="font-size:11px;color:#333;margin-top:8px;">Ketua,</div>
-      <div class="sign-line"></div>
-      <div style="font-size:12px;font-weight:bold;">${m.namaKetua}</div>
-      <div style="font-size:11px;">NIP. ${m.nip}</div>
-    </div>
-  </div>
-  <div class="watermark">Developed by D.D Candra © 2026 | Dicetak: ${new Date().toLocaleString('id-ID')}</div>
-  </body></html>`);
-  win.document.close();
-  setTimeout(() => win.print(), 500);
-}
-
-function closeRpeModal() { document.getElementById('rpe-modal').classList.remove('open'); }
-
 // ===== LOCALSTORAGE PERSISTENCE =====
 const LS_KEYS = {
   screen:    'kuriku_screen',
@@ -6737,49 +6347,37 @@ const LS_KEYS = {
   customBlock: 'kuriku_custom_block',
   bebanMengajar: 'kuriku_beban_mengajar',
   lockedDays: 'kuriku_locked_days',
+  rpe: 'kuriku_rpe',
   late:      'kuriku_late',
   notulen:   'kuriku_notulen',
   planning:  'kuriku_planning',
   siswa:     'kuriku_siswa',
   kelasTujuan: 'kuriku_kelas_tujuan',
-  rpe:       'kuriku_rpe',
 };
 
 function saveAll() {
-  // Simpan tiap key SECARA TERPISAH — kalau satu key gagal (mis. penyimpanan browser
-  // penuh), key lainnya tetap tersimpan. Sebelumnya semua dibungkus 1 try/catch besar,
-  // jadi kalau 1 key gagal, SEMUA key setelahnya ikut gagal tersimpan tanpa Anda sadari.
-  const failed = [];
-  const save1 = (key, val) => {
-    try { localStorage.setItem(key, val); }
-    catch (e) { failed.push(key); console.warn('Gagal simpan', key, e); }
-  };
-  save1(LS_KEYS.screen,  currentScreen);
-  save1(LS_KEYS.guru,    JSON.stringify(GURU_DATA));
-  save1(LS_KEYS.jadwal,  JSON.stringify(JADWAL_DATA));
-  save1(LS_KEYS.jadwal2, JSON.stringify(JADWAL_DATA2));
-  save1(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
-  save1(LS_KEYS.customBlock, JSON.stringify(customBlockData));
-  save1(LS_KEYS.bebanMengajar, JSON.stringify(bebanMengajarData));
-  save1(LS_KEYS.lockedDays, JSON.stringify(lockedDaysData));
-  save1(LS_KEYS.late,    JSON.stringify(lateRecords));
-  save1(LS_KEYS.notulen, JSON.stringify(notulenRecords));
-  save1(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
-  save1(LS_KEYS.kelasTujuan, JSON.stringify(KELAS_TUJUAN));
-  save1(LS_KEYS.rpe, JSON.stringify(RPE_DATA));
-  // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
   try {
+    localStorage.setItem(LS_KEYS.screen,  currentScreen);
+    localStorage.setItem(LS_KEYS.guru,    JSON.stringify(GURU_DATA));
+    localStorage.setItem(LS_KEYS.jadwal,  JSON.stringify(JADWAL_DATA));
+    localStorage.setItem(LS_KEYS.jadwal2, JSON.stringify(JADWAL_DATA2));
+    localStorage.setItem(LS_KEYS.mgmp,    JSON.stringify(mgmpData));
+    localStorage.setItem(LS_KEYS.customBlock, JSON.stringify(customBlockData));
+    localStorage.setItem(LS_KEYS.bebanMengajar, JSON.stringify(bebanMengajarData));
+    localStorage.setItem(LS_KEYS.lockedDays, JSON.stringify(lockedDaysData));
+    localStorage.setItem(LS_KEYS.rpe, JSON.stringify(RPE_DATA));
+    localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
+    localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
+    localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
+    localStorage.setItem(LS_KEYS.kelasTujuan, JSON.stringify(KELAS_TUJUAN));
+    // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
     const planSnap = {};
     ['pendek','menengah','panjang'].forEach(j => {
       const card = document.getElementById('plan-' + j)?.querySelector('.card');
       if (card) planSnap[j] = card.innerHTML;
     });
-    save1(LS_KEYS.planning, JSON.stringify(planSnap));
-  } catch (e) { failed.push(LS_KEYS.planning); console.warn('Gagal simpan planning:', e); }
-
-  if (failed.length) {
-    showToast('⚠️ Sebagian data GAGAL tersimpan (penyimpanan browser penuh?). Segera export/backup manual!', true);
-  }
+    localStorage.setItem(LS_KEYS.planning, JSON.stringify(planSnap));
+  } catch(e) { console.warn('Save gagal:', e); }
 }
 
 function loadAll() {
@@ -6805,6 +6403,9 @@ function loadAll() {
     // Hari terkunci (generate per hari)
     const ld = localStorage.getItem(LS_KEYS.lockedDays);
     if (ld) lockedDaysData = JSON.parse(ld);
+    // RPE
+    const rp = localStorage.getItem(LS_KEYS.rpe);
+    if (rp) RPE_DATA = JSON.parse(rp);
     // Keterlambatan
     const l = localStorage.getItem(LS_KEYS.late);
     if (l) lateRecords = JSON.parse(l);
@@ -6816,10 +6417,6 @@ function loadAll() {
     if (sw) SISWA_DATA = JSON.parse(sw);
     const kt = localStorage.getItem(LS_KEYS.kelasTujuan);
     if (kt) KELAS_TUJUAN = JSON.parse(kt);
-    // RPE
-    const rp = localStorage.getItem(LS_KEYS.rpe);
-    if (rp) RPE_DATA = JSON.parse(rp);
-    if (!RPE_DATA.jamEfektif) RPE_DATA.jamEfektif = { formatif: 3, tengahSemester: 3, akhir: 3, kokurikuler: 12, mapelList: [] };
     // Planning DOM
     const pl = localStorage.getItem(LS_KEYS.planning);
     if (pl) {

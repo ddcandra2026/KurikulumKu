@@ -1536,14 +1536,6 @@
           <label class="form-label">NAMA GURU</label>
           <select class="form-select" id="rekam-guru">
             <option value="">— Pilih Guru —</option>
-            <option>Budi Santoso, S.Pd (Matematika)</option>
-            <option>Sari Dewi, S.Pd (B. Indonesia)</option>
-            <option>Ahmad Fauzi, S.Pd (IPA)</option>
-            <option>Rina Kurniawati, S.Pd (B. Inggris)</option>
-            <option>Hendra Wijaya, S.Pd (IPS)</option>
-            <option>Dewi Lestari, S.Pd (PKn)</option>
-            <option>Agus Priyono, S.Pd (PJOK)</option>
-            <option>Fitri Handayani, S.Pd (Seni Budaya)</option>
           </select>
         </div>
         <div class="form-group">
@@ -2439,7 +2431,7 @@ function switchScreen(name) {
   
   if (name === 'jam') renderGuruList();
   if (name === 'jadwal') { renderGrid(); populateListGuruSel(); populateMGMPGuruSel(); }
-  if (name === 'monitoring') renderRiwayat();
+  if (name === 'monitoring') { renderRiwayat(); populateRekamGuruSel(); }
   if (name === 'regulasi') loadRegulasi();
   if (name === 'home') renderMiniSchedule();
   if (name === 'notulen') renderNotulenList();
@@ -4592,17 +4584,35 @@ function exportJadwalPDF() {
 function renderJadwal() { renderGrid(); }
 
 // ===== MINI SCHEDULE HOME =====
+// Tampilkan cuplikan jadwal HARI INI dari data asli (JADWAL_DATA2), bukan data contoh.
 function renderMiniSchedule() {
   const now = new Date();
-  const day = now.getDay() || 1;
-  const items = (JADWAL_DATA[day] || []).slice(0, 3);
+  const day = now.getDay() || 1; // Minggu(0) dianggap Senin biar tetap tampil sesuatu
   const el = document.getElementById('mini-schedule');
+  if (!el) return;
+
+  const hariData = JADWAL_DATA2[day] || {};
+  let items = [];
+  Object.entries(hariData).forEach(([kelas, jamObj]) => {
+    Object.entries(jamObj).forEach(([jam, cell]) => {
+      if (cell && cell.guru) items.push({ jam: parseInt(jam), guru: cell.guru, kelas, mapel: cell.mapel || '' });
+    });
+  });
+  items.sort((a, b) => a.jam - b.jam);
+
   if (!items.length) { el.innerHTML = '<div style="font-size:11px;color:var(--muted);">Tidak ada jadwal hari ini</div>'; return; }
-  const statusMap = { hadir: ['status-hadir','✅'], telat: ['status-telat','⚠️'], belum: ['status-belum','🕐'] };
-  el.innerHTML = items.map(s => {
-    const [cls, ico] = statusMap[s.status] || ['status-belum','🕐'];
+
+  // Cek keterlambatan yang sudah tercatat HARI INI untuk penanda visual (kalau ada)
+  const todayStr = now.toLocaleDateString('id-ID');
+  const telatGuruHariIni = new Set(
+    lateRecords.filter(r => (r.waktu || '').startsWith(todayStr)).map(r => r.guru)
+  );
+
+  el.innerHTML = items.slice(0, 5).map(s => {
+    const isTelat = telatGuruHariIni.has(s.guru);
+    const ico = isTelat ? '⚠️' : '🕐';
     return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
-      <div><span style="color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;">${s.jam}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span></div>
+      <div><span style="color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;">JP${s.jam} · ${JAM_LABELS[s.jam]||''}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span> ${s.mapel ? '· '+s.mapel : ''}</div>
       <span>${ico}</span>
     </div>`;
   }).join('') + `<div style="text-align:right;margin-top:6px;"><span onclick="switchScreen('jadwal')" style="font-size:10px;color:var(--cyan);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">LIHAT SEMUA →</span></div>`;
@@ -4617,6 +4627,16 @@ function switchMonitor(id, el) {
   document.getElementById('monitor-' + id).classList.add('active');
   if (id === 'riwayat') renderRiwayat();
   if (id === 'statistik') renderStatistik();
+}
+
+// Isi dropdown "NAMA GURU" di form Rekam Keterlambatan dari data guru asli (bukan contoh dummy lagi)
+function populateRekamGuruSel() {
+  const sel = document.getElementById('rekam-guru');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Pilih Guru —</option>' +
+    GURU_DATA.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel})</option>`).join('');
+  if (current) sel.value = current;
 }
 
 function handlePhotos(e) {

@@ -965,6 +965,51 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
   }
   .rpe-table tfoot .rpe-efektif { color: var(--cyan); }
+
+  /* ===== PROMES TABLE (matrix mapel x bulan) ===== */
+  .promes-scroll { overflow-x: auto; }
+  .promes-table { border-collapse: collapse; font-size: 9px; min-width: 700px; width: 100%; }
+  .promes-table th, .promes-table td {
+    border: 1px solid var(--border); padding: 5px 4px; text-align: center; white-space: nowrap;
+  }
+  .promes-table thead th {
+    background: var(--slate2); color: var(--cyan); font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 8px; letter-spacing: 0.3px;
+  }
+  .promes-table tbody td:nth-child(2) { text-align: left; min-width: 90px; }
+  .promes-table tbody td:first-child { min-width: 70px; }
+  .promes-table input[type="text"] {
+    width: 100%; min-width: 90px; background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 5px; color: var(--white); font-size: 9px; padding: 4px; font-family: 'Inter', sans-serif;
+  }
+  .promes-table input[type="number"] {
+    width: 38px; text-align: center; background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 5px; color: var(--white); font-size: 9px; padding: 4px 2px; font-family: 'Inter', sans-serif;
+  }
+  .promes-table select {
+    background: var(--slate2); border: 1px solid var(--border); border-radius: 5px;
+    color: var(--white); font-size: 8px; padding: 3px; font-family: 'Inter', sans-serif;
+  }
+  .promes-table input:focus, .promes-table select:focus { outline: none; border-color: var(--cyan); }
+  .promes-table .promes-total { font-weight: 700; color: var(--cyan); background: rgba(0,144,199,0.06); }
+  .promes-table tfoot td { background: rgba(0,144,199,0.1); font-weight: 800; color: var(--white); }
+  .promes-row-jenis-ph { border-left: 3px solid #f59e0b; }
+  .promes-row-jenis-sts { border-left: 3px solid #ef4444; }
+  .promes-row-jenis-sas { border-left: 3px solid #dc2626; }
+  .promes-row-jenis-cadangan { border-left: 3px solid #64748b; }
+  .promes-row-jenis-cokurikuler { border-left: 3px solid #a855f7; }
+  .promes-del-btn {
+    background: rgba(220,38,64,0.15); color: var(--red); border: none; border-radius: 5px;
+    padding: 4px 7px; cursor: pointer; font-size: 10px;
+  }
+
+  .mapel-chip {
+    padding: 7px 12px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--slate2); color: var(--white); font-size: 11px; font-weight: 600;
+    cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .mapel-chip.active { background: rgba(0,144,199,0.18); border-color: var(--cyan); color: var(--cyan); }
+  .mapel-chip .mapel-chip-del { color: var(--red); font-size: 10px; }
   .rekap-table .rekap-hari-header {
     background: rgba(0,144,199,0.15); color: var(--cyan); font-weight: 700;
     font-size: 8px; letter-spacing: 0.5px;
@@ -1285,6 +1330,11 @@
         <span class="menu-icon">📊</span>
         <div class="menu-label">RPE</div>
         <div class="menu-sub">Rincian Pekan Efektif</div>
+      </div>
+      <div class="menu-item" onclick="switchScreen('protapromes')">
+        <span class="menu-icon">📘</span>
+        <div class="menu-label">Prota &amp; Promes</div>
+        <div class="menu-sub">+ Co-Kurikuler Blok</div>
       </div>
     </div>
 
@@ -2163,6 +2213,50 @@
     <div class="watermark">Developed by D.D Candra © 2026</div>
   </div>
 
+  <!-- SCREEN: PROTA & PROMES -->
+  <div class="screen" id="screen-protapromes">
+    <div class="section-header">
+      <p class="section-title">📘 PROTA &amp; PROMES</p>
+    </div>
+
+    <!-- CO-KURIKULER BLOK -->
+    <div class="card" style="margin-bottom:16px;border-color:rgba(139,92,246,0.4);">
+      <div style="font-size:10px;color:#a855f7;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">🧩 PROGRAM CO-KURIKULER (SISTEM BLOK)</div>
+      <div style="font-size:9px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+        Dilaksanakan dalam bentuk blok beberapa minggu menjelang SAT/SAS (bukan tiap minggu seperti mapel biasa) — mis. P5 (Projek Penguatan Profil Pelajar Pancasila). Jumlah minggu di sini otomatis mengurangi jam efektif reguler tiap mapel di Prota/Promes.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div>
+          <div style="font-size:9px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px;">SEMESTER 1</div>
+          <input type="text" class="form-input" id="coku-nama-sem1" placeholder="Nama program" style="margin-bottom:6px;" oninput="onCokuChange()">
+          <input type="number" min="0" class="form-input" id="coku-minggu-sem1" placeholder="Jumlah minggu" style="margin-bottom:6px;" oninput="onCokuChange()">
+          <input type="text" class="form-input" id="coku-ket-sem1" placeholder="Keterangan (opsional)" oninput="onCokuChange()">
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;margin-bottom:6px;">SEMESTER 2</div>
+          <input type="text" class="form-input" id="coku-nama-sem2" placeholder="Nama program" style="margin-bottom:6px;" oninput="onCokuChange()">
+          <input type="number" min="0" class="form-input" id="coku-minggu-sem2" placeholder="Jumlah minggu" style="margin-bottom:6px;" oninput="onCokuChange()">
+          <input type="text" class="form-input" id="coku-ket-sem2" placeholder="Keterangan (opsional)" oninput="onCokuChange()">
+        </div>
+      </div>
+    </div>
+
+    <!-- DAFTAR MAPEL -->
+    <div class="card" style="margin-bottom:16px;">
+      <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📚 MAPEL</div>
+      <div style="display:flex;gap:6px;margin-bottom:10px;">
+        <input type="text" class="form-input" id="prota-mapel-baru" placeholder="Nama mapel (mis. Matematika 7)" style="flex:2;">
+        <input type="number" min="1" class="form-input" id="prota-jp-baru" placeholder="JP/minggu" style="flex:1;">
+        <button class="btn-add" onclick="tambahMapelProta()" style="font-size:10px;padding:0 12px;">➕</button>
+      </div>
+      <div id="prota-mapel-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    </div>
+
+    <div id="prota-promes-detail"></div>
+
+    <div class="watermark">Developed by D.D Candra © 2026</div>
+  </div>
+
 </div><!-- end #app -->
 
 <!-- BOTTOM NAV -->
@@ -2431,12 +2525,13 @@ function switchScreen(name) {
   
   if (name === 'jam') renderGuruList();
   if (name === 'jadwal') { renderGrid(); populateListGuruSel(); populateMGMPGuruSel(); }
-  if (name === 'monitoring') { renderRiwayat(); populateRekamGuruSel(); }
+  if (name === 'monitoring') { renderRiwayat(); populateRekamGuruSel(); checkStorageUsage(); }
   if (name === 'regulasi') loadRegulasi();
   if (name === 'home') renderMiniSchedule();
   if (name === 'notulen') renderNotulenList();
   if (name === 'siswa') renderSiswaList();
   if (name === 'rpe') renderRPE();
+  if (name === 'protapromes') { renderCokuInputs(); renderMapelListProta(); renderProtaPromesDetail(); }
 }
 
 // ===== PLANNING TABS =====
@@ -4639,15 +4734,39 @@ function populateRekamGuruSel() {
   if (current) sel.value = current;
 }
 
+// Kompres & resize foto sebelum disimpan agar tidak cepat memenuhi kuota localStorage
+// (foto asli dari kamera HP bisa 2-5MB per foto sebagai base64; kuota localStorage hanya ~5-10MB TOTAL)
+function compressImage(dataUrl, maxDim = 900, quality = 0.6) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      let { width, height } = img;
+      if (width > height && width > maxDim) {
+        height = Math.round(height * (maxDim / width)); width = maxDim;
+      } else if (height > maxDim) {
+        width = Math.round(width * (maxDim / height)); height = maxDim;
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.onerror = () => resolve(dataUrl); // fallback: pakai asli jika gagal diproses
+    img.src = dataUrl;
+  });
+}
+
 function handlePhotos(e) {
   const files = Array.from(e.target.files);
   const prev = document.getElementById('photo-previews');
   files.forEach(f => {
     const reader = new FileReader();
-    reader.onload = ev => {
-      uploadedPhotos.push(ev.target.result);
+    reader.onload = async ev => {
+      const compressed = await compressImage(ev.target.result);
+      uploadedPhotos.push(compressed);
       const img = document.createElement('img');
-      img.src = ev.target.result; img.className = 'photo-preview';
+      img.src = compressed; img.className = 'photo-preview';
       prev.appendChild(img);
     };
     reader.readAsDataURL(f);
@@ -5612,6 +5731,8 @@ function backupData() {
       bebanMengajar: bebanMengajarData,
       lockedDays: lockedDaysData,
       rpe: RPE_DATA,
+      cokurikuler: COKURIKULER_DATA,
+      prota: PROTA_DATA,
       late: lateRecords,
       notulen: notulenRecords.map(n => ({ ...n, teks: n.teks?.substring(0, 2000) })), // trim large teks
       planning: planSnap,
@@ -5673,6 +5794,8 @@ function restoreData(input) {
       if (data.bebanMengajar) bebanMengajarData = data.bebanMengajar;
       if (data.lockedDays) lockedDaysData = data.lockedDays;
       if (data.rpe) RPE_DATA = data.rpe;
+      if (data.cokurikuler) COKURIKULER_DATA = data.cokurikuler;
+      if (data.prota) PROTA_DATA = data.prota;
       // Restore keterlambatan
       if (data.late) lateRecords = data.late;
       // Restore notulen
@@ -5723,7 +5846,7 @@ let RPE_DATA = {
     { bulan: 'Juli',      pekan: 4, tidakEfektif: 2 },
     { bulan: 'Agustus',   pekan: 4, tidakEfektif: 0 },
     { bulan: 'September', pekan: 4, tidakEfektif: 0 },
-    { bulan: 'Oktober',   pekan: 5, tidakEfektif: 0 },
+    { bulan: 'Oktober',   pekan: 5, tidakEfektif: 1 },  // KTS (Kegiatan Tengah Semester) awal Oktober = 1 pekan tidak efektif
     { bulan: 'November',  pekan: 4, tidakEfektif: 0 },
     { bulan: 'Desember',  pekan: 4, tidakEfektif: 2 },
   ],
@@ -5841,7 +5964,293 @@ function exportRPEPDF() {
   win.document.close();
   setTimeout(() => win.print(), 400);
 }
-let KELAS_TUJUAN = [];      // [{nama: '9A', kuota: 32}, ...]
+
+// ===== CO-KURIKULER (SISTEM BLOK) + PROTA & PROMES =====
+let COKURIKULER_DATA = {
+  sem1: { nama: '', minggu: 0, keterangan: '' },
+  sem2: { nama: '', minggu: 0, keterangan: '' },
+};
+let PROTA_DATA = [];   // [{id, nama, jpPerMinggu, sem1:[{id,jenis,nama,promes:{bulan:jp}}], sem2:[...]}]
+let _activeMapelId = null;
+let _activeSemProta = 'sem1';
+
+const JENIS_LABEL = {
+  materi: '📖 Materi', ph: '📝 P. Harian', sts: '📐 STS', sas: '🏁 SAS/SAT',
+  cadangan: '🗓️ Cadangan', cokurikuler: '🧩 Co-Kurikuler',
+};
+
+function renderCokuInputs() {
+  document.getElementById('coku-nama-sem1').value = COKURIKULER_DATA.sem1.nama || '';
+  document.getElementById('coku-minggu-sem1').value = COKURIKULER_DATA.sem1.minggu || 0;
+  document.getElementById('coku-ket-sem1').value = COKURIKULER_DATA.sem1.keterangan || '';
+  document.getElementById('coku-nama-sem2').value = COKURIKULER_DATA.sem2.nama || '';
+  document.getElementById('coku-minggu-sem2').value = COKURIKULER_DATA.sem2.minggu || 0;
+  document.getElementById('coku-ket-sem2').value = COKURIKULER_DATA.sem2.keterangan || '';
+}
+function onCokuChange() {
+  COKURIKULER_DATA.sem1.nama = document.getElementById('coku-nama-sem1').value;
+  COKURIKULER_DATA.sem1.minggu = Math.max(0, parseInt(document.getElementById('coku-minggu-sem1').value) || 0);
+  COKURIKULER_DATA.sem1.keterangan = document.getElementById('coku-ket-sem1').value;
+  COKURIKULER_DATA.sem2.nama = document.getElementById('coku-nama-sem2').value;
+  COKURIKULER_DATA.sem2.minggu = Math.max(0, parseInt(document.getElementById('coku-minggu-sem2').value) || 0);
+  COKURIKULER_DATA.sem2.keterangan = document.getElementById('coku-ket-sem2').value;
+  saveAll();
+  renderProtaPromesDetail();
+}
+
+function tambahMapelProta() {
+  const nama = document.getElementById('prota-mapel-baru')?.value.trim();
+  const jp = parseInt(document.getElementById('prota-jp-baru')?.value) || 0;
+  if (!nama) { showToast('⚠️ Isi nama mapel dulu!', true); return; }
+  if (jp <= 0) { showToast('⚠️ Isi JP/minggu dulu!', true); return; }
+  const entry = { id: 'm' + Date.now(), nama, jpPerMinggu: jp, sem1: [], sem2: [] };
+  PROTA_DATA.push(entry);
+  _activeMapelId = entry.id;
+  document.getElementById('prota-mapel-baru').value = '';
+  document.getElementById('prota-jp-baru').value = '';
+  saveAll();
+  renderMapelListProta();
+  renderProtaPromesDetail();
+  showToast('✅ Mapel ditambahkan!');
+}
+function hapusMapelProta(id) {
+  if (!confirm('Hapus mapel ini beserta seluruh Prota/Promes-nya?')) return;
+  PROTA_DATA = PROTA_DATA.filter(m => m.id !== id);
+  if (_activeMapelId === id) _activeMapelId = PROTA_DATA[0]?.id || null;
+  saveAll();
+  renderMapelListProta();
+  renderProtaPromesDetail();
+}
+function pilihMapelProta(id) {
+  _activeMapelId = id;
+  renderMapelListProta();
+  renderProtaPromesDetail();
+}
+function renderMapelListProta() {
+  const el = document.getElementById('prota-mapel-list');
+  if (!el) return;
+  if (!PROTA_DATA.length) { el.innerHTML = '<div style="font-size:10px;color:var(--muted);">Belum ada mapel. Tambahkan di atas.</div>'; return; }
+  el.innerHTML = PROTA_DATA.map(m => `
+    <div class="mapel-chip ${m.id===_activeMapelId?'active':''}" onclick="pilihMapelProta('${m.id}')">
+      ${m.nama} <span style="opacity:.6;">(${m.jpPerMinggu}jp)</span>
+      <span class="mapel-chip-del" onclick="event.stopPropagation();hapusMapelProta('${m.id}')">✕</span>
+    </div>`).join('');
+}
+
+// Pastikan baris Co-Kurikuler selalu ada di semester tsb (auto-sync nama dari pengaturan blok)
+function ensureCokuRow(mapelEntry, sem) {
+  let row = mapelEntry[sem].find(r => r.jenis === 'cokurikuler');
+  if (!row) {
+    row = { id: 'r' + Date.now() + Math.random().toString(36).slice(2, 6), jenis: 'cokurikuler', nama: '', promes: {} };
+    mapelEntry[sem].push(row);
+  }
+  row.nama = COKURIKULER_DATA[sem].nama || 'Program Co-Kurikuler';
+  return row;
+}
+function tambahBarisProta(jenis) {
+  const m = PROTA_DATA.find(x => x.id === _activeMapelId);
+  if (!m) return;
+  m[_activeSemProta].push({ id: 'r' + Date.now() + Math.random().toString(36).slice(2, 6), jenis, nama: '', promes: {} });
+  saveAll();
+  renderProtaPromesDetail();
+}
+function hapusBarisProta(rowId) {
+  const m = PROTA_DATA.find(x => x.id === _activeMapelId);
+  if (!m) return;
+  m[_activeSemProta] = m[_activeSemProta].filter(r => r.id !== rowId);
+  saveAll();
+  renderProtaPromesDetail();
+}
+function onProtaRowNamaChange(rowId, value) {
+  const m = PROTA_DATA.find(x => x.id === _activeMapelId);
+  if (!m) return;
+  const row = m[_activeSemProta].find(r => r.id === rowId);
+  if (row) { row.nama = value; saveAll(); }
+}
+function onProtaRowJenisChange(rowId, value) {
+  const m = PROTA_DATA.find(x => x.id === _activeMapelId);
+  if (!m) return;
+  const row = m[_activeSemProta].find(r => r.id === rowId);
+  if (row) { row.jenis = value; saveAll(); renderProtaPromesDetail(); }
+}
+function onProtaCellChange(rowId, bulan, value) {
+  const m = PROTA_DATA.find(x => x.id === _activeMapelId);
+  if (!m) return;
+  const row = m[_activeSemProta].find(r => r.id === rowId);
+  if (!row) return;
+  const v = Math.max(0, parseInt(value) || 0);
+  if (v === 0) delete row.promes[bulan]; else row.promes[bulan] = v;
+  saveAll();
+  renderProtaPromesDetail();
+}
+function switchSemProta(sem) {
+  _activeSemProta = sem;
+  renderProtaPromesDetail();
+}
+
+function renderProtaPromesDetail() {
+  const el = document.getElementById('prota-promes-detail');
+  if (!el) return;
+  const m = PROTA_DATA.find(x => x.id === _activeMapelId);
+  if (!m) { el.innerHTML = '<div class="card" style="text-align:center;color:var(--muted);font-size:11px;padding:20px;">Pilih atau tambahkan mapel dulu untuk mulai isi Prota &amp; Promes.</div>'; return; }
+
+  const sem = _activeSemProta;
+  ensureCokuRow(m, 'sem1');
+  ensureCokuRow(m, 'sem2');
+  const bulanList = RPE_DATA[sem].map(r => r.bulan);
+  const pekanEfektifTotal = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+  const jpTersedia = pekanEfektifTotal * m.jpPerMinggu;
+
+  const rows = m[sem];
+  const rowTotal = (row) => bulanList.reduce((s, b) => s + (row.promes[b] || 0), 0);
+  const grandTotal = rows.reduce((s, r) => s + rowTotal(r), 0);
+  const cokuTarget = COKURIKULER_DATA[sem].minggu * m.jpPerMinggu;
+  const selisih = jpTersedia - grandTotal;
+  let statusColor = '#2ecc71', statusText = `✅ PAS (${grandTotal}/${jpTersedia} JP)`;
+  if (selisih > 0) { statusColor = '#e67e22'; statusText = `⚠️ KURANG ${selisih} JP (${grandTotal}/${jpTersedia})`; }
+  if (selisih < 0) { statusColor = '#e74c3c'; statusText = `🔺 LEBIH ${-selisih} JP (${grandTotal}/${jpTersedia})`; }
+
+  let html = `
+    <div class="card" style="margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:10px;">
+        <div style="font-size:12px;font-weight:700;color:var(--white);">${m.nama} <span style="color:var(--muted);font-weight:400;font-size:10px;">(${m.jpPerMinggu} JP/minggu)</span></div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-add" onclick="exportProtaExcel()" style="font-size:9px;padding:5px 9px;">📊 Excel</button>
+          <button class="btn-add" onclick="exportProtaPDF()" style="font-size:9px;padding:5px 9px;">📄 PDF</button>
+        </div>
+      </div>
+      <div class="notulen-tabs" style="margin-bottom:12px;">
+        <div class="notulen-tab ${sem==='sem1'?'active':''}" onclick="switchSemProta('sem1')">SEMESTER 1</div>
+        <div class="notulen-tab ${sem==='sem2'?'active':''}" onclick="switchSemProta('sem2')">SEMESTER 2</div>
+      </div>
+
+      <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">
+        Pekan efektif semester ini: <b style="color:var(--cyan);">${pekanEfektifTotal} pekan</b> ×
+        ${m.jpPerMinggu} JP/minggu = <b style="color:var(--cyan);">${jpTersedia} JP tersedia</b>
+        ${cokuTarget ? ` · Target Co-Kurikuler: <b style="color:#a855f7;">${cokuTarget} JP</b> (${COKURIKULER_DATA[sem].minggu} minggu)` : ''}
+      </div>
+
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+        <button class="btn-add" onclick="tambahBarisProta('materi')" style="font-size:9px;padding:5px 9px;">➕ Materi</button>
+        <button class="btn-add" onclick="tambahBarisProta('ph')" style="font-size:9px;padding:5px 9px;">➕ P.Harian</button>
+        <button class="btn-add" onclick="tambahBarisProta('sts')" style="font-size:9px;padding:5px 9px;">➕ STS</button>
+        <button class="btn-add" onclick="tambahBarisProta('sas')" style="font-size:9px;padding:5px 9px;">➕ SAS/SAT</button>
+        <button class="btn-add" onclick="tambahBarisProta('cadangan')" style="font-size:9px;padding:5px 9px;">➕ Cadangan</button>
+      </div>
+
+      <div class="promes-scroll">
+        <table class="promes-table">
+          <thead><tr>
+            <th>JENIS</th><th>MATERI / KEGIATAN</th>
+            ${bulanList.map(b => `<th>${b}</th>`).join('')}
+            <th>JML</th><th></th>
+          </tr></thead>
+          <tbody>
+            ${rows.map(r => `
+              <tr class="promes-row-jenis-${r.jenis}">
+                <td>
+                  ${r.jenis === 'cokurikuler' ? JENIS_LABEL[r.jenis] : `
+                  <select onchange="onProtaRowJenisChange('${r.id}',this.value)">
+                    ${Object.keys(JENIS_LABEL).filter(j=>j!=='cokurikuler').map(j => `<option value="${j}" ${r.jenis===j?'selected':''}>${JENIS_LABEL[j]}</option>`).join('')}
+                  </select>`}
+                </td>
+                <td><input type="text" value="${r.nama || ''}" ${r.jenis==='cokurikuler'?'readonly':''} placeholder="Nama materi/kegiatan" onchange="onProtaRowNamaChange('${r.id}',this.value)"></td>
+                ${bulanList.map(b => `<td><input type="number" min="0" value="${r.promes[b] || ''}" onchange="onProtaCellChange('${r.id}','${b}',this.value)"></td>`).join('')}
+                <td class="promes-total">${rowTotal(r)}</td>
+                <td>${r.jenis!=='cokurikuler' ? `<button class="promes-del-btn" onclick="hapusBarisProta('${r.id}')">✕</button>` : ''}</td>
+              </tr>`).join('')}
+          </tbody>
+          <tfoot><tr>
+            <td colspan="2">JUMLAH</td>
+            ${bulanList.map(b => `<td>${rows.reduce((s,r)=>s+(r.promes[b]||0),0)}</td>`).join('')}
+            <td>${grandTotal}</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+
+      <div style="margin-top:10px;padding:8px 10px;border-radius:8px;background:rgba(255,255,255,0.03);font-size:11px;font-weight:700;color:${statusColor};text-align:center;">
+        ${statusText}
+      </div>
+    </div>`;
+  el.innerHTML = html;
+}
+
+function exportProtaExcel() {
+  const m = PROTA_DATA.find(x => x.id === _activeMapelId);
+  if (!m) { showToast('⚠️ Pilih mapel dulu!', true); return; }
+  const wb = XLSX.utils.book_new();
+  ['sem1', 'sem2'].forEach((sem, si) => {
+    ensureCokuRow(m, sem);
+    const bulanList = RPE_DATA[sem].map(r => r.bulan);
+    const rows = m[sem];
+    const rowTotal = (row) => bulanList.reduce((s, b) => s + (row.promes[b] || 0), 0);
+    const pekanEfektifTotal = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+    const jpTersedia = pekanEfektifTotal * m.jpPerMinggu;
+    const aoa = [
+      [`PROMES — ${m.nama} — SEMESTER ${si + 1} — TAHUN AJARAN ${RPE_DATA.tahunAjaran}`],
+      ['JENIS', 'MATERI/KEGIATAN', ...bulanList, 'JUMLAH'],
+      ...rows.map(r => [JENIS_LABEL[r.jenis].replace(/^\S+\s/, ''), r.nama, ...bulanList.map(b => r.promes[b] || 0), rowTotal(r)]),
+      ['JUMLAH', '', ...bulanList.map(b => rows.reduce((s,r)=>s+(r.promes[b]||0),0)), rows.reduce((s,r)=>s+rowTotal(r),0)],
+      [],
+      ['Pekan Efektif', pekanEfektifTotal, 'JP/Minggu', m.jpPerMinggu, 'JP Tersedia', jpTersedia],
+    ];
+    const ws = XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols'] = [{wch:14},{wch:24},...bulanList.map(()=>({wch:8})),{wch:10}];
+    XLSX.utils.book_append_sheet(wb, ws, `Promes Sem ${si+1}`);
+  });
+  XLSX.writeFile(wb, `Prota-Promes-${m.nama.replace(/\s/g,'')}.xlsx`);
+  showToast('📊 Excel Prota/Promes berhasil diunduh!');
+}
+function exportProtaPDF() {
+  const m = PROTA_DATA.find(x => x.id === _activeMapelId);
+  if (!m) { showToast('⚠️ Pilih mapel dulu!', true); return; }
+  const schoolName = (typeof currentSetting !== 'undefined' && currentSetting.schoolName) || '';
+  const buildSemTable = (sem, label) => {
+    ensureCokuRow(m, sem);
+    const bulanList = RPE_DATA[sem].map(r => r.bulan);
+    const rows = m[sem];
+    const rowTotal = (row) => bulanList.reduce((s, b) => s + (row.promes[b] || 0), 0);
+    const pekanEfektifTotal = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+    const jpTersedia = pekanEfektifTotal * m.jpPerMinggu;
+    const grandTotal = rows.reduce((s,r)=>s+rowTotal(r),0);
+    return `
+      <h3 style="margin-top:24px;">${label}</h3>
+      <p style="font-size:12px;">Pekan Efektif: ${pekanEfektifTotal} × ${m.jpPerMinggu} JP/minggu = <b>${jpTersedia} JP tersedia</b> — Terisi: <b>${grandTotal} JP</b></p>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;">
+        <thead><tr style="background:#003366;color:#fff;">
+          <th style="padding:4px;border:1px solid #ccc;">Jenis</th>
+          <th style="padding:4px;border:1px solid #ccc;">Materi/Kegiatan</th>
+          ${bulanList.map(b=>`<th style="padding:4px;border:1px solid #ccc;">${b}</th>`).join('')}
+          <th style="padding:4px;border:1px solid #ccc;">Jml</th>
+        </tr></thead>
+        <tbody>
+          ${rows.map(r => `<tr>
+            <td style="padding:4px;border:1px solid #ccc;">${JENIS_LABEL[r.jenis].replace(/^\S+\s/,'')}</td>
+            <td style="padding:4px;border:1px solid #ccc;">${r.nama||''}</td>
+            ${bulanList.map(b=>`<td style="padding:4px;border:1px solid #ccc;text-align:center;">${r.promes[b]||''}</td>`).join('')}
+            <td style="padding:4px;border:1px solid #ccc;text-align:center;font-weight:bold;">${rowTotal(r)}</td>
+          </tr>`).join('')}
+          <tr style="background:#eef;font-weight:bold;">
+            <td style="padding:4px;border:1px solid #ccc;" colspan="2">JUMLAH</td>
+            ${bulanList.map(b=>`<td style="padding:4px;border:1px solid #ccc;text-align:center;">${rows.reduce((s,r)=>s+(r.promes[b]||0),0)}</td>`).join('')}
+            <td style="padding:4px;border:1px solid #ccc;text-align:center;">${grandTotal}</td>
+          </tr>
+        </tbody>
+      </table>`;
+  };
+  const win = window.open('', '_blank');
+  win.document.write(`
+    <html><head><title>Prota-Promes ${m.nama}</title></head>
+    <body style="font-family:Arial,sans-serif;padding:24px;">
+      <h2 style="text-align:center;margin-bottom:2px;">${schoolName}</h2>
+      <h3 style="text-align:center;margin-top:0;">PROGRAM TAHUNAN &amp; PROGRAM SEMESTER</h3>
+      <p style="text-align:center;">Mapel: ${m.nama} · Tahun Ajaran ${RPE_DATA.tahunAjaran}</p>
+      ${buildSemTable('sem1', 'SEMESTER 1 (GANJIL)')}
+      ${buildSemTable('sem2', 'SEMESTER 2 (GENAP)')}
+    </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
 
 function switchSiswaTab(tab, el) {
   document.querySelectorAll('.notulen-tab[id^="stab"]').forEach(t => t.classList.remove('active'));
@@ -6356,6 +6765,25 @@ function resetSemuaData() {
   setTimeout(() => location.reload(), 1500);
 }
 
+// Estimasi pemakaian localStorage & peringatkan user sebelum penuh (bukan sesudah data hilang)
+function checkStorageUsage() {
+  try {
+    let totalBytes = 0;
+    for (const k in localStorage) {
+      if (Object.prototype.hasOwnProperty.call(localStorage, k)) {
+        totalBytes += (localStorage.getItem(k) || '').length + k.length;
+      }
+    }
+    const totalMB = totalBytes / (1024 * 1024);
+    const assumedLimitMB = 5; // batas paling konservatif di berbagai browser/WebView
+    const pct = (totalMB / assumedLimitMB) * 100;
+    if (pct >= 80) {
+      showToast(`⚠️ Penyimpanan hampir penuh (${totalMB.toFixed(1)}MB). Hapus riwayat/foto lama agar data baru tidak gagal tersimpan!`, true);
+    }
+    return { totalMB, pct };
+  } catch (e) { return { totalMB: 0, pct: 0 }; }
+}
+
 // ===== LOCALSTORAGE PERSISTENCE =====
 const LS_KEYS = {
   screen:    'kuriku_screen',
@@ -6368,6 +6796,8 @@ const LS_KEYS = {
   bebanMengajar: 'kuriku_beban_mengajar',
   lockedDays: 'kuriku_locked_days',
   rpe: 'kuriku_rpe',
+  cokurikuler: 'kuriku_cokurikuler',
+  prota: 'kuriku_prota',
   late:      'kuriku_late',
   notulen:   'kuriku_notulen',
   planning:  'kuriku_planning',
@@ -6386,6 +6816,8 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.bebanMengajar, JSON.stringify(bebanMengajarData));
     localStorage.setItem(LS_KEYS.lockedDays, JSON.stringify(lockedDaysData));
     localStorage.setItem(LS_KEYS.rpe, JSON.stringify(RPE_DATA));
+    localStorage.setItem(LS_KEYS.cokurikuler, JSON.stringify(COKURIKULER_DATA));
+    localStorage.setItem(LS_KEYS.prota, JSON.stringify(PROTA_DATA));
     localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
     localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
     localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
@@ -6397,7 +6829,22 @@ function saveAll() {
       if (card) planSnap[j] = card.innerHTML;
     });
     localStorage.setItem(LS_KEYS.planning, JSON.stringify(planSnap));
-  } catch(e) { console.warn('Save gagal:', e); }
+  } catch(e) {
+    console.warn('Save gagal:', e);
+    // Storage penuh (biasanya karena foto). Coba simpan ulang TANPA foto
+    // supaya data teks (nama guru, waktu, keterangan, dll) tetap tersimpan.
+    if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
+      try {
+        const lateNoPhotos = lateRecords.map(r => ({ ...r, photos: [] }));
+        localStorage.setItem(LS_KEYS.late, JSON.stringify(lateNoPhotos));
+        showToast('⚠️ Penyimpanan penuh! Data tersimpan TANPA foto. Hapus riwayat lama / foto untuk membebaskan ruang.', true);
+      } catch (e2) {
+        showToast('❌ Penyimpanan gagal total (storage penuh). Data terbaru berisiko HILANG saat halaman dimuat ulang!', true);
+      }
+    } else {
+      showToast('❌ Gagal menyimpan data: ' + (e.message || e), true);
+    }
+  }
 }
 
 function loadAll() {
@@ -6426,6 +6873,11 @@ function loadAll() {
     // RPE
     const rp = localStorage.getItem(LS_KEYS.rpe);
     if (rp) RPE_DATA = JSON.parse(rp);
+    // Co-Kurikuler & Prota/Promes
+    const ck = localStorage.getItem(LS_KEYS.cokurikuler);
+    if (ck) COKURIKULER_DATA = JSON.parse(ck);
+    const pr = localStorage.getItem(LS_KEYS.prota);
+    if (pr) PROTA_DATA = JSON.parse(pr);
     // Keterlambatan
     const l = localStorage.getItem(LS_KEYS.late);
     if (l) lateRecords = JSON.parse(l);
@@ -6485,6 +6937,7 @@ loadSetting();      // terapkan pengaturan (nama, logo, tema)
 renderGuruList();
 renderJadwal();
 updateNotifDot();
+setTimeout(checkStorageUsage, 800); // cek kuota storage setelah app siap
 
 // Patch saveAll agar dot notif selalu update
 const _origSaveAll = saveAll;

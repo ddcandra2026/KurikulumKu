@@ -2227,10 +2227,21 @@
           </div>
 
           <div class="form-group">
-            <label class="form-label">NAMA SISWA</label>
-            <select class="form-select" id="cs-siswa" disabled>
-              <option value="">— Pilih Kelas Dahulu —</option>
-            </select>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+              <label class="form-label" style="margin-bottom:0;">NAMA SISWA (bisa pilih lebih dari satu)</label>
+              <span id="cs-siswa-count" style="font-size:9px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;"></span>
+            </div>
+            <div id="cs-siswa-bulkbtns" style="display:none;gap:6px;margin-bottom:6px;">
+              <button type="button" onclick="pilihSemuaCsSiswa(true)" style="flex:1;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--slate2);color:var(--muted);font-size:9px;cursor:pointer;">☑️ Pilih Semua</button>
+              <button type="button" onclick="pilihSemuaCsSiswa(false)" style="flex:1;padding:6px;border-radius:8px;border:1px solid var(--border);background:var(--slate2);color:var(--muted);font-size:9px;cursor:pointer;">⬜ Batal Semua</button>
+            </div>
+            <div id="cs-siswa-list" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:10px;padding:6px;background:var(--slate2);">
+              <div style="text-align:center;color:var(--muted);font-size:10px;padding:12px;">— Pilih Kelas Dahulu —</div>
+            </div>
+          </div>
+
+          <div style="background:rgba(224,102,10,0.08);border:1px solid rgba(224,102,10,0.25);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:9px;color:var(--orange);line-height:1.5;">
+            💡 Status &amp; Follow Up di bawah akan diterapkan ke <b>SEMUA siswa yang dicentang</b> sekaligus. Kalau ada beberapa siswa kabur bersamaan, centang semuanya lalu simpan satu kali — tidak perlu satu per satu.
           </div>
 
           <div class="form-group">
@@ -6537,6 +6548,7 @@ function hapusSemuaSiswa() {
 // ===== CATATAN SISWA (Keberadaan Siswa Selama KBM Jam 1-9) =====
 let csSelectedStatus = null;
 let csSelectedFollowUp = null;
+let csSelectedSiswaIds = [];
 
 function switchCatatanSub(id, el) {
   document.querySelectorAll('#siswa-tab-catatan .cs-tab').forEach(t => t.classList.remove('active'));
@@ -6558,21 +6570,49 @@ function populateCatatanKelasSel() {
 
 function onCatatanKelasChange() {
   const kelas = document.getElementById('cs-kelas').value;
-  const sel = document.getElementById('cs-siswa');
+  const list = document.getElementById('cs-siswa-list');
+  const bulkBtns = document.getElementById('cs-siswa-bulkbtns');
+  csSelectedSiswaIds = [];
+  updateCsSiswaCount();
   if (!kelas) {
-    sel.innerHTML = '<option value="">— Pilih Kelas Dahulu —</option>';
-    sel.disabled = true;
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:10px;padding:12px;">— Pilih Kelas Dahulu —</div>';
+    bulkBtns.style.display = 'none';
     return;
   }
   const siswaKelas = SISWA_DATA.filter(s => s.kelas === kelas);
   if (!siswaKelas.length) {
-    sel.innerHTML = '<option value="">Belum ada siswa di kelas ini</option>';
-    sel.disabled = true;
+    list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:10px;padding:12px;">Belum ada siswa di kelas ini</div>';
+    bulkBtns.style.display = 'none';
     return;
   }
-  sel.disabled = false;
-  sel.innerHTML = '<option value="">— Pilih Siswa —</option>' +
-    siswaKelas.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
+  bulkBtns.style.display = 'flex';
+  list.innerHTML = siswaKelas.map(s => `
+    <label style="display:flex;align-items:center;gap:8px;padding:7px 6px;border-radius:8px;cursor:pointer;font-size:11px;color:var(--white);" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+      <input type="checkbox" data-siswa-id="${s.id}" onchange="toggleCsSiswa('${s.id}',this.checked)" style="width:16px;height:16px;accent-color:var(--orange);cursor:pointer;">
+      <span>${s.nama}</span>
+    </label>`).join('');
+}
+
+function toggleCsSiswa(id, checked) {
+  if (checked) {
+    if (!csSelectedSiswaIds.includes(id)) csSelectedSiswaIds.push(id);
+  } else {
+    csSelectedSiswaIds = csSelectedSiswaIds.filter(x => x !== id);
+  }
+  updateCsSiswaCount();
+}
+
+function pilihSemuaCsSiswa(all) {
+  const boxes = document.querySelectorAll('#cs-siswa-list input[type="checkbox"]');
+  boxes.forEach(b => { b.checked = all; });
+  csSelectedSiswaIds = all ? Array.from(boxes).map(b => b.dataset.siswaId) : [];
+  updateCsSiswaCount();
+}
+
+function updateCsSiswaCount() {
+  const el = document.getElementById('cs-siswa-count');
+  if (!el) return;
+  el.textContent = csSelectedSiswaIds.length ? `${csSelectedSiswaIds.length} siswa dipilih` : '';
 }
 
 function pilihCsStatus(val, el) {
@@ -6606,24 +6646,31 @@ const csStatusLabel = { hadir: '✅ Hadir', izin: '📝 Izin', sakit: '🤒 Saki
 
 function simpanCatatanSiswa() {
   const kelas = document.getElementById('cs-kelas').value;
-  const siswaId = document.getElementById('cs-siswa').value;
   const jam = document.getElementById('cs-jam').value;
   const ket = document.getElementById('cs-ket').value.trim();
-  if (!kelas || !siswaId) { showToast('⚠️ Pilih kelas & nama siswa dahulu!', true); return; }
+  if (!kelas) { showToast('⚠️ Pilih kelas dahulu!', true); return; }
+  if (!csSelectedSiswaIds.length) { showToast('⚠️ Pilih minimal satu siswa!', true); return; }
   if (!csSelectedStatus) { showToast('⚠️ Pilih status kehadiran!', true); return; }
-  const siswa = SISWA_DATA.find(s => s.id === siswaId);
-  if (!siswa) { showToast('⚠️ Data siswa tidak ditemukan!', true); return; }
   const statusTersimpan = csSelectedStatus;
+  const waktu = new Date().toLocaleString('id-ID');
 
-  catatanSiswaData.unshift({
-    id: 'cs_' + Date.now(),
-    kelas, siswaId, nama: siswa.nama,
-    jam, status: csSelectedStatus, followUp: csSelectedFollowUp,
-    ket, waktu: new Date().toLocaleString('id-ID')
+  let jumlahTersimpan = 0;
+  csSelectedSiswaIds.forEach(siswaId => {
+    const siswa = SISWA_DATA.find(s => s.id === siswaId);
+    if (!siswa) return;
+    catatanSiswaData.unshift({
+      id: 'cs_' + Date.now() + '_' + jumlahTersimpan,
+      kelas, siswaId, nama: siswa.nama,
+      jam, status: csSelectedStatus, followUp: csSelectedFollowUp,
+      ket, waktu
+    });
+    jumlahTersimpan++;
   });
 
   // Reset form
-  document.getElementById('cs-siswa').value = '';
+  document.querySelectorAll('#cs-siswa-list input[type="checkbox"]').forEach(b => { b.checked = false; });
+  csSelectedSiswaIds = [];
+  updateCsSiswaCount();
   document.getElementById('cs-ket').value = '';
   document.querySelectorAll('#cs-status-row .status-pill').forEach(p => p.classList.remove('on-hadir','on-izin','on-sakit','on-alpa','on-kabur'));
   document.querySelectorAll('#cs-fu-row .status-pill').forEach(p => p.classList.remove('on-fu'));
@@ -6631,7 +6678,8 @@ function simpanCatatanSiswa() {
   csSelectedStatus = null; csSelectedFollowUp = null;
 
   saveAll();
-  showToast(statusTersimpan === 'kabur' ? '🏃 Catatan siswa kabur tersimpan!' : '✅ Catatan siswa tersimpan!');
+  const label = jumlahTersimpan > 1 ? `${jumlahTersimpan} siswa` : '1 siswa';
+  showToast(statusTersimpan === 'kabur' ? `🏃 Catatan kabur untuk ${label} tersimpan!` : `✅ Catatan untuk ${label} tersimpan!`);
 }
 
 function populateCatatanRiwayatFilter() {

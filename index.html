@@ -358,6 +358,37 @@
   .lli-photos img { width: 44px; height: 44px; border-radius: 6px; object-fit: cover; border: 1px solid rgba(220,38,64,0.3); }
   .lli-actions { display: flex; gap: 6px; margin-top: 8px; }
 
+  /* ===== CATATAN SISWA (Keberadaan Siswa Selama KBM) ===== */
+  .cs-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+  .cs-tab {
+    flex: 1; padding: 8px; text-align: center;
+    background: var(--slate2); border: 1px solid var(--border);
+    border-radius: 10px; font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; color: var(--muted);
+  }
+  .cs-tab.active { background: rgba(224,102,10,0.15); border-color: var(--orange); color: var(--orange); }
+  .cs-content { display: none; }
+  .cs-content.active { display: block; }
+  .status-pill-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .status-pill {
+    padding: 7px 12px; border-radius: 9px; border: 1px solid var(--border);
+    background: var(--slate2); color: var(--muted); font-size: 10px; font-weight: 600;
+    cursor: pointer; transition: all 0.2s; font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .status-pill.on-hadir { background: rgba(0,168,107,0.18); border-color: var(--green); color: var(--green); }
+  .status-pill.on-izin  { background: rgba(0,144,199,0.18); border-color: var(--cyan); color: var(--cyan); }
+  .status-pill.on-sakit { background: rgba(107,70,193,0.18); border-color: var(--purple); color: var(--purple); }
+  .status-pill.on-alpa  { background: rgba(224,102,10,0.18); border-color: var(--orange); color: var(--orange); }
+  .status-pill.on-kabur { background: rgba(220,38,64,0.18); border-color: var(--red); color: var(--red); animation: pulseKabur 1.4s infinite; }
+  .status-pill.on-fu    { background: rgba(224,102,10,0.18); border-color: var(--orange); color: var(--orange); }
+  @keyframes pulseKabur { 0%,100% { box-shadow: 0 0 0 0 rgba(220,38,64,0.35); } 50% { box-shadow: 0 0 0 5px rgba(220,38,64,0); } }
+  .cs-list-item {
+    background: var(--card-bg); border: 1px solid var(--border);
+    border-radius: 12px; padding: 12px; margin-bottom: 8px;
+  }
+  .cs-list-item.is-kabur { border-color: rgba(220,38,64,0.4); }
+  .cs-badge { display:inline-block; padding:3px 8px; border-radius:6px; font-size:9px; font-weight:700; font-family:'Plus Jakarta Sans',sans-serif; }
+
   /* ===== REGULASI / BERITA ===== */
   .news-card {
     background: var(--card-bg); border: 1px solid var(--border);
@@ -2104,6 +2135,7 @@
       <div class="notulen-tab active" id="stab-data" onclick="switchSiswaTab('data',this)">📋 DATA</div>
       <div class="notulen-tab" id="stab-naik" onclick="switchSiswaTab('naik',this)">⬆️ NAIK KELAS</div>
       <div class="notulen-tab" id="stab-acak" onclick="switchSiswaTab('acak',this)">🎲 ACAK & HASIL</div>
+      <div class="notulen-tab" id="stab-catatan" onclick="switchSiswaTab('catatan',this)">🚨 CATATAN</div>
     </div>
 
     <!-- TAB DATA — Upload & List -->
@@ -2111,7 +2143,7 @@
       <div class="card glow-cyan" style="margin-bottom:12px;">
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">📤 UPLOAD DATA SISWA</div>
         <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-          Format file Excel/CSV — susunan kolom: <b style="color:var(--white);">NISN, NIS, Kelas, Nama Siswa</b> (NIS boleh dikosongkan jika belum ada)
+          Format file Excel/CSV — susunan kolom: <b style="color:var(--white);">Nama Siswa, NISN, NIS, Kelas</b> (NIS boleh dikosongkan jika belum ada)
         </div>
         <label style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,144,199,0.08);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;margin-bottom:8px;">
           📁 PILIH FILE (.xlsx / .csv)
@@ -2169,6 +2201,104 @@
       </button>
 
       <div id="hasil-acak-container"></div>
+    </div>
+
+    <!-- TAB CATATAN SISWA (Keberadaan selama KBM jam 1-9) -->
+    <div id="siswa-tab-catatan" class="jadwal-tab-content">
+      <div class="cs-tabs">
+        <div class="cs-tab active" id="cstab-rekam" onclick="switchCatatanSub('rekam',this)">📝 REKAM</div>
+        <div class="cs-tab" id="cstab-riwayat" onclick="switchCatatanSub('riwayat',this)">📋 RIWAYAT</div>
+        <div class="cs-tab" id="cstab-statistik" onclick="switchCatatanSub('statistik',this)">📊 STATISTIK</div>
+      </div>
+
+      <!-- REKAM -->
+      <div class="cs-content active" id="cs-rekam">
+        <div class="late-form">
+          <div style="font-size:11px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:12px;">🚨 CATAT KEBERADAAN SISWA</div>
+          <div style="font-size:9px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+            Gunakan untuk mencatat kehadiran siswa per jam pelajaran (Jam ke-1 s/d ke-9), termasuk siswa yang kabur/tidak kembali saat KBM berlangsung.
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">KELAS</label>
+            <select class="form-select" id="cs-kelas" onchange="onCatatanKelasChange()">
+              <option value="">— Pilih Kelas —</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">NAMA SISWA</label>
+            <select class="form-select" id="cs-siswa" disabled>
+              <option value="">— Pilih Kelas Dahulu —</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">TERPANTAU / KEJADIAN PADA JAM KE-</label>
+            <select class="form-select" id="cs-jam">
+              <option value="1">Jam ke-1</option>
+              <option value="2">Jam ke-2</option>
+              <option value="3">Jam ke-3</option>
+              <option value="4">Jam ke-4</option>
+              <option value="5">Jam ke-5</option>
+              <option value="6">Jam ke-6</option>
+              <option value="7">Jam ke-7</option>
+              <option value="8">Jam ke-8</option>
+              <option value="9">Jam ke-9</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">STATUS KEHADIRAN</label>
+            <div class="status-pill-row" id="cs-status-row">
+              <div class="status-pill" data-val="hadir" onclick="pilihCsStatus('hadir',this)">✅ Hadir</div>
+              <div class="status-pill" data-val="izin" onclick="pilihCsStatus('izin',this)">📝 Izin</div>
+              <div class="status-pill" data-val="sakit" onclick="pilihCsStatus('sakit',this)">🤒 Sakit</div>
+              <div class="status-pill" data-val="alpa" onclick="pilihCsStatus('alpa',this)">❌ Alpa</div>
+              <div class="status-pill" data-val="kabur" onclick="pilihCsStatus('kabur',this)">🏃 Kabur</div>
+            </div>
+          </div>
+
+          <div class="form-group" id="cs-followup-group" style="display:none;">
+            <label class="form-label">FOLLOW UP</label>
+            <div class="status-pill-row" id="cs-fu-row">
+              <div class="status-pill" data-val="dicari" onclick="pilihCsFollowUp('dicari',this)">🔎 Sedang Dicari</div>
+              <div class="status-pill" data-val="kembali" onclick="pilihCsFollowUp('kembali',this)">✅ Sudah Kembali</div>
+              <div class="status-pill" data-val="tidak_kembali" onclick="pilihCsFollowUp('tidak_kembali',this)">🚫 Tidak Kembali</div>
+              <div class="status-pill" data-val="dijemput" onclick="pilihCsFollowUp('dijemput',this)">👪 Dijemput Ortu</div>
+              <div class="status-pill" data-val="info_ortu" onclick="pilihCsFollowUp('info_ortu',this)">📞 Ortu Diberi Info</div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">KETERANGAN TAMBAHAN (opsional)</label>
+            <input type="text" class="form-input" id="cs-ket" placeholder="Contoh: Terakhir terlihat di kantin...">
+          </div>
+
+          <button class="btn-primary" style="background:linear-gradient(135deg,var(--orange),var(--red));" onclick="simpanCatatanSiswa()">💾 SIMPAN CATATAN</button>
+        </div>
+      </div>
+
+      <!-- RIWAYAT -->
+      <div class="cs-content" id="cs-riwayat">
+        <select class="form-select" id="cs-riwayat-filter" onchange="renderRiwayatCatatan()" style="margin-bottom:10px;">
+          <option value="">Semua Kelas</option>
+        </select>
+        <div id="cs-riwayat-list"></div>
+      </div>
+
+      <!-- STATISTIK -->
+      <div class="cs-content" id="cs-statistik">
+        <div class="card" style="margin-bottom:12px;">
+          <div class="section-title" style="margin-bottom:10px;">🏃 REKAP SISWA KABUR</div>
+          <div id="cs-stat-kabur"></div>
+        </div>
+        <div class="card">
+          <div class="section-title" style="margin-bottom:10px;">📊 REKAP PER KELAS</div>
+          <div id="cs-stat-kelas"></div>
+        </div>
+      </div>
+      <div class="watermark">Developed by D.D Candra © 2026</div>
     </div>
 
     <div class="watermark">Developed by D.D Candra © 2026</div>
@@ -5739,6 +5869,7 @@ function backupData() {
       setting: currentSetting,
       siswa: SISWA_DATA,
       kelasTujuan: KELAS_TUJUAN,
+      catatanSiswa: catatanSiswaData,
     };
 
     const json = JSON.stringify(backup, null, 2);
@@ -5816,6 +5947,7 @@ function restoreData(input) {
       // Restore siswa
       if (data.siswa) SISWA_DATA = data.siswa;
       if (data.kelasTujuan) KELAS_TUJUAN = data.kelasTujuan;
+      if (data.catatanSiswa) catatanSiswaData = data.catatanSiswa;
 
       // Save all to localStorage
       saveAll();
@@ -5837,6 +5969,7 @@ function restoreData(input) {
 
 // ===== DATA SISWA & NAIK KELAS =====
 let SISWA_DATA = [];        // [{id, nama, kelas, nisn, nis, status: 'naik'|'tidak'|null, kelasBaru: null}]
+let catatanSiswaData = [];  // [{id, kelas, siswaId, nama, jam, status, followUp, ket, waktu}]
 
 // ===== RPE (RINCIAN PEKAN EFEKTIF) =====
 // Default sesuai kalender pendidikan contoh (bisa diedit bebas oleh user)
@@ -6260,6 +6393,7 @@ function switchSiswaTab(tab, el) {
   if (tab === 'data') renderSiswaList();
   if (tab === 'naik') { populateNaikKelasFilter(); renderNaikKelasList(); }
   if (tab === 'acak') { renderKelasTujuanList(); renderHasilAcak(); }
+  if (tab === 'catatan') { populateCatatanKelasSel(); switchCatatanSub('rekam', document.getElementById('cstab-rekam')); }
   try { localStorage.setItem('kuriku_siswa_tab', tab); } catch(e) {}
 }
 
@@ -6334,13 +6468,13 @@ function uploadSiswaFile(input) {
 function downloadTemplateSiswa() {
   const wb = XLSX.utils.book_new();
   const wsData = [
-    ['NISN', 'NIS', 'KELAS', 'NAMA SISWA'],
-    ['1234567890', '2024001', '8A', 'Contoh Siswa Satu'],
-    ['1234567891', '2024002', '8A', 'Contoh Siswa Dua'],
-    ['1234567892', '2024003', '8B', 'Contoh Siswa Tiga'],
+    ['NAMA SISWA', 'NISN', 'NIS', 'KELAS'],
+    ['Contoh Siswa Satu', '1234567890', '2024001', '8A'],
+    ['Contoh Siswa Dua', '1234567891', '2024002', '8A'],
+    ['Contoh Siswa Tiga', '1234567892', '2024003', '8B'],
   ];
   const ws = XLSX.utils.aoa_to_sheet(wsData);
-  ws['!cols'] = [{wch:15},{wch:12},{wch:10},{wch:25}];
+  ws['!cols'] = [{wch:25},{wch:15},{wch:12},{wch:10}];
   XLSX.utils.book_append_sheet(wb, ws, 'Data Siswa');
   XLSX.writeFile(wb, 'template-data-siswa.xlsx');
   showToast('📥 Template berhasil diunduh!');
@@ -6398,6 +6532,201 @@ function hapusSemuaSiswa() {
   KELAS_TUJUAN = [];
   renderSiswaList(); saveAll();
   showToast('🗑️ Semua data siswa dihapus');
+}
+
+// ===== CATATAN SISWA (Keberadaan Siswa Selama KBM Jam 1-9) =====
+let csSelectedStatus = null;
+let csSelectedFollowUp = null;
+
+function switchCatatanSub(id, el) {
+  document.querySelectorAll('#siswa-tab-catatan .cs-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#siswa-tab-catatan .cs-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('cs-' + id).classList.add('active');
+  if (id === 'riwayat') { populateCatatanRiwayatFilter(); renderRiwayatCatatan(); }
+  if (id === 'statistik') renderStatistikCatatan();
+}
+
+function populateCatatanKelasSel() {
+  const sel = document.getElementById('cs-kelas');
+  if (!sel) return;
+  const kelasUnik = [...new Set(SISWA_DATA.map(s => s.kelas))].sort();
+  const current = sel.value;
+  sel.innerHTML = '<option value="">— Pilih Kelas —</option>' + kelasUnik.map(k => `<option value="${k}">${k}</option>`).join('');
+  if (current && kelasUnik.includes(current)) sel.value = current;
+}
+
+function onCatatanKelasChange() {
+  const kelas = document.getElementById('cs-kelas').value;
+  const sel = document.getElementById('cs-siswa');
+  if (!kelas) {
+    sel.innerHTML = '<option value="">— Pilih Kelas Dahulu —</option>';
+    sel.disabled = true;
+    return;
+  }
+  const siswaKelas = SISWA_DATA.filter(s => s.kelas === kelas);
+  if (!siswaKelas.length) {
+    sel.innerHTML = '<option value="">Belum ada siswa di kelas ini</option>';
+    sel.disabled = true;
+    return;
+  }
+  sel.disabled = false;
+  sel.innerHTML = '<option value="">— Pilih Siswa —</option>' +
+    siswaKelas.map(s => `<option value="${s.id}">${s.nama}</option>`).join('');
+}
+
+function pilihCsStatus(val, el) {
+  document.querySelectorAll('#cs-status-row .status-pill').forEach(p => p.classList.remove('on-hadir','on-izin','on-sakit','on-alpa','on-kabur'));
+  const isToggleOff = csSelectedStatus === val;
+  csSelectedStatus = isToggleOff ? null : val;
+  if (!isToggleOff) el.classList.add('on-' + val);
+  // Follow up hanya relevan kalau status = kabur
+  const fuGroup = document.getElementById('cs-followup-group');
+  if (csSelectedStatus === 'kabur') {
+    fuGroup.style.display = 'block';
+  } else {
+    fuGroup.style.display = 'none';
+    csSelectedFollowUp = null;
+    document.querySelectorAll('#cs-fu-row .status-pill').forEach(p => p.classList.remove('on-fu'));
+  }
+}
+
+function pilihCsFollowUp(val, el) {
+  document.querySelectorAll('#cs-fu-row .status-pill').forEach(p => p.classList.remove('on-fu'));
+  const isToggleOff = csSelectedFollowUp === val;
+  csSelectedFollowUp = isToggleOff ? null : val;
+  if (!isToggleOff) el.classList.add('on-fu');
+}
+
+const csFollowUpLabel = {
+  dicari: '🔎 Sedang Dicari', kembali: '✅ Sudah Kembali',
+  tidak_kembali: '🚫 Tidak Kembali', dijemput: '👪 Dijemput Ortu', info_ortu: '📞 Ortu Diberi Info'
+};
+const csStatusLabel = { hadir: '✅ Hadir', izin: '📝 Izin', sakit: '🤒 Sakit', alpa: '❌ Alpa', kabur: '🏃 Kabur' };
+
+function simpanCatatanSiswa() {
+  const kelas = document.getElementById('cs-kelas').value;
+  const siswaId = document.getElementById('cs-siswa').value;
+  const jam = document.getElementById('cs-jam').value;
+  const ket = document.getElementById('cs-ket').value.trim();
+  if (!kelas || !siswaId) { showToast('⚠️ Pilih kelas & nama siswa dahulu!', true); return; }
+  if (!csSelectedStatus) { showToast('⚠️ Pilih status kehadiran!', true); return; }
+  const siswa = SISWA_DATA.find(s => s.id === siswaId);
+  if (!siswa) { showToast('⚠️ Data siswa tidak ditemukan!', true); return; }
+  const statusTersimpan = csSelectedStatus;
+
+  catatanSiswaData.unshift({
+    id: 'cs_' + Date.now(),
+    kelas, siswaId, nama: siswa.nama,
+    jam, status: csSelectedStatus, followUp: csSelectedFollowUp,
+    ket, waktu: new Date().toLocaleString('id-ID')
+  });
+
+  // Reset form
+  document.getElementById('cs-siswa').value = '';
+  document.getElementById('cs-ket').value = '';
+  document.querySelectorAll('#cs-status-row .status-pill').forEach(p => p.classList.remove('on-hadir','on-izin','on-sakit','on-alpa','on-kabur'));
+  document.querySelectorAll('#cs-fu-row .status-pill').forEach(p => p.classList.remove('on-fu'));
+  document.getElementById('cs-followup-group').style.display = 'none';
+  csSelectedStatus = null; csSelectedFollowUp = null;
+
+  saveAll();
+  showToast(statusTersimpan === 'kabur' ? '🏃 Catatan siswa kabur tersimpan!' : '✅ Catatan siswa tersimpan!');
+}
+
+function populateCatatanRiwayatFilter() {
+  const sel = document.getElementById('cs-riwayat-filter');
+  if (!sel) return;
+  const kelasUnik = [...new Set(catatanSiswaData.map(r => r.kelas))].sort();
+  const current = sel.value;
+  sel.innerHTML = '<option value="">Semua Kelas</option>' + kelasUnik.map(k => `<option value="${k}">${k}</option>`).join('');
+  if (current) sel.value = current;
+}
+
+function renderRiwayatCatatan() {
+  const list = document.getElementById('cs-riwayat-list');
+  if (!list) return;
+  const filterKelas = document.getElementById('cs-riwayat-filter')?.value || '';
+  const data = filterKelas ? catatanSiswaData.filter(r => r.kelas === filterKelas) : catatanSiswaData;
+  if (!data.length) {
+    list.innerHTML = '<div class="card" style="text-align:center;color:var(--muted);font-size:12px;padding:24px;">📭 Belum ada catatan siswa</div>';
+    return;
+  }
+  list.innerHTML = data.map((r) => {
+    const idx = catatanSiswaData.indexOf(r);
+    return `
+    <div class="cs-list-item ${r.status === 'kabur' ? 'is-kabur' : ''}">
+      <div class="lli-top">
+        <div>
+          <div class="lli-name">🎓 ${r.nama} <span style="color:var(--muted);font-weight:400;">(${r.kelas})</span></div>
+          <div class="lli-date">${r.waktu} · Jam ke-${r.jam}</div>
+        </div>
+        <button class="btn-danger" onclick="hapusCatatanSiswa('${r.id}')">🗑️ Hapus</button>
+      </div>
+      <div class="lli-meta" style="margin-top:6px;">
+        <span class="cs-badge" style="background:rgba(255,255,255,0.06);color:var(--white);">${csStatusLabel[r.status] || r.status}</span>
+        ${r.followUp ? `<span class="cs-badge" style="background:rgba(224,102,10,0.15);color:var(--orange);margin-left:6px;">${csFollowUpLabel[r.followUp] || r.followUp}</span>` : ''}
+      </div>
+      ${r.ket ? `<div class="lli-meta">📌 ${r.ket}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function hapusCatatanSiswa(id) {
+  catatanSiswaData = catatanSiswaData.filter(r => r.id !== id);
+  renderRiwayatCatatan();
+  saveAll();
+  showToast('🗑️ Catatan dihapus');
+}
+
+function renderStatistikCatatan() {
+  const elKabur = document.getElementById('cs-stat-kabur');
+  const elKelas = document.getElementById('cs-stat-kelas');
+  const kaburRecords = catatanSiswaData.filter(r => r.status === 'kabur');
+
+  // Rekap siswa kabur (per siswa, hitung berapa kali & status follow up terakhir)
+  if (!kaburRecords.length) {
+    elKabur.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;">Belum ada siswa yang tercatat kabur 👍</div>';
+  } else {
+    const bySiswa = {};
+    kaburRecords.forEach(r => {
+      if (!bySiswa[r.nama]) bySiswa[r.nama] = { count: 0, kelas: r.kelas, lastFu: null };
+      bySiswa[r.nama].count++;
+      bySiswa[r.nama].lastFu = r.followUp;
+    });
+    const max = Math.max(...Object.values(bySiswa).map(v => v.count));
+    elKabur.innerHTML = Object.entries(bySiswa).sort((a,b) => b[1].count - a[1].count).map(([nama, v]) => {
+      const pct = (v.count / max) * 100;
+      const fuText = v.lastFu ? (csFollowUpLabel[v.lastFu] || v.lastFu) : '— Belum ada follow up';
+      return `<div style="margin-bottom:10px;">
+        <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;">
+          <span style="color:var(--white)">${nama} <span style="color:var(--muted);">(${v.kelas})</span></span>
+          <span style="color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;">${v.count}×</span>
+        </div>
+        <div style="height:6px;background:rgba(255,255,255,0.05);border-radius:4px;overflow:hidden;margin-bottom:3px;">
+          <div style="width:${pct}%;height:100%;background:linear-gradient(90deg,var(--red),var(--orange));border-radius:4px;"></div>
+        </div>
+        <div style="font-size:9px;color:var(--muted);">${fuText}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // Rekap per kelas (total semua status, bukan cuma kabur)
+  if (!catatanSiswaData.length) {
+    elKelas.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:11px;padding:16px;">Belum ada data statistik</div>';
+    return;
+  }
+  const byKelas = {};
+  catatanSiswaData.forEach(r => {
+    if (!byKelas[r.kelas]) byKelas[r.kelas] = { total: 0, kabur: 0 };
+    byKelas[r.kelas].total++;
+    if (r.status === 'kabur') byKelas[r.kelas].kabur++;
+  });
+  elKelas.innerHTML = Object.entries(byKelas).sort().map(([kelas, v]) => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:11px;color:var(--white);font-weight:600;">${kelas}</span>
+      <span style="font-size:10px;color:var(--muted);">${v.total} catatan · <span style="color:var(--red);">${v.kabur} kabur</span></span>
+    </div>`).join('');
 }
 
 // ===== TAB NAIK KELAS =====
@@ -6803,6 +7132,7 @@ const LS_KEYS = {
   planning:  'kuriku_planning',
   siswa:     'kuriku_siswa',
   kelasTujuan: 'kuriku_kelas_tujuan',
+  catatanSiswa: 'kuriku_catatan_siswa',
 };
 
 function saveAll() {
@@ -6822,6 +7152,7 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
     localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
     localStorage.setItem(LS_KEYS.kelasTujuan, JSON.stringify(KELAS_TUJUAN));
+    localStorage.setItem(LS_KEYS.catatanSiswa, JSON.stringify(catatanSiswaData));
     // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
     const planSnap = {};
     ['pendek','menengah','panjang'].forEach(j => {
@@ -6889,6 +7220,8 @@ function loadAll() {
     if (sw) SISWA_DATA = JSON.parse(sw);
     const kt = localStorage.getItem(LS_KEYS.kelasTujuan);
     if (kt) KELAS_TUJUAN = JSON.parse(kt);
+    const cs = localStorage.getItem(LS_KEYS.catatanSiswa);
+    if (cs) catatanSiswaData = JSON.parse(cs);
     // Planning DOM
     const pl = localStorage.getItem(LS_KEYS.planning);
     if (pl) {

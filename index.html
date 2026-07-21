@@ -1068,7 +1068,12 @@
   .rekap-cell-empty {
     cursor: pointer; min-width: 22px; color: transparent;
   }
-  .rekap-cell-empty:active, .rekap-cell-fill:active, .rekap-cell-mgmp:active { opacity: 0.6; }
+  .rekap-cell-bentrok {
+    background: repeating-linear-gradient(45deg, rgba(220,38,64,0.28), rgba(220,38,64,0.28) 3px, rgba(220,38,64,0.45) 3px, rgba(220,38,64,0.45) 6px);
+    color: #fff; font-weight: 800; cursor: pointer; min-width: 22px; font-size: 6.5px;
+    border: 1px solid var(--red) !important; animation: pulseKabur 1.4s infinite;
+  }
+  .rekap-cell-empty:active, .rekap-cell-fill:active, .rekap-cell-mgmp:active, .rekap-cell-bentrok:active { opacity: 0.6; }
   .jadwal-grid th {
     background: var(--slate2); color: var(--cyan);
     font-family: 'Plus Jakarta Sans', sans-serif; font-size: 9px; letter-spacing: 0.5px;
@@ -1782,8 +1787,11 @@
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;">📊 REKAPITULASI SEMUA GURU</div>
         <button class="btn-add" onclick="exportRekapPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
       </div>
+      <button onclick="cekJadwalYatim()" style="width:100%;padding:9px;margin-bottom:10px;border:1px dashed var(--orange);border-radius:10px;background:rgba(224,102,10,0.08);color:var(--orange);font-size:10px;font-weight:700;cursor:pointer;">🔍 Cek Jadwal "Hilang" (Nama Guru Tidak Cocok)</button>
+      <div id="jadwal-yatim-box"></div>
+      <div id="rekap-conflict-alert-box"></div>
       <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-        Tap sel kosong untuk isi jadwal guru. Data otomatis sinkron dengan tab Grid.
+        Tap sel kosong untuk isi jadwal guru. Data otomatis sinkron dengan tab Grid. Sel bergaris merah ⚠️ berarti guru itu bentrok (dijadwalkan di 2 kelas sekaligus pada jam yang sama) — tap untuk melihat & memperbaiki.
       </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
         <div id="rekap-table-container"></div>
@@ -2878,6 +2886,34 @@ let customBlockData = [];
 // ===== BEBAN MENGAJAR (untuk Auto-Generate Jadwal) =====
 // { id, guru, mapel, kelasList:[], jamPerMinggu, ruang }
 let bebanMengajarData = [];
+
+// Nama guru dipakai sebagai "kunci" text di banyak tempat (jadwal, MGMP, blokir, beban mengajar,
+// riwayat keterlambatan) — TIDAK ada ID unik. Kalau nama guru diedit (perbaiki typo, tambah gelar, dst)
+// tanpa fungsi ini, semua data lama yang masih memakai nama LAMA jadi "yatim" — datanya tetap ada di
+// penyimpanan, tapi tidak lagi cocok dicari berdasarkan nama BARU. Di fitur Rekap (yang mencari jadwal
+// per-nama-guru), ini terlihat seperti kelas yang diajar guru itu "hilang", padahal sebenarnya jadwalnya
+// masih utuh, hanya tidak ketemu lagi karena nama pencariannya sudah berubah.
+function cascadeGuruRename(oldName, newName) {
+  if (!oldName || !newName || oldName === newName) return 0;
+  let count = 0;
+  // 1) Jadwal (JADWAL_DATA2)
+  Object.values(JADWAL_DATA2).forEach(hariData => {
+    Object.values(hariData).forEach(kelasData => {
+      Object.values(kelasData).forEach(cell => {
+        if (cell && cell.guru === oldName) { cell.guru = newName; count++; }
+      });
+    });
+  });
+  // 2) MGMP
+  mgmpData.forEach(m => { if (m.guru === oldName) { m.guru = newName; count++; } });
+  // 3) Blokir kustom (target guru)
+  customBlockData.forEach(b => { if (b.guru === oldName) { b.guru = newName; count++; } });
+  // 4) Beban mengajar (dipakai generator jadwal otomatis)
+  bebanMengajarData.forEach(b => { if (b.guru === oldName) { b.guru = newName; count++; } });
+  // 5) Riwayat keterlambatan (supaya laporan & filter tetap konsisten dengan nama terbaru)
+  lateRecords.forEach(r => { if (r.guru === oldName) { r.guru = newName; count++; } });
+  return count;
+}
 // Hari yang dikunci (1-6) — tidak akan pernah disentuh oleh generate manapun sampai dibuka lagi
 let lockedDaysData = [];
 // Hari yang dipilih untuk digenerate pada sesi klik generate berikutnya (default semua)
@@ -2983,8 +3019,8 @@ function detectConflicts() {
   return conflicts;
 }
 
-function renderConflictAlert() {
-  const el = document.getElementById('conflict-alert-box');
+function renderConflictAlert(targetId = 'conflict-alert-box') {
+  const el = document.getElementById(targetId);
   if (!el) return;
   const conflicts = detectConflicts();
   if (!conflicts.length) { el.innerHTML = ''; return; }
@@ -3664,10 +3700,10 @@ function onCellDrop(targetHari, targetKelas, targetJam, ev) {
   }))];
 
   if (!displacedJams.length) {
-    performCellMove(src, srcRange, targetHari, targetKelas, newRange, srcCell);
+    const bentrok = performCellMove(src, srcRange, targetHari, targetKelas, newRange, srcCell);
     renderGrid(); saveAll();
     if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
-    showToast('✅ Jadwal dipindah!');
+    if (!bentrok) showToast('✅ Jadwal dipindah!');
     return;
   }
 
@@ -3689,6 +3725,30 @@ function performCellMove(src, srcRange, targetHari, targetKelas, newRange, cellD
   newRange.forEach(j => {
     JADWAL_DATA2[targetHari][targetKelas][j] = { guru: cellData.guru, mapel: cellData.mapel, ruang: cellData.ruang, jamRange: newRange };
   });
+  return warnIfGuruBentrok(cellData.guru, targetHari, newRange, targetKelas, 'digeser');
+}
+
+// Cek apakah guru ini sekarang bentrok (mengajar kelas lain di jam yang sama) setelah sebuah aksi geser/tukar jadwal.
+// Ini yang tadinya TIDAK PERNAH dicek saat drag & drop — beda dengan form tambah manual yang sudah dicek —
+// sehingga bentrok bisa tercipta diam-diam dan membuat salah satu kelas "hilang" dari tampilan Rekap.
+function warnIfGuruBentrok(guru, hari, jamRange, kelasBaru, aksiLabel) {
+  const hariData = JADWAL_DATA2[hari] || {};
+  const bentrokList = [];
+  jamRange.forEach(j => {
+    Object.entries(hariData).forEach(([k, jamObj]) => {
+      if (k !== kelasBaru && jamObj[j]?.guru === guru) bentrokList.push(`JP${j} (${k})`);
+    });
+  });
+  if (bentrokList.length) {
+    const notifMsg = `⚠️ BENTROK: ${guru} — ${[...new Set(bentrokList)].join(', ')} pada ${HARI[hari]} (akibat jadwal ${aksiLabel})`;
+    if (!window._bentrokNotifs) window._bentrokNotifs = [];
+    window._bentrokNotifs = window._bentrokNotifs.filter(n => n !== notifMsg);
+    window._bentrokNotifs.unshift(notifMsg);
+    updateNotifDot();
+    showToast(`⚠️ Tersimpan, tapi ${guru} jadi bentrok jam dengan kelas lain!`, true);
+    return true;
+  }
+  return false;
 }
 
 function openDragConflictModal() {
@@ -3753,7 +3813,9 @@ function resolveDragSwap() {
   closeDragConflictModal();
   renderGrid(); saveAll();
   if (document.getElementById('jadwal-tab-rekap')?.classList.contains('active')) renderRekapTable();
-  showToast('✅ Posisi ditukar!');
+  const bentrok1 = warnIfGuruBentrok(p.srcCell.guru, p.targetHari, p.newRange, p.targetKelas, 'ditukar');
+  const bentrok2 = warnIfGuruBentrok(p.displacedCell.guru, p.src.hari, p.srcRange, p.src.kelas, 'ditukar');
+  if (!bentrok1 && !bentrok2) showToast('✅ Posisi ditukar!');
 }
 function resolveDragRelocate() {
   const p = _pendingDrag;
@@ -3877,15 +3939,23 @@ function renderRekapTable() {
       for (let jam = 1; jam <= maxJam; jam++) {
         const sepClass = (jam === 1) ? ' rekap-day-sep' : '';
         const isMGMPGuru = getMGMPForSlot(hari, jam).some(m => m.guru === g.nama);
-        // Find if this guru teaches at this hari+jam (search all kelas)
-        let foundKelas = null;
+        // Cari SEMUA kelas yang diajar guru ini di hari+jam ini (bisa lebih dari satu kalau bentrok —
+        // dulu di sini cuma diambil yang TERAKHIR ketemu, jadi kelas lain seperti 7A bisa "hilang" dari
+        // tampilan Rekap padahal datanya masih utuh di JADWAL_DATA2. Sekarang semua ditangkap & ditampilkan.)
+        let foundKelasList = [];
         const hariData = JADWAL_DATA2[hari] || {};
         Object.entries(hariData).forEach(([kelas, jamObj]) => {
-          if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
+          if (jamObj[jam]?.guru === g.nama) foundKelasList.push(kelas);
         });
         const blockHit = getCustomBlockForGuruSlot(g.nama, hari, jam);
-        const fullyBlocked = !foundKelas && !isMGMPGuru && !blockHit.length ? getFullyBlockedInfo(hari, jam) : null;
-        if (foundKelas) {
+        const fullyBlocked = !foundKelasList.length && !isMGMPGuru && !blockHit.length ? getFullyBlockedInfo(hari, jam) : null;
+        if (foundKelasList.length > 1) {
+          // BENTROK: guru ini dijadwalkan di lebih dari 1 kelas pada jam yang sama
+          const label = foundKelasList.join('+');
+          const titleTxt = `⚠️ BENTROK! ${g.nama} dijadwalkan di ${foundKelasList.join(' & ')} sekaligus pada ${HARI[hari]} JP${jam}. Tap untuk perbaiki.`;
+          html += `<td class="rekap-cell-bentrok${sepClass}" onclick="openRekapCell('${g.nama}',${hari},${jam},'${foundKelasList[0]}')" title="${titleTxt}">${label}</td>`;
+        } else if (foundKelasList.length === 1) {
+          const foundKelas = foundKelasList[0];
           const kcCls = kelasClass(foundKelas);
           html += `<td class="rekap-cell-fill ${kcCls}${sepClass}" onclick="openRekapCell('${g.nama}',${hari},${jam},'${foundKelas}')" title="${HARI[hari]} JP${jam} — Kelas ${foundKelas}">${foundKelas}</td>`;
         } else if (isMGMPGuru) {
@@ -3903,6 +3973,67 @@ function renderRekapTable() {
   });
   html += '</tbody></table>';
   container.innerHTML = html;
+  renderConflictAlert('rekap-conflict-alert-box');
+}
+
+// ===== DIAGNOSTIK: JADWAL "YATIM" (nama guru di jadwal tidak cocok dengan GURU_DATA saat ini) =====
+// Terjadi kalau nama guru pernah diedit SEBELUM fungsi cascadeGuruRename() ada — jadwal lama
+// masih menyimpan nama LAMA sehingga tidak lagi ketemu di Rekap (yang mencari berdasar nama guru saat ini).
+function scanJadwalYatim() {
+  const namaValid = new Set(GURU_DATA.map(g => g.nama));
+  const orphanMap = {}; // { namaLama: [{hari, kelas, jam}, ...] }
+  Object.entries(JADWAL_DATA2).forEach(([hari, hariData]) => {
+    Object.entries(hariData).forEach(([kelas, kelasData]) => {
+      Object.entries(kelasData).forEach(([jam, cell]) => {
+        if (cell && cell.guru && !namaValid.has(cell.guru)) {
+          if (!orphanMap[cell.guru]) orphanMap[cell.guru] = [];
+          orphanMap[cell.guru].push({ hari: parseInt(hari), kelas, jam: parseInt(jam) });
+        }
+      });
+    });
+  });
+  return orphanMap;
+}
+
+function cekJadwalYatim() {
+  const box = document.getElementById('jadwal-yatim-box');
+  if (!box) return;
+  const orphanMap = scanJadwalYatim();
+  const namaOrphan = Object.keys(orphanMap);
+  if (!namaOrphan.length) {
+    box.innerHTML = `<div style="background:rgba(0,168,107,0.08);border:1px solid rgba(0,168,107,0.3);border-radius:10px;padding:10px;margin-bottom:10px;font-size:10px;color:var(--green);">✅ Tidak ditemukan jadwal yang "yatim" — semua nama guru di jadwal cocok dengan data guru saat ini.</div>`;
+    return;
+  }
+  box.innerHTML = `<div style="background:rgba(220,38,64,0.08);border:1px solid rgba(220,38,64,0.3);border-radius:10px;padding:10px;margin-bottom:10px;">
+    <div style="font-size:11px;color:var(--red);font-weight:700;margin-bottom:8px;">⚠️ Ditemukan ${namaOrphan.length} nama guru di jadwal yang TIDAK COCOK dengan data guru saat ini — kemungkinan besar ini penyebab kelas "hilang" di Rekap!</div>
+    ${namaOrphan.map((nama, i) => {
+      const cells = orphanMap[nama];
+      const kelasList = [...new Set(cells.map(c => c.kelas))];
+      return `
+      <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:8px;padding:10px;margin-bottom:8px;">
+        <div style="font-size:10px;color:var(--white);margin-bottom:4px;">Nama tersimpan di jadwal: <b style="color:var(--red);">"${nama}"</b></div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">${cells.length} slot jadwal terpengaruh · Kelas: ${kelasList.join(', ')}</div>
+        <div style="display:flex;gap:6px;">
+          <select id="yatim-fix-${i}" class="form-select" style="flex:1;font-size:10px;">
+            <option value="">— Pilih guru yang benar —</option>
+            ${GURU_DATA.map(g => `<option value="${g.nama}">${g.nama} (${g.mapel})</option>`).join('')}
+          </select>
+          <button class="btn-primary" style="width:auto;padding:8px 12px;font-size:10px;" onclick="perbaikiJadwalYatim('${nama.replace(/'/g,"\\'")}', ${i})">✅ Perbaiki</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function perbaikiJadwalYatim(namaLama, i) {
+  const sel = document.getElementById('yatim-fix-' + i);
+  const namaBaru = sel?.value;
+  if (!namaBaru) { showToast('⚠️ Pilih guru yang benar dahulu!', true); return; }
+  const jumlah = cascadeGuruRename(namaLama, namaBaru);
+  renderRekapTable();
+  saveAll();
+  showToast(`✅ ${jumlah} slot jadwal "${namaLama}" berhasil disambungkan kembali ke ${namaBaru}!`);
+  cekJadwalYatim(); // refresh daftar (harusnya nama ini sudah tidak muncul lagi)
 }
 
 // Klik sel di rekap table -> buka form isi jadwal, guru & jam sudah pre-filled
@@ -3936,15 +4067,18 @@ function exportRekapPDF() {
       for (let jam = 1; jam <= maxJam; jam++) {
         const sepStyle = (jam === 1) ? 'border-left:3px solid #003366;' : '';
         const isMGMPGuru = getMGMPForSlot(hari, jam).some(m => m.guru === g.nama);
-        let foundKelas = null;
+        let foundKelasList = [];
         const hariData = JADWAL_DATA2[hari] || {};
         Object.entries(hariData).forEach(([kelas, jamObj]) => {
-          if (jamObj[jam]?.guru === g.nama) foundKelas = kelas;
+          if (jamObj[jam]?.guru === g.nama) foundKelasList.push(kelas);
         });
         const blockHit = getCustomBlockForGuruSlot(g.nama, hari, jam);
-        const fullyBlocked = !foundKelas && !isMGMPGuru && !blockHit.length ? getFullyBlockedInfo(hari, jam) : null;
-        if (foundKelas) rows += `<td style="background:#eef;font-weight:bold;${sepStyle}">${foundKelas}</td>`;
-        else if (isMGMPGuru) rows += `<td style="background:#f0e0d0;color:#78350F;font-weight:bold;${sepStyle}">M</td>`;
+        const fullyBlocked = !foundKelasList.length && !isMGMPGuru && !blockHit.length ? getFullyBlockedInfo(hari, jam) : null;
+        if (foundKelasList.length > 1) {
+          rows += `<td style="background:#fde2e2;color:#b91c1c;font-weight:bold;${sepStyle}" title="⚠️ BENTROK: ${g.nama} dijadwalkan di ${foundKelasList.join(' & ')} sekaligus">${foundKelasList.join('+')}</td>`;
+        } else if (foundKelasList.length === 1) {
+          rows += `<td style="background:#eef;font-weight:bold;${sepStyle}">${foundKelasList[0]}</td>`;
+        } else if (isMGMPGuru) rows += `<td style="background:#f0e0d0;color:#78350F;font-weight:bold;${sepStyle}">M</td>`;
         else if (blockHit.length) rows += `<td style="background:#f3e8ff;color:#7c3aed;${sepStyle}font-size:6px;" title="${blockHit[0].label}">${blockHit[0].label.slice(0,4)}</td>`;
         else if (fullyBlocked) rows += `<td style="background:#f3e8ff;color:#7c3aed;${sepStyle}font-size:6px;" title="${fullyBlocked.label}">${fullyBlocked.label.slice(0,4)}</td>`;
         else rows += `<td style="${sepStyle}"></td>`;
@@ -5631,6 +5765,7 @@ function saveModalForm() {
     const kepala = document.getElementById('mf-kepala')?.checked || false;
     const wakasek = document.getElementById('mf-wakasek')?.checked || false;
     if (!nama || !mapel) { showToast('⚠️ Nama & mapel harus diisi!', true); return; }
+    const oldNama = GURU_DATA[idx].nama;
     const prevTugas = GURU_DATA[idx].tugas || [];
     const coreTugas = prevTugas.filter(t => !['Guru Wali','Ka. Lab IPA','Waka Kur'].includes(t));
     const newTugas = [...coreTugas];
@@ -5638,8 +5773,12 @@ function saveModalForm() {
     if (kepala) newTugas.push('Ka. Lab IPA');
     if (wakasek) newTugas.push('Waka Kur');
     GURU_DATA[idx] = { ...GURU_DATA[idx], nama, mapel, jp, wali, kepala, wakasek, max: 40, tugas: newTugas };
+    const jumlahDiperbarui = cascadeGuruRename(oldNama, nama);
     renderGuruList();
-    showToast('✅ Data guru diperbarui!');
+    saveAll();
+    showToast(jumlahDiperbarui > 0
+      ? `✅ Data guru diperbarui! ${jumlahDiperbarui} data jadwal/terkait ikut disesuaikan ke nama baru.`
+      : '✅ Data guru diperbarui!');
   } else if (type === 'jadwal-cell') {
     const ctx = _jadwalFormCtx;
     if (!ctx) return;

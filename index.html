@@ -6702,13 +6702,15 @@ function renderProtaPromesDetail() {
   ensureCokuRow(m, 'sem1');
   ensureCokuRow(m, 'sem2');
   const bulanList = RPE_DATA[sem].map(r => r.bulan);
-  const pekanEfektifTotal = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+  const pekanKotor = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+  const pekanCoku = COKURIKULER_DATA[sem].minggu || 0;
+  const pekanEfektifTotal = Math.max(0, pekanKotor - pekanCoku);
   const jpTersedia = pekanEfektifTotal * m.jpPerMinggu;
 
   const rows = m[sem];
   const rowTotal = (row) => bulanList.reduce((s, b) => s + (row.promes[b] || 0), 0);
   const grandTotal = rows.reduce((s, r) => s + rowTotal(r), 0);
-  const cokuTarget = COKURIKULER_DATA[sem].minggu * m.jpPerMinggu;
+  const cokuTarget = pekanCoku * m.jpPerMinggu;
   const selisih = jpTersedia - grandTotal;
   let statusColor = '#2ecc71', statusText = `✅ PAS (${grandTotal}/${jpTersedia} JP)`;
   if (selisih > 0) { statusColor = '#e67e22'; statusText = `⚠️ KURANG ${selisih} JP (${grandTotal}/${jpTersedia})`; }
@@ -6729,9 +6731,9 @@ function renderProtaPromesDetail() {
       </div>
 
       <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">
-        Pekan efektif semester ini: <b style="color:var(--cyan);">${pekanEfektifTotal} pekan</b> ×
+        Pekan efektif semester ini: <b style="color:var(--cyan);">${pekanKotor} pekan</b>${pekanCoku ? ` − ${pekanCoku} pekan Co-Kurikuler` : ''} = <b style="color:var(--cyan);">${pekanEfektifTotal} pekan</b> ×
         ${m.jpPerMinggu} JP/minggu = <b style="color:var(--cyan);">${jpTersedia} JP tersedia</b>
-        ${cokuTarget ? ` · Target Co-Kurikuler: <b style="color:#a855f7;">${cokuTarget} JP</b> (${COKURIKULER_DATA[sem].minggu} minggu)` : ''}
+        ${cokuTarget ? ` · Alokasi Co-Kurikuler: <b style="color:#a855f7;">${cokuTarget} JP</b> (${pekanCoku} minggu, di luar JP tersedia di atas)` : ''}
       </div>
 
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
@@ -6741,6 +6743,7 @@ function renderProtaPromesDetail() {
         <button class="btn-add" onclick="tambahBarisProta('sas')" style="font-size:9px;padding:5px 9px;">➕ SAS/SAT</button>
         <button class="btn-add" onclick="tambahBarisProta('cadangan')" style="font-size:9px;padding:5px 9px;">➕ Cadangan</button>
       </div>
+      ${rows.length <= 1 ? `<div style="font-size:9px;color:var(--orange);background:rgba(224,102,10,0.08);border:1px solid rgba(224,102,10,0.25);border-radius:8px;padding:8px 10px;margin-bottom:10px;">👆 Tabel masih kosong. Klik salah satu tombol ➕ di atas untuk mulai menambah baris materi/kegiatan ke Promes.</div>` : ''}
 
       <div class="promes-scroll">
         <table class="promes-table">
@@ -6788,7 +6791,9 @@ function exportProtaExcel() {
     const bulanList = RPE_DATA[sem].map(r => r.bulan);
     const rows = m[sem];
     const rowTotal = (row) => bulanList.reduce((s, b) => s + (row.promes[b] || 0), 0);
-    const pekanEfektifTotal = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+    const pekanKotor = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+    const pekanCoku = COKURIKULER_DATA[sem].minggu || 0;
+    const pekanEfektifTotal = Math.max(0, pekanKotor - pekanCoku);
     const jpTersedia = pekanEfektifTotal * m.jpPerMinggu;
     const aoa = [
       [`PROMES — ${m.nama} — SEMESTER ${si + 1} — TAHUN AJARAN ${RPE_DATA.tahunAjaran}`],
@@ -6796,7 +6801,8 @@ function exportProtaExcel() {
       ...rows.map(r => [JENIS_LABEL[r.jenis].replace(/^\S+\s/, ''), r.nama, ...bulanList.map(b => r.promes[b] || 0), rowTotal(r)]),
       ['JUMLAH', '', ...bulanList.map(b => rows.reduce((s,r)=>s+(r.promes[b]||0),0)), rows.reduce((s,r)=>s+rowTotal(r),0)],
       [],
-      ['Pekan Efektif', pekanEfektifTotal, 'JP/Minggu', m.jpPerMinggu, 'JP Tersedia', jpTersedia],
+      ['Pekan Efektif (kotor)', pekanKotor, 'Pekan Co-Kurikuler', pekanCoku, 'Pekan Efektif Bersih', pekanEfektifTotal],
+      ['JP/Minggu', m.jpPerMinggu, 'JP Tersedia', jpTersedia],
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
     ws['!cols'] = [{wch:14},{wch:24},...bulanList.map(()=>({wch:8})),{wch:10}];
@@ -6814,12 +6820,14 @@ function exportProtaPDF() {
     const bulanList = RPE_DATA[sem].map(r => r.bulan);
     const rows = m[sem];
     const rowTotal = (row) => bulanList.reduce((s, b) => s + (row.promes[b] || 0), 0);
-    const pekanEfektifTotal = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+    const pekanKotor = RPE_DATA[sem].reduce((s, r) => s + (r.pekan - r.tidakEfektif), 0);
+    const pekanCoku = COKURIKULER_DATA[sem].minggu || 0;
+    const pekanEfektifTotal = Math.max(0, pekanKotor - pekanCoku);
     const jpTersedia = pekanEfektifTotal * m.jpPerMinggu;
     const grandTotal = rows.reduce((s,r)=>s+rowTotal(r),0);
     return `
       <h3 style="margin-top:24px;">${label}</h3>
-      <p style="font-size:12px;">Pekan Efektif: ${pekanEfektifTotal} × ${m.jpPerMinggu} JP/minggu = <b>${jpTersedia} JP tersedia</b> — Terisi: <b>${grandTotal} JP</b></p>
+      <p style="font-size:12px;">Pekan Efektif: ${pekanKotor}${pekanCoku ? ` − ${pekanCoku} (Co-Kurikuler)` : ''} = ${pekanEfektifTotal} × ${m.jpPerMinggu} JP/minggu = <b>${jpTersedia} JP tersedia</b> — Terisi: <b>${grandTotal} JP</b></p>
       <table style="width:100%;border-collapse:collapse;font-size:10px;">
         <thead><tr style="background:#003366;color:#fff;">
           <th style="padding:4px;border:1px solid #ccc;">Jenis</th>

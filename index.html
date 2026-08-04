@@ -2346,41 +2346,146 @@
   <!-- SCREEN: RPE -->
   <div class="screen" id="screen-rpe">
     <div class="section-header">
-      <p class="section-title">📊 RPE (RINCIAN PEKAN EFEKTIF)</p>
+      <p class="section-title">📊 RPE & ATP</p>
     </div>
 
-    <div class="card" style="margin-bottom:12px;">
-      <div class="form-group" style="margin-bottom:0;">
-        <label class="form-label">TAHUN AJARAN</label>
-        <input type="text" class="form-input" id="rpe-tahun-ajaran" value="2026/2027" oninput="onRpeTahunAjaranChange()" placeholder="Contoh: 2026/2027">
+    <div class="notulen-tabs">
+      <div class="notulen-tab active" id="rtab-rpe" onclick="switchRpeAtpTab('rpe',this)">📊 RPE</div>
+      <div class="notulen-tab" id="rtab-atp" onclick="switchRpeAtpTab('atp',this)">🎯 ATP & TP</div>
+    </div>
+
+    <!-- ===== TAB RPE ===== -->
+    <div id="rpe-tab-rpe" class="jadwal-tab-content active">
+      <div class="card" style="margin-bottom:12px;">
+        <div class="form-group">
+          <label class="form-label">TAHUN AJARAN</label>
+          <input type="text" class="form-input" id="rpe-tahun-ajaran" value="2026/2027" oninput="onRpeMetaChange('tahunAjaran',this.value)" placeholder="Contoh: 2026/2027">
+        </div>
+        <div class="form-group">
+          <label class="form-label">KELAS / MATA PELAJARAN</label>
+          <input type="text" class="form-input" id="rpe-kelas" oninput="onRpeMetaChange('kelasMapel',this.value)" placeholder="Contoh: VII / Matematika Kelas 7">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">KEPALA SEKOLAH</label>
+            <input type="text" class="form-input" id="rpe-kepsek" oninput="onRpeMetaChange('kepalaSekolah',this.value)" placeholder="Nama Kepala Sekolah">
+          </div>
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">GURU PENYUSUN</label>
+            <input type="text" class="form-input" id="rpe-guru" oninput="onRpeMetaChange('guru',this.value)" placeholder="Nama Guru">
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0;margin-top:8px;">
+          <label class="form-label">KOTA (untuk tanda tangan)</label>
+          <input type="text" class="form-input" id="rpe-kota" oninput="onRpeMetaChange('kota',this.value)" placeholder="Contoh: Sampang">
+        </div>
+      </div>
+
+      <button onclick="toggleKaldikPanel()" style="width:100%;padding:10px;margin-bottom:10px;border:1px dashed var(--cyan);border-radius:10px;background:rgba(0,144,199,0.08);color:var(--cyan);font-size:10px;font-weight:700;cursor:pointer;">📅 Buka Kalender Pendidikan Acuan (MKKS Sampang 2026/2027)</button>
+      <div id="kaldik-panel" style="display:none;"></div>
+
+      <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:12px;flex-wrap:wrap;">
+        <button class="btn-add" onclick="exportRPEExcel()" style="font-size:10px;padding:6px 10px;">📊 Export Excel</button>
+        <button class="btn-add" onclick="exportRPEPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
+      </div>
+
+      <p class="section-title" style="font-size:12px;">SEMESTER 1 (GANJIL)</p>
+      <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden;">
+        <table class="rpe-table" id="rpe-table-sem1"></table>
+      </div>
+      <div id="rpe-uraian-sem1" style="margin-bottom:16px;"></div>
+
+      <p class="section-title" style="font-size:12px;">SEMESTER 2 (GENAP)</p>
+      <div class="card" style="margin-bottom:10px;padding:0;overflow:hidden;">
+        <table class="rpe-table" id="rpe-table-sem2"></table>
+      </div>
+      <div id="rpe-uraian-sem2" style="margin-bottom:16px;"></div>
+
+      <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.3);">
+        <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">ℹ️ CARA HITUNG</div>
+        <div style="font-size:10px;color:var(--muted);line-height:1.7;">
+          <b>Pekan Efektif = Pekan − Pekan Tidak Efektif</b><br>
+          Isi kolom "Pekan" (total minggu kalender bulan itu) dan "Pekan Tidak Efektif" (minggu libur/tidak belajar) sesuai kalender pendidikan sekolah Anda — kolom Efektif & Jumlah dihitung otomatis. Tabel "Pekan Tidak Efektif" di bawah tiap semester untuk merinci alasannya (dipakai di dokumen cetak resmi).
+        </div>
       </div>
     </div>
 
-    <div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:12px;">
-      <button class="btn-add" onclick="exportRPEExcel()" style="font-size:10px;padding:6px 10px;">📊 Export Excel</button>
-      <button class="btn-add" onclick="exportRPEPDF()" style="font-size:10px;padding:6px 10px;">📄 Export PDF</button>
-    </div>
-
-    <p class="section-title" style="font-size:12px;">SEMESTER 1 (GANJIL)</p>
-    <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">
-      <table class="rpe-table" id="rpe-table-sem1"></table>
-    </div>
-
-    <p class="section-title" style="font-size:12px;">SEMESTER 2 (GENAP)</p>
-    <div class="card" style="margin-bottom:16px;padding:0;overflow:hidden;">
-      <table class="rpe-table" id="rpe-table-sem2"></table>
-    </div>
-
-    <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.3);">
-      <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">ℹ️ CARA HITUNG</div>
-      <div style="font-size:10px;color:var(--muted);line-height:1.7;">
-        <b>Pekan Efektif = Pekan − Pekan Tidak Efektif</b><br>
-        Isi kolom "Pekan" (total minggu kalender bulan itu) dan "Pekan Tidak Efektif" (minggu libur/tidak belajar) sesuai kalender pendidikan sekolah Anda — kolom Efektif & Jumlah dihitung otomatis.
+    <!-- ===== TAB ATP ===== -->
+    <div id="rpe-tab-atp" class="jadwal-tab-content">
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🎯 SUSUN TP & ATP DARI CP (BERBANTUAN AI)</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:12px;line-height:1.6;">
+          Isi data di bawah → aplikasi menyusun prompt siap pakai → salin ke Claude/ChatGPT/Gemini → tempel jawabannya kembali di sini → otomatis jadi tabel ATP rapi.
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div class="form-group" style="margin-bottom:8px;">
+            <label class="form-label">NAMA MAPEL</label>
+            <input type="text" class="form-input" id="atp-mapel" placeholder="Contoh: Matematika">
+          </div>
+          <div class="form-group" style="margin-bottom:8px;">
+            <label class="form-label">KELAS</label>
+            <input type="text" class="form-input" id="atp-kelas" placeholder="Contoh: 7">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">FASE</label>
+          <select class="form-select" id="atp-fase">
+            <option value="A">Fase A (Kelas 1-2)</option>
+            <option value="B">Fase B (Kelas 3-4)</option>
+            <option value="C">Fase C (Kelas 5-6)</option>
+            <option value="D" selected>Fase D (Kelas 7-9)</option>
+            <option value="E">Fase E (Kelas 10)</option>
+            <option value="F">Fase F (Kelas 11-12)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">JENIS PROMPT</label>
+          <select class="form-select" id="atp-jenis" onchange="onAtpJenisChange()">
+            <option value="standar">Standar (CP → TP → ATP, 3 kolom)</option>
+            <option value="bukupaket">Sesuai Buku Paket (+ Taksonomi Solo, Materi Pokok, DPL)</option>
+            <option value="kbc">Sesuai Buku Paket + KBC (Panca Cinta)</option>
+            <option value="slb">SLB (kebutuhan khusus)</option>
+          </select>
+        </div>
+        <div class="form-group" id="atp-materi-group" style="display:none;">
+          <label class="form-label">MATERI BUKU PAKET (BAB & SUBBAB)</label>
+          <input type="text" class="form-input" id="atp-materi" placeholder="Contoh: Bab 1 Bilangan Bulat, Bab 2 ...">
+        </div>
+        <div class="form-group" id="atp-kebutuhan-group" style="display:none;">
+          <label class="form-label">KEBUTUHAN KHUSUS MURID</label>
+          <input type="text" class="form-input" id="atp-kebutuhan" placeholder="Contoh: Tunagrahita">
+        </div>
+        <div class="form-group">
+          <label class="form-label">CAPAIAN PEMBELAJARAN (CP)</label>
+          <textarea class="form-input" id="atp-cp" rows="4" placeholder="Tempel/tulis Capaian Pembelajaran mapel ini di sini..."></textarea>
+        </div>
+        <button class="btn-primary" onclick="buatPromptATP()">📋 Buat & Salin Prompt</button>
+        <div id="atp-prompt-preview" style="display:none;margin-top:10px;background:var(--slate2);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:9px;color:var(--muted);max-height:160px;overflow-y:auto;white-space:pre-wrap;"></div>
       </div>
+
+      <div class="card" style="margin-bottom:12px;">
+        <div style="font-size:11px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;">📥 TEMPEL HASIL DARI AI</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">Tempel jawaban tabel dari AI (format Markdown, hasil salin-tempel langsung dari chat AI) di kotak bawah ini.</div>
+        <textarea class="form-input" id="atp-paste" rows="6" placeholder="| CP | TP | ATP |&#10;| --- | --- | --- |&#10;| ... | ... | ... |"></textarea>
+        <button class="btn-primary" style="background:linear-gradient(135deg,var(--green),var(--cyan));margin-top:8px;" onclick="prosesTabelATP()">⚙️ Proses Jadi Tabel ATP</button>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:6px;">
+        <select class="form-select" id="atp-list-filter" onchange="renderAtpList()" style="flex:1;min-width:140px;">
+          <option value="">Semua ATP Tersimpan</option>
+        </select>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-add" onclick="exportAtpPDF()" style="font-size:10px;padding:6px 10px;">📄 PDF</button>
+          <button class="btn-add" onclick="exportAtpWord()" style="font-size:10px;padding:6px 10px;">📝 Word</button>
+        </div>
+      </div>
+      <div id="atp-list-container"></div>
+      <div class="watermark">Developed by D.D Candra © 2026</div>
     </div>
 
     <div class="watermark">Developed by D.D Candra © 2026</div>
   </div>
+
 
   <!-- SCREEN: PROTA & PROMES -->
   <div class="screen" id="screen-protapromes">
@@ -2786,7 +2891,7 @@ function switchScreen(name) {
   if (name === 'home') renderMiniSchedule();
   if (name === 'notulen') renderNotulenList();
   if (name === 'siswa') renderSiswaList();
-  if (name === 'rpe') renderRPE();
+  if (name === 'rpe') { renderRPE(); renderAtpList(); }
   if (name === 'protapromes') { renderCokuInputs(); renderMapelListProta(); renderProtaPromesDetail(); }
 }
 
@@ -6334,6 +6439,7 @@ function backupData() {
       rpe: RPE_DATA,
       cokurikuler: COKURIKULER_DATA,
       prota: PROTA_DATA,
+      atp: ATP_DATA,
       late: lateRecords,
       notulen: notulenRecords.map(n => ({ ...n, teks: n.teks?.substring(0, 2000) })), // trim large teks
       planning: planSnap,
@@ -6398,6 +6504,7 @@ function restoreData(input) {
       if (data.rpe) RPE_DATA = data.rpe;
       if (data.cokurikuler) COKURIKULER_DATA = data.cokurikuler;
       if (data.prota) PROTA_DATA = data.prota;
+      if (data.atp) ATP_DATA = data.atp;
       // Restore keterlambatan
       if (data.late) lateRecords = data.late;
       // Restore notulen
@@ -6446,6 +6553,18 @@ let catatanSiswaData = [];  // [{id, kelas, siswaId, nama, jam, status, followUp
 // Default sesuai kalender pendidikan contoh (bisa diedit bebas oleh user)
 let RPE_DATA = {
   tahunAjaran: '2026/2027',
+  kelasMapel: '',
+  kepalaSekolah: '',
+  guru: '',
+  kota: '',
+  uraianSem1: [
+    { kegiatan: 'Libur Akhir Tahun Ajaran / Awal Masuk Sekolah', jumlah: 1, keterangan: 'Juli' },
+    { kegiatan: 'Libur Semester Ganjil', jumlah: 1, keterangan: 'Desember' },
+  ],
+  uraianSem2: [
+    { kegiatan: 'Libur Sekitar Hari Raya', jumlah: 1, keterangan: 'Maret' },
+    { kegiatan: 'Libur Semester Genap', jumlah: 2, keterangan: 'Juni' },
+  ],
   sem1: [
     { bulan: 'Juli',      pekan: 4, tidakEfektif: 2 },
     { bulan: 'Agustus',   pekan: 4, tidakEfektif: 0 },
@@ -6464,8 +6583,16 @@ let RPE_DATA = {
   ],
 };
 
-function onRpeTahunAjaranChange() {
-  RPE_DATA.tahunAjaran = document.getElementById('rpe-tahun-ajaran')?.value || '';
+function switchRpeAtpTab(tab, el) {
+  document.querySelectorAll('#screen-rpe .notulen-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#screen-rpe .jadwal-tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('rpe-tab-' + tab).classList.add('active');
+  if (tab === 'atp') renderAtpList();
+}
+
+function onRpeMetaChange(field, value) {
+  RPE_DATA[field] = value;
   saveAll();
 }
 function onRpeInputChange(sem, idx, field, value) {
@@ -6496,28 +6623,177 @@ function buildRpeTableHtml(sem) {
   </tr></tfoot>`;
   return html;
 }
+// ===== KALENDER PENDIDIKAN ACUAN (dari file KALDIK_MKKS_26-27.xlsx yang diunggah) =====
+// Sumber: Kalender Pendidikan MKKS SMP Negeri Kab. Sampang, Tahun Ajaran 2026/2027
+// Perkiraan pekan efektif dihitung otomatis dari grid tanggal (Minggu = libur, kode LU/LHB/LS1/LS2/CB/KTS/KPP/LHR = tidak efektif).
+// Semester Ganjil hasil hitung = 24 pekan efektif — PERSIS cocok dengan angka resmi di kalender (139 hari/24 pekan). Semester Genap: 23 pekan (resmi: 24 pekan/123 hari) — beda tipis karena minggu di batas bulan, silakan cek & sesuaikan.
+const KALDIK_SAMPANG_2627 = {
+  sumber: 'Kalender Pendidikan MKKS SMP Negeri Kab. Sampang — Tahun Ajaran 2026/2027',
+  sem1: [
+    { bulan: 'Juli',      pekan: 4, tidakEfektif: 1, ket: 'MPLS awal bulan + libur akhir tahun ajaran sebelumnya' },
+    { bulan: 'Agustus',   pekan: 4, tidakEfektif: 0, ket: 'Libur HUT RI (17 Agu) & Maulid Nabi (25 Agu) — hari tunggal, tidak mengurangi pekan' },
+    { bulan: 'September', pekan: 5, tidakEfektif: 0, ket: '' },
+    { bulan: 'Oktober',   pekan: 4, tidakEfektif: 0, ket: 'KTS (Kegiatan Tengah Semester) 1-3 Okt — dalam pekan yang sama masih ada hari efektif' },
+    { bulan: 'November',  pekan: 4, tidakEfektif: 0, ket: '' },
+    { bulan: 'Desember',  pekan: 5, tidakEfektif: 1, ket: 'Cuti Bersama & Libur Semester Ganjil (LS1) akhir bulan' },
+  ],
+  sem2: [
+    { bulan: 'Januari',  pekan: 4, tidakEfektif: 0, ket: 'Sisa Libur Semester Ganjil awal bulan, tapi masih ada hari efektif dalam pekan yang sama' },
+    { bulan: 'Februari', pekan: 4, tidakEfektif: 0, ket: 'KPP (Kegiatan Permulaan Puasa) pertengahan bulan' },
+    { bulan: 'Maret',    pekan: 5, tidakEfektif: 1, ket: 'Libur Sekitar Hari Raya (LHR) & Hari Raya Nyepi/Idul Fitri' },
+    { bulan: 'April',    pekan: 4, tidakEfektif: 0, ket: '' },
+    { bulan: 'Mei',      pekan: 4, tidakEfektif: 0, ket: '' },
+    { bulan: 'Juni',     pekan: 5, tidakEfektif: 2, ket: 'Libur Semester Genap (LS2) & Hari Raya Idul Adha' },
+  ],
+};
+
+function toggleKaldikPanel() {
+  const panel = document.getElementById('kaldik-panel');
+  if (!panel) return;
+  if (panel.style.display === 'none' || !panel.innerHTML) {
+    panel.innerHTML = buildKaldikPanelHtml();
+    panel.style.display = 'block';
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function buildKaldikPanelHtml() {
+  const buildTable = (sem, label) => `
+    <div style="font-size:9px;color:var(--cyan);font-weight:700;margin:8px 0 4px;">${label}</div>
+    <table class="rpe-table" style="font-size:9px;">
+      <thead><tr><th>Bulan</th><th style="width:36px;">Pekan</th><th style="width:36px;">Tdk Efektif</th><th>Keterangan</th></tr></thead>
+      <tbody>
+        ${KALDIK_SAMPANG_2627[sem].map(r => `<tr>
+          <td>${r.bulan}</td>
+          <td style="text-align:center;">${r.pekan}</td>
+          <td style="text-align:center;${r.tidakEfektif ? 'color:var(--red);font-weight:bold;' : ''}">${r.tidakEfektif}</td>
+          <td style="font-size:8px;color:var(--muted);">${r.ket || '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  return `
+    <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.3);">
+      <div style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5;">
+        📌 Sumber: <b style="color:var(--white);">${KALDIK_SAMPANG_2627.sumber}</b><br>
+        Angka di bawah ini adalah <b style="color:var(--orange);">perkiraan otomatis</b> hasil olah kalender yang Anda unggah — cocok persis dengan total resmi semester ganjil (24 pekan). Silakan cek kembali sebelum dipakai di dokumen resmi.
+      </div>
+      ${buildTable('sem1', 'SEMESTER 1 (GANJIL)')}
+      ${buildTable('sem2', 'SEMESTER 2 (GENAP)')}
+      <button class="btn-primary" style="margin-top:10px;" onclick="isiOtomatisKaldik()">🪄 Isi Otomatis ke Tabel RPE di Atas</button>
+    </div>`;
+}
+
+function isiOtomatisKaldik() {
+  if (!confirm('Ini akan MENIMPA angka Pekan & Pekan Tidak Efektif yang sudah Anda isi di tabel RPE dengan perkiraan dari kalender acuan. Lanjutkan?')) return;
+  ['sem1', 'sem2'].forEach(sem => {
+    RPE_DATA[sem].forEach((row, i) => {
+      const ref = KALDIK_SAMPANG_2627[sem][i];
+      if (ref) { row.pekan = ref.pekan; row.tidakEfektif = ref.tidakEfektif; }
+    });
+  });
+  renderRPE();
+  saveAll();
+  showToast('🪄 RPE terisi otomatis dari kalender acuan — silakan periksa & sesuaikan!');
+}
+
 function renderRPE() {
   const tahunEl = document.getElementById('rpe-tahun-ajaran');
   if (tahunEl && tahunEl.value !== RPE_DATA.tahunAjaran) tahunEl.value = RPE_DATA.tahunAjaran;
+  const setIf = (id, val) => { const el = document.getElementById(id); if (el && el.value !== (val || '')) el.value = val || ''; };
+  setIf('rpe-kelas', RPE_DATA.kelasMapel);
+  setIf('rpe-kepsek', RPE_DATA.kepalaSekolah);
+  setIf('rpe-guru', RPE_DATA.guru);
+  setIf('rpe-kota', RPE_DATA.kota);
   const t1 = document.getElementById('rpe-table-sem1');
   const t2 = document.getElementById('rpe-table-sem2');
   if (t1) t1.innerHTML = buildRpeTableHtml('sem1');
   if (t2) t2.innerHTML = buildRpeTableHtml('sem2');
+  renderRpeUraian('sem1');
+  renderRpeUraian('sem2');
+}
+
+// ===== TABEL RINCIAN "PEKAN TIDAK EFEKTIF" (sesuai format resmi sekolah) =====
+function renderRpeUraian(sem) {
+  const el = document.getElementById('rpe-uraian-' + sem);
+  if (!el) return;
+  const rows = RPE_DATA['uraian' + (sem === 'sem1' ? 'Sem1' : 'Sem2')];
+  const total = rows.reduce((s, r) => s + (r.jumlah || 0), 0);
+  el.innerHTML = `
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:10px 10px 0;font-size:10px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;">RINCIAN PEKAN TIDAK EFEKTIF</div>
+      <table class="rpe-table">
+        <thead><tr><th style="width:24px;">No</th><th>Uraian Kegiatan</th><th style="width:70px;">Jumlah<br>(Pekan)</th><th>Keterangan</th><th style="width:30px;"></th></tr></thead>
+        <tbody>
+          ${rows.map((r, i) => `<tr>
+            <td style="text-align:center;">${i + 1}</td>
+            <td><input type="text" value="${r.kegiatan || ''}" onchange="onRpeUraianChange('${sem}',${i},'kegiatan',this.value)" style="width:100%;"></td>
+            <td><input type="number" min="0" value="${r.jumlah || 0}" onchange="onRpeUraianChange('${sem}',${i},'jumlah',this.value)" style="width:100%;"></td>
+            <td><input type="text" value="${r.keterangan || ''}" onchange="onRpeUraianChange('${sem}',${i},'keterangan',this.value)" style="width:100%;"></td>
+            <td style="text-align:center;"><span style="color:var(--red);cursor:pointer;font-size:14px;" onclick="hapusRpeUraian('${sem}',${i})">✕</span></td>
+          </tr>`).join('')}
+          <tr><td colspan="2" style="text-align:right;font-weight:bold;">JUMLAH</td><td style="text-align:center;font-weight:bold;">${total}</td><td colspan="2"></td></tr>
+        </tbody>
+      </table>
+      <div style="padding:8px 10px;">
+        <button style="width:100%;padding:7px;border:1px dashed var(--border);border-radius:8px;background:transparent;color:var(--muted);font-size:9px;cursor:pointer;" onclick="tambahRpeUraian('${sem}')">➕ Tambah Baris</button>
+      </div>
+    </div>`;
+}
+function onRpeUraianChange(sem, idx, field, value) {
+  const key = 'uraian' + (sem === 'sem1' ? 'Sem1' : 'Sem2');
+  RPE_DATA[key][idx][field] = field === 'jumlah' ? Math.max(0, parseInt(value) || 0) : value;
+  renderRpeUraian(sem);
+  saveAll();
+}
+function tambahRpeUraian(sem) {
+  const key = 'uraian' + (sem === 'sem1' ? 'Sem1' : 'Sem2');
+  RPE_DATA[key].push({ kegiatan: '', jumlah: 0, keterangan: '' });
+  renderRpeUraian(sem);
+  saveAll();
+}
+function hapusRpeUraian(sem, idx) {
+  const key = 'uraian' + (sem === 'sem1' ? 'Sem1' : 'Sem2');
+  RPE_DATA[key].splice(idx, 1);
+  renderRpeUraian(sem);
+  saveAll();
 }
 function exportRPEExcel() {
   const wb = XLSX.utils.book_new();
+  const schoolName = (typeof currentSetting !== 'undefined' && currentSetting.schoolName) || '';
   ['sem1', 'sem2'].forEach((sem, si) => {
     const rows = RPE_DATA[sem];
+    const uraian = RPE_DATA['uraian' + (sem === 'sem1' ? 'Sem1' : 'Sem2')];
     const totalPekan = rows.reduce((s, r) => s + r.pekan, 0);
     const totalTdk = rows.reduce((s, r) => s + r.tidakEfektif, 0);
+    const totalEfektif = totalPekan - totalTdk;
+    const totalUraian = uraian.reduce((s, r) => s + (r.jumlah || 0), 0);
     const aoa = [
-      [`RINCIAN PEKAN EFEKTIF — SEMESTER ${si + 1} — TAHUN AJARAN ${RPE_DATA.tahunAjaran}`],
-      ['BULAN', 'PEKAN', 'PEKAN TIDAK EFEKTIF', 'PEKAN EFEKTIF'],
-      ...rows.map(r => [r.bulan, r.pekan, r.tidakEfektif, r.pekan - r.tidakEfektif]),
-      ['JUMLAH', totalPekan, totalTdk, totalPekan - totalTdk],
+      ['RINCIAN PEKAN EFEKTIF'],
+      [`TAHUN PELAJARAN ${RPE_DATA.tahunAjaran}`],
+      [`Nama Sekolah : ${schoolName}`],
+      [`Kelas/Mapel  : ${RPE_DATA.kelasMapel}`],
+      [`Semester     : ${si === 0 ? 'Ganjil' : 'Genap'}`],
+      [],
+      ['A. JUMLAH PEKAN DALAM SATU SEMESTER'],
+      ['No', 'Bulan', 'Jumlah Pekan', 'Pekan Efektif', 'Pekan Tidak Efektif'],
+      ...rows.map((r, i) => [i + 1, r.bulan, r.pekan, r.pekan - r.tidakEfektif, r.tidakEfektif]),
+      ['', 'Jumlah', totalPekan, totalEfektif, totalTdk],
+      [],
+      ['B. PEKAN TIDAK EFEKTIF'],
+      ['No', 'Uraian Kegiatan', 'Jumlah (Pekan)', 'Keterangan'],
+      ...uraian.map((r, i) => [i + 1, r.kegiatan, r.jumlah, r.keterangan]),
+      ['', 'Jumlah', totalUraian, ''],
+      [],
+      ['C. JUMLAH PEKAN EFEKTIF'],
+      [`Jumlah Pekan Efektif = ${totalPekan} Pekan - ${totalTdk} Pekan = ${totalEfektif} Pekan`],
+      [],
+      [`Mengetahui, Kepala Sekolah`, '', `${RPE_DATA.kota || '...........'}, ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}`],
+      [RPE_DATA.kepalaSekolah || '...........................', '', 'Guru Kelas/Mapel'],
+      ['', '', RPE_DATA.guru || '.................................'],
     ];
     const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [{wch:14},{wch:10},{wch:18},{wch:14}];
+    ws['!cols'] = [{wch:6},{wch:28},{wch:14},{wch:14},{wch:18}];
     XLSX.utils.book_append_sheet(wb, ws, `Semester ${si + 1}`);
   });
   XLSX.writeFile(wb, `RPE-${RPE_DATA.tahunAjaran.replace('/','-')}.xlsx`);
@@ -6527,43 +6803,90 @@ function exportRPEPDF() {
   const schoolName = (typeof currentSetting !== 'undefined' && currentSetting.schoolName) || '';
   const buildTable = (sem, label) => {
     const rows = RPE_DATA[sem];
+    const uraian = RPE_DATA['uraian' + (sem === 'sem1' ? 'Sem1' : 'Sem2')];
     const totalPekan = rows.reduce((s, r) => s + r.pekan, 0);
     const totalTdk = rows.reduce((s, r) => s + r.tidakEfektif, 0);
     const totalEfektif = totalPekan - totalTdk;
+    const totalUraian = uraian.reduce((s, r) => s + (r.jumlah || 0), 0);
     return `
-      <h3 style="margin-top:24px;">${label}</h3>
+      <h3 style="margin-top:24px;">RINCIAN PEKAN EFEKTIF</h3>
+      <p style="font-size:12px;margin:2px 0;">TAHUN PELAJARAN ${RPE_DATA.tahunAjaran}</p>
+      <table style="font-size:12px;margin-bottom:10px;"><tr><td style="width:130px;"><b>Nama Sekolah</b></td><td>: ${schoolName}</td></tr>
+      <tr><td><b>Kelas/Mapel</b></td><td>: ${RPE_DATA.kelasMapel || '—'}</td></tr>
+      <tr><td><b>Semester</b></td><td>: ${label}</td></tr></table>
+
+      <p style="font-size:12px;font-weight:bold;">A. Jumlah Pekan dalam Satu Semester</p>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead><tr style="background:#003366;color:#fff;">
-          <th style="padding:6px;border:1px solid #ccc;">BULAN</th>
-          <th style="padding:6px;border:1px solid #ccc;">PEKAN</th>
-          <th style="padding:6px;border:1px solid #ccc;">PEKAN TIDAK EFEKTIF</th>
-          <th style="padding:6px;border:1px solid #ccc;">PEKAN EFEKTIF</th>
+          <th style="padding:6px;border:1px solid #ccc;">No</th>
+          <th style="padding:6px;border:1px solid #ccc;">Bulan</th>
+          <th style="padding:6px;border:1px solid #ccc;">Jumlah Pekan</th>
+          <th style="padding:6px;border:1px solid #ccc;">Pekan Efektif</th>
+          <th style="padding:6px;border:1px solid #ccc;">Pekan Tidak Efektif</th>
         </tr></thead>
         <tbody>
-          ${rows.map(r => `<tr>
+          ${rows.map((r,i) => `<tr>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${i+1}</td>
             <td style="padding:6px;border:1px solid #ccc;">${r.bulan}</td>
             <td style="padding:6px;border:1px solid #ccc;text-align:center;">${r.pekan}</td>
-            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${r.tidakEfektif}</td>
             <td style="padding:6px;border:1px solid #ccc;text-align:center;font-weight:bold;">${r.pekan - r.tidakEfektif}</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${r.tidakEfektif}</td>
           </tr>`).join('')}
           <tr style="background:#eef;font-weight:bold;">
-            <td style="padding:6px;border:1px solid #ccc;">JUMLAH</td>
+            <td style="padding:6px;border:1px solid #ccc;" colspan="2">JUMLAH</td>
             <td style="padding:6px;border:1px solid #ccc;text-align:center;">${totalPekan}</td>
-            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${totalTdk}</td>
             <td style="padding:6px;border:1px solid #ccc;text-align:center;">${totalEfektif}</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${totalTdk}</td>
           </tr>
         </tbody>
+      </table>
+
+      <p style="font-size:12px;font-weight:bold;margin-top:14px;">B. Pekan Tidak Efektif</p>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:#003366;color:#fff;">
+          <th style="padding:6px;border:1px solid #ccc;">No</th>
+          <th style="padding:6px;border:1px solid #ccc;">Uraian Kegiatan</th>
+          <th style="padding:6px;border:1px solid #ccc;">Jumlah (Pekan)</th>
+          <th style="padding:6px;border:1px solid #ccc;">Keterangan</th>
+        </tr></thead>
+        <tbody>
+          ${uraian.map((r,i) => `<tr>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${i+1}</td>
+            <td style="padding:6px;border:1px solid #ccc;">${r.kegiatan}</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${r.jumlah}</td>
+            <td style="padding:6px;border:1px solid #ccc;">${r.keterangan || '—'}</td>
+          </tr>`).join('')}
+          <tr style="background:#eef;font-weight:bold;">
+            <td style="padding:6px;border:1px solid #ccc;" colspan="2">JUMLAH</td>
+            <td style="padding:6px;border:1px solid #ccc;text-align:center;">${totalUraian}</td>
+            <td style="padding:6px;border:1px solid #ccc;"></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p style="font-size:12px;font-weight:bold;margin-top:14px;">C. Jumlah Pekan Efektif</p>
+      <p style="font-size:12px;">Jumlah Pekan Efektif = Jumlah Pekan – Jumlah Pekan Tidak Efektif</p>
+      <p style="font-size:12px;">Jumlah Pekan Efektif = ${totalPekan} Pekan – ${totalTdk} Pekan = <b>${totalEfektif} Pekan</b></p>
+
+      <table style="width:100%;margin-top:40px;font-size:12px;">
+        <tr>
+          <td style="width:50%;">Mengetahui,<br>Kepala Sekolah</td>
+          <td style="width:50%;">${RPE_DATA.kota || '...........'}, ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}<br>Guru Kelas/Mapel</td>
+        </tr>
+        <tr><td style="height:50px;"></td><td></td></tr>
+        <tr>
+          <td style="text-decoration:underline;font-weight:bold;">${RPE_DATA.kepalaSekolah || '...........................'}</td>
+          <td style="text-decoration:underline;font-weight:bold;">${RPE_DATA.guru || '.................................'}</td>
+        </tr>
       </table>`;
   };
   const win = window.open('', '_blank');
   win.document.write(`
     <html><head><title>RPE ${RPE_DATA.tahunAjaran}</title></head>
-    <body style="font-family:Arial,sans-serif;padding:24px;">
-      <h2 style="text-align:center;margin-bottom:2px;">${schoolName}</h2>
-      <h3 style="text-align:center;margin-top:0;">RINCIAN PEKAN EFEKTIF (RPE)</h3>
-      <p style="text-align:center;">Tahun Ajaran ${RPE_DATA.tahunAjaran}</p>
-      ${buildTable('sem1', 'SEMESTER 1 (GANJIL)')}
-      ${buildTable('sem2', 'SEMESTER 2 (GENAP)')}
+    <body style="font-family:Arial,sans-serif;padding:24px;max-width:750px;margin:0 auto;">
+      ${buildTable('sem1', 'Ganjil')}
+      <div style="page-break-before:always;"></div>
+      ${buildTable('sem2', 'Genap')}
     </body></html>`);
   win.document.close();
   setTimeout(() => win.print(), 400);
@@ -6862,6 +7185,234 @@ function exportProtaPDF() {
     </body></html>`);
   win.document.close();
   setTimeout(() => win.print(), 400);
+}
+
+// ===== ATP & TP (Alur Tujuan Pembelajaran & Tujuan Pembelajaran) — Berbantuan AI =====
+// Sumber prompt: dokumen "Menyusun TP dan ATP Berdasarkan CP Berbantuan AI" yang diunggah pengguna.
+let ATP_DATA = []; // [{id, mapel, kelas, fase, jenis, cp, materi, kebutuhan, rows:[{cp,tp,atp,taksonomiSolo,materiPokok,dpl,kbc}]}]
+let _atpLastGenerated = null; // simpan konteks form terakhir dipakai untuk generate prompt
+
+const ATP_JENIS_LABEL = {
+  standar: 'Standar (CP-TP-ATP)', bukupaket: 'Sesuai Buku Paket', kbc: 'Buku Paket + KBC', slb: 'SLB',
+};
+const ATP_COLS = {
+  standar:   ['cp','tp','atp'],
+  bukupaket: ['cp','tp','taksonomiSolo','materiPokok','dpl'],
+  kbc:       ['cp','tp','taksonomiSolo','materiPokok','dpl','kbc'],
+  slb:       ['cp','tp','taksonomiSolo','materiPokok','dpl'],
+};
+const ATP_COL_LABEL = {
+  cp: 'Capaian Pembelajaran', tp: 'Tujuan Pembelajaran', atp: 'Alur Tujuan Pembelajaran',
+  taksonomiSolo: 'Taksonomi Solo', materiPokok: 'Materi Pokok', dpl: 'Dimensi Profil Lulusan', kbc: 'Topik Panca Cinta (KBC)',
+};
+
+function onAtpJenisChange() {
+  const jenis = document.getElementById('atp-jenis').value;
+  document.getElementById('atp-materi-group').style.display = (jenis === 'bukupaket' || jenis === 'kbc' || jenis === 'slb') ? 'block' : 'none';
+  document.getElementById('atp-kebutuhan-group').style.display = (jenis === 'slb') ? 'block' : 'none';
+}
+
+function buatPromptATP() {
+  const mapel = document.getElementById('atp-mapel').value.trim();
+  const kelas = document.getElementById('atp-kelas').value.trim();
+  const fase = document.getElementById('atp-fase').value;
+  const jenis = document.getElementById('atp-jenis').value;
+  const cp = document.getElementById('atp-cp').value.trim();
+  const materi = document.getElementById('atp-materi').value.trim();
+  const kebutuhan = document.getElementById('atp-kebutuhan').value.trim();
+  if (!mapel || !kelas || !cp) { showToast('⚠️ Lengkapi Nama Mapel, Kelas, dan Capaian Pembelajaran dulu!', true); return; }
+  if (jenis === 'slb' && !kebutuhan) { showToast('⚠️ Isi kebutuhan khusus murid untuk jenis SLB!', true); return; }
+  if ((jenis === 'bukupaket' || jenis === 'kbc') && !materi) { showToast('⚠️ Isi materi buku paket (bab & subbab) dulu!', true); return; }
+
+  let prompt = '';
+  if (jenis === 'standar') {
+    prompt = `Saya adalah seorang guru mata pelajaran ${mapel} yang mengajar di kelas ${kelas}, fase ${fase}. Saya sedang menyusun perangkat ajar berdasarkan Capaian Pembelajaran berikut: ${cp} Setiap topik materi yang terkandung dalam capaian pembelajaran tersebut akan saya uraikan menjadi 5 hingga 6 Tujuan Pembelajaran (TP). Tujuan pertama dirancang untuk membangun pemahaman dasar peserta didik, sedangkan tujuan kedua dan ketiga difokuskan pada penerapan pendekatan pembelajaran mendalam. Oleh karena itu, dua tujuan terakhir diarahkan pada proses berpikir tingkat tinggi (HOTS), yaitu pada level menerapkan, menganalisis, mengevaluasi, atau mencipta sesuai taksonomi Bloom revisi. Tujuan Pembelajaran ditulis menggunakan kalimat operasional (Behavior) yang diawali dengan subjek belajar (Audience) yaitu "Murid dapat...", bersifat terukur, dan disesuaikan dengan perkembangan kognitif Murid di kelas tersebut. Tujuan juga memuat konteks (Condition), dan tingkat pencapaian (Degree). Setelah tujuan pembelajaran dirumuskan, setiap TP yang dihasilkan ditulis ulang dan diurutkan dalam Alur Tujuan Pembelajaran (ATP) sesuai dengan level berpikir yang akan dituju pada akhir fase. Output yang diharapkan disajikan dalam bentuk tabel tiga kolom yang terdiri atas: Capaian Pembelajaran (CP), dituliskan kembali atau tetap jika digunakan untuk beberapa TP; Tujuan Pembelajaran (TP), ditulis secara berurutan sesuai topik materi dan level berpikir; Alur Tujuan Pembelajaran (ATP), dituliskan secara urut sesuai TP tersebut. Tabel diberi nomor urut pada setiap baris, dan untuk topik yang memiliki lebih dari satu tujuan pembelajaran, tetap menggunakan CP yang sama di kolom pertama. Tuliskan hasilnya dalam format tabel Markdown agar mudah saya salin. Dengan format ini, saya ingin menghasilkan perangkat ajar yang tidak hanya menekankan penguasaan konsep, tetapi juga mengembangkan kemampuan berpikir kritis, kreatif, dan reflektif Murid melalui pendekatan pembelajaran mendalam.`;
+  } else if (jenis === 'bukupaket') {
+    prompt = `Saya adalah seorang guru mata pelajaran ${mapel} yang mengajar di kelas ${kelas}, fase ${fase}. Saya sedang menyusun perangkat ajar berdasarkan Capaian Pembelajaran berikut: ${cp} Setiap topik materi yang terkandung dalam capaian pembelajaran tersebut akan saya uraikan menjadi 5 hingga 6 Tujuan Pembelajaran (TP). Tujuan pertama dirancang untuk membangun pemahaman dasar peserta didik, sedangkan tujuan kedua dan seterusnya difokuskan pada penerapan pendekatan pembelajaran mendalam. Oleh karena itu, dua tujuan terakhir diarahkan pada proses berpikir tingkat tinggi (HOTS), yaitu pada level menerapkan, menganalisis, mengevaluasi, atau mencipta sesuai taksonomi Bloom revisi. Sesuaikan materi pembelajaran dengan buku paket yaitu ${materi} Tujuan Pembelajaran ditulis menggunakan kalimat operasional (Behavior) yang diawali dengan subjek belajar (Audience) yaitu "Murid dapat...", bersifat terukur, dan disesuaikan dengan perkembangan kognitif Murid di kelas tersebut. Tujuan juga memuat konteks (Condition), dan tingkat pencapaian (Degree). Setelah tujuan pembelajaran dirumuskan, setiap TP yang dihasilkan ditulis ulang dan diurutkan dalam Alur Tujuan Pembelajaran (ATP) sesuai dengan level berpikir yang akan dituju pada akhir fase. Tulis ulang capaian pembelajaran dengan rapi dalam bentuk poin sesuai elemen yang ada di bagian paling atas sebelum tabel berikut. Output yang diharapkan disajikan dalam bentuk tabel lima kolom yang terdiri atas: Capaian Pembelajaran (CP) — jika kalimatnya panjang, pisahkan sesuai materi pokok (Bab); Tujuan Pembelajaran (TP); Taksonomi Solo; Materi Pokok; Dimensi Profil Lulusan (DPL) — pilih dimensi yang sesuai (bisa lebih dari satu), yaitu keimanan dan ketakwaan kepada Tuhan Yang Maha Esa, kewargaan, penalaran kritis, kreativitas, kolaborasi, kemandirian, kesehatan, atau komunikasi. Tabel diberi nomor urut pada setiap baris, dan untuk topik yang memiliki lebih dari satu tujuan pembelajaran, tetap menggunakan CP yang sama di kolom pertama. Tuliskan hasilnya dalam format tabel Markdown agar mudah saya salin. Dengan format ini, saya ingin menghasilkan perangkat ajar yang tidak hanya menekankan penguasaan konsep, tetapi juga mengembangkan kemampuan berpikir kritis, kreatif, dan reflektif Murid melalui pendekatan pembelajaran mendalam.`;
+  } else if (jenis === 'kbc') {
+    prompt = `Saya adalah seorang guru mata pelajaran ${mapel} yang mengajar di kelas ${kelas}, fase ${fase}. Saya sedang menyusun perangkat ajar berdasarkan Capaian Pembelajaran berikut: ${cp} Setiap topik materi yang terkandung dalam capaian pembelajaran tersebut akan saya uraikan menjadi 5 hingga 6 Tujuan Pembelajaran (TP). Tujuan pertama dirancang untuk membangun pemahaman dasar peserta didik, sedangkan tujuan kedua dan seterusnya difokuskan pada penerapan pendekatan pembelajaran mendalam. Oleh karena itu, dua tujuan terakhir diarahkan pada proses berpikir tingkat tinggi (HOTS), yaitu pada level menerapkan, menganalisis, mengevaluasi, atau mencipta sesuai taksonomi Bloom revisi. Sesuaikan materi pembelajaran dengan buku paket yaitu ${materi} Tujuan Pembelajaran ditulis menggunakan kalimat operasional (Behavior) yang diawali dengan subjek belajar (Audience) yaitu "Murid dapat...", bersifat terukur, dan disesuaikan dengan perkembangan kognitif Murid di kelas tersebut. Tujuan juga memuat konteks (Condition), dan tingkat pencapaian (Degree). Setelah tujuan pembelajaran dirumuskan, setiap TP yang dihasilkan ditulis ulang dan diurutkan dalam Alur Tujuan Pembelajaran (ATP) sesuai dengan level berpikir yang akan dituju pada akhir fase. Tulis ulang capaian pembelajaran dengan rapi dalam bentuk poin sesuai elemen yang ada di bagian paling atas sebelum tabel berikut. Output yang diharapkan disajikan dalam bentuk tabel enam kolom yang terdiri atas: Capaian Pembelajaran (CP) — jika kalimatnya panjang, pisahkan sesuai materi pokok (Bab); Tujuan Pembelajaran (TP); Taksonomi Solo; Materi Pokok; Dimensi Profil Lulusan (DPL) — pilih dimensi yang sesuai (bisa lebih dari satu), yaitu keimanan dan ketakwaan kepada Tuhan Yang Maha Esa, kewargaan, penalaran kritis, kreativitas, kolaborasi, kemandirian, kesehatan, atau komunikasi; Topik Panca Cinta (KBC) — pilih yang sesuai (bisa lebih dari satu), yaitu Cinta Allah dan Rasul-Nya, Cinta Ilmu, Cinta Lingkungan, Cinta Diri dan Sesama, Cinta Tanah Air. Tabel diberi nomor urut pada setiap baris, dan untuk topik yang memiliki lebih dari satu tujuan pembelajaran, tetap menggunakan CP yang sama di kolom pertama. Tuliskan hasilnya dalam format tabel Markdown agar mudah saya salin. Dengan format ini, saya ingin menghasilkan perangkat ajar yang tidak hanya menekankan penguasaan konsep, tetapi juga mengembangkan kemampuan berpikir kritis, kreatif, dan reflektif Murid melalui pendekatan pembelajaran mendalam.`;
+  } else if (jenis === 'slb') {
+    prompt = `Saya adalah seorang guru mata pelajaran ${mapel} yang mengajar di kelas ${kelas}, fase ${fase} dengan kebutuhan murid yaitu ${kebutuhan}. Saya sedang menyusun perangkat ajar berdasarkan Capaian Pembelajaran berikut: ${cp} Setiap topik materi yang terkandung dalam capaian pembelajaran tersebut akan saya uraikan menjadi 5 hingga 6 Tujuan Pembelajaran (TP). Tujuan pertama dirancang untuk membangun pemahaman dasar peserta didik, sedangkan tujuan kedua dan seterusnya difokuskan pada penerapan pendekatan pembelajaran mendalam. Oleh karena itu, dua tujuan terakhir diarahkan pada proses berpikir tingkat tinggi (HOTS), yaitu pada level menerapkan, menganalisis, mengevaluasi, atau mencipta sesuai taksonomi Bloom revisi. ${materi ? `Sesuaikan materi pembelajaran dengan buku paket yaitu ${materi} ` : ''}Tujuan Pembelajaran ditulis menggunakan kalimat operasional (Behavior) yang diawali dengan subjek belajar (Audience) yaitu "Murid dapat...", bersifat terukur, dan disesuaikan dengan perkembangan kognitif Murid di kelas tersebut. Tujuan juga memuat konteks (Condition), dan tingkat pencapaian (Degree). Setelah tujuan pembelajaran dirumuskan, setiap TP yang dihasilkan ditulis ulang dan diurutkan dalam Alur Tujuan Pembelajaran (ATP) sesuai dengan level berpikir yang akan dituju pada akhir fase. Tulis ulang capaian pembelajaran dengan rapi dalam bentuk poin sesuai elemen yang ada di bagian paling atas sebelum tabel berikut. Output yang diharapkan disajikan dalam bentuk tabel lima kolom yang terdiri atas: Capaian Pembelajaran (CP) — jika kalimatnya panjang, pisahkan sesuai materi pokok (Bab); Tujuan Pembelajaran (TP); Taksonomi Solo; Materi Pokok; Dimensi Profil Lulusan (DPL) — pilih dimensi yang sesuai (bisa lebih dari satu), yaitu keimanan dan ketakwaan kepada Tuhan Yang Maha Esa, kewargaan, penalaran kritis, kreativitas, kolaborasi, kemandirian, kesehatan, atau komunikasi. Tabel diberi nomor urut pada setiap baris, dan untuk topik yang memiliki lebih dari satu tujuan pembelajaran, tetap menggunakan CP yang sama di kolom pertama. Tuliskan hasilnya dalam format tabel Markdown agar mudah saya salin. Dengan format ini, saya ingin menghasilkan perangkat ajar yang tidak hanya menekankan penguasaan konsep, tetapi juga mengembangkan kemampuan berpikir kritis, kreatif, dan reflektif Murid melalui pendekatan pembelajaran mendalam.`;
+  }
+
+  _atpLastGenerated = { mapel, kelas, fase, jenis, cp, materi, kebutuhan };
+  const preview = document.getElementById('atp-prompt-preview');
+  preview.textContent = prompt;
+  preview.style.display = 'block';
+
+  // Salin ke clipboard
+  const doCopy = () => {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(prompt);
+    const ta = document.createElement('textarea');
+    ta.value = prompt; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); document.body.removeChild(ta);
+    return Promise.resolve();
+  };
+  doCopy().then(() => showToast('📋 Prompt tersalin! Tempel ke Claude/ChatGPT/Gemini, lalu tempel hasilnya di kotak bawah.'))
+          .catch(() => showToast('⚠️ Gagal menyalin otomatis — silakan salin manual dari kotak di bawah.', true));
+}
+
+// Parser tabel Markdown hasil tempelan AI -> baris data ATP terstruktur
+function parseMarkdownTable(text, jenis) {
+  const cols = ATP_COLS[jenis];
+  const lines = text.split('\n').map(l => l.trim()).filter(l => l.startsWith('|') || l.includes('|'));
+  const dataLines = lines.filter(l => !/^\|?[\s:|-]+\|?$/.test(l)); // buang baris pemisah (---)
+  if (!dataLines.length) return [];
+  // Baris pertama biasanya header -> lewati jika cocok dengan nama kolom
+  let startIdx = 0;
+  const firstCells = dataLines[0].split('|').map(c => c.trim()).filter((c,i,a)=> !(i===0 && c==='') && !(i===a.length-1 && c===''));
+  const looksLikeHeader = firstCells.some(c => /capaian|tujuan|alur|taksonomi|materi|dimensi|panca|no\b/i.test(c));
+  if (looksLikeHeader) startIdx = 1;
+
+  const rows = [];
+  for (let i = startIdx; i < dataLines.length; i++) {
+    let cells = dataLines[i].split('|').map(c => c.trim());
+    if (cells[0] === '') cells.shift();
+    if (cells[cells.length - 1] === '') cells.pop();
+    if (!cells.length) continue;
+    // Buang kolom "No" kalau ada (cell pertama murni angka & jumlah kolom lebih dari yang diharapkan)
+    if (cells.length === cols.length + 1 && /^\d+$/.test(cells[0])) cells = cells.slice(1);
+    if (cells.length < cols.length) { while (cells.length < cols.length) cells.push(''); }
+    const row = {};
+    cols.forEach((c, idx) => { row[c] = cells[idx] || ''; });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function prosesTabelATP() {
+  const text = document.getElementById('atp-paste').value.trim();
+  if (!text) { showToast('⚠️ Tempel dulu hasil dari AI!', true); return; }
+  if (!_atpLastGenerated) { showToast('⚠️ Buat prompt dulu sebelum memproses hasilnya (supaya konteks mapel/kelas tersimpan)!', true); return; }
+  const rows = parseMarkdownTable(text, _atpLastGenerated.jenis);
+  if (!rows.length) { showToast('⚠️ Tabel tidak terbaca. Pastikan format Markdown (pakai tanda |) tetap utuh saat ditempel.', true); return; }
+
+  const entry = {
+    id: 'atp' + Date.now(),
+    mapel: _atpLastGenerated.mapel, kelas: _atpLastGenerated.kelas, fase: _atpLastGenerated.fase,
+    jenis: _atpLastGenerated.jenis, cp: _atpLastGenerated.cp, materi: _atpLastGenerated.materi,
+    kebutuhan: _atpLastGenerated.kebutuhan, rows,
+  };
+  ATP_DATA.unshift(entry);
+  document.getElementById('atp-paste').value = '';
+  saveAll();
+  renderAtpList();
+  showToast(`✅ ${rows.length} baris ATP berhasil diproses & disimpan!`);
+}
+
+function populateAtpFilter() {
+  const sel = document.getElementById('atp-list-filter');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Semua ATP Tersimpan</option>' +
+    ATP_DATA.map(e => `<option value="${e.id}">${e.mapel} — Kelas ${e.kelas} (${ATP_JENIS_LABEL[e.jenis]})</option>`).join('');
+  if (cur) sel.value = cur;
+}
+
+function renderAtpList() {
+  populateAtpFilter();
+  const container = document.getElementById('atp-list-container');
+  if (!container) return;
+  const filterId = document.getElementById('atp-list-filter')?.value || '';
+  const data = filterId ? ATP_DATA.filter(e => e.id === filterId) : ATP_DATA;
+  if (!ATP_DATA.length) {
+    container.innerHTML = '<div class="card" style="text-align:center;color:var(--muted);font-size:11px;padding:20px;">📭 Belum ada ATP tersimpan. Buat prompt di atas, lalu tempel hasilnya.</div>';
+    return;
+  }
+  container.innerHTML = data.map(entry => {
+    const cols = ATP_COLS[entry.jenis];
+    return `
+    <div class="card" style="margin-bottom:12px;padding:0;overflow:hidden;">
+      <div style="padding:10px 10px 0;display:flex;justify-content:space-between;align-items:flex-start;gap:6px;">
+        <div>
+          <div style="font-size:11px;color:var(--white);font-weight:700;">${entry.mapel} — Kelas ${entry.kelas} (Fase ${entry.fase})</div>
+          <div style="font-size:9px;color:var(--muted);">${ATP_JENIS_LABEL[entry.jenis]} · ${entry.rows.length} baris TP</div>
+        </div>
+        <button class="btn-danger" onclick="hapusAtpEntry('${entry.id}')" style="flex-shrink:0;">🗑️</button>
+      </div>
+      <div style="overflow-x:auto;padding:10px;">
+        <table class="rpe-table" style="font-size:9px;min-width:500px;">
+          <thead><tr><th style="width:24px;">No</th>${cols.map(c => `<th>${ATP_COL_LABEL[c]}</th>`).join('')}</tr></thead>
+          <tbody>
+            ${entry.rows.map((r, i) => `<tr>
+              <td style="text-align:center;">${i + 1}</td>
+              ${cols.map(c => `<td><textarea onchange="onAtpCellChange('${entry.id}',${i},'${c}',this.value)" style="width:100%;min-width:80px;border:none;background:transparent;color:var(--white);font-size:9px;resize:vertical;">${r[c] || ''}</textarea></td>`).join('')}
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function onAtpCellChange(entryId, rowIdx, col, value) {
+  const entry = ATP_DATA.find(e => e.id === entryId);
+  if (!entry || !entry.rows[rowIdx]) return;
+  entry.rows[rowIdx][col] = value;
+  saveAll();
+}
+
+function hapusAtpEntry(id) {
+  if (!confirm('Hapus ATP ini beserta seluruh isinya?')) return;
+  ATP_DATA = ATP_DATA.filter(e => e.id !== id);
+  saveAll();
+  renderAtpList();
+  showToast('🗑️ ATP dihapus');
+}
+
+function buildAtpReportHtml() {
+  const filterId = document.getElementById('atp-list-filter')?.value || '';
+  const data = filterId ? ATP_DATA.filter(e => e.id === filterId) : ATP_DATA;
+  const schoolName = (typeof currentSetting !== 'undefined' && currentSetting.schoolName) || '';
+  return `
+    <div style="text-align:center;border-bottom:3px double #003366;padding-bottom:12px;margin-bottom:16px;">
+      <h2 style="font-size:17px;color:#003366;margin:0 0 4px;text-transform:uppercase;">${schoolName}</h2>
+      <p style="font-size:11px;color:#555;margin:2px 0;">ALUR TUJUAN PEMBELAJARAN (ATP) — Tahun Ajaran ${RPE_DATA.tahunAjaran}</p>
+    </div>
+    ${data.map(entry => {
+      const cols = ATP_COLS[entry.jenis];
+      return `
+      <h3 style="color:#003366;">${entry.mapel} — Kelas ${entry.kelas} (Fase ${entry.fase})</h3>
+      <p style="font-size:11px;color:#555;">Capaian Pembelajaran: ${entry.cp}</p>
+      <table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:20px;">
+        <thead><tr style="background:#003366;color:#fff;">
+          <th style="padding:5px;border:1px solid #ccc;width:24px;">No</th>
+          ${cols.map(c => `<th style="padding:5px;border:1px solid #ccc;">${ATP_COL_LABEL[c]}</th>`).join('')}
+        </tr></thead>
+        <tbody>
+          ${entry.rows.map((r,i) => `<tr>
+            <td style="padding:5px;border:1px solid #ccc;text-align:center;">${i+1}</td>
+            ${cols.map(c => `<td style="padding:5px;border:1px solid #ccc;">${r[c] || ''}</td>`).join('')}
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    }).join('')}`;
+}
+
+function exportAtpPDF() {
+  if (!ATP_DATA.length) { showToast('⚠️ Belum ada data ATP untuk diekspor!', true); return; }
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>ATP</title>
+  <style>@media print{body{-webkit-print-color-adjust:exact;}} body{font-family:Arial;padding:24px;}</style>
+  </head><body>${buildAtpReportHtml()}
+  <div style="margin-top:20px;text-align:center;font-size:9px;color:#aaa;">Developed by D.D Candra © 2026</div>
+  </body></html>`);
+  win.document.close();
+  setTimeout(() => win.print(), 400);
+}
+
+function exportAtpWord() {
+  if (!ATP_DATA.length) { showToast('⚠️ Belum ada data ATP untuk diekspor!', true); return; }
+  const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+  <head><meta charset="utf-8"><!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml><![endif]--></head>
+  <body>${buildAtpReportHtml()}</body></html>`;
+  const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `ATP-${new Date().toISOString().slice(0,10)}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📝 ATP Word berhasil diunduh!');
 }
 
 function switchSiswaTab(tab, el) {
@@ -7857,6 +8408,7 @@ const LS_KEYS = {
   rpe: 'kuriku_rpe',
   cokurikuler: 'kuriku_cokurikuler',
   prota: 'kuriku_prota',
+  atp: 'kuriku_atp',
   late:      'kuriku_late',
   notulen:   'kuriku_notulen',
   planning:  'kuriku_planning',
@@ -7878,6 +8430,7 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.rpe, JSON.stringify(RPE_DATA));
     localStorage.setItem(LS_KEYS.cokurikuler, JSON.stringify(COKURIKULER_DATA));
     localStorage.setItem(LS_KEYS.prota, JSON.stringify(PROTA_DATA));
+    localStorage.setItem(LS_KEYS.atp, JSON.stringify(ATP_DATA));
     localStorage.setItem(LS_KEYS.late,    JSON.stringify(lateRecords));
     localStorage.setItem(LS_KEYS.notulen, JSON.stringify(notulenRecords));
     localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
@@ -7934,11 +8487,20 @@ function loadAll() {
     // RPE
     const rp = localStorage.getItem(LS_KEYS.rpe);
     if (rp) RPE_DATA = JSON.parse(rp);
+    // Kompatibilitas mundur: data RPE lama (sebelum update ini) belum punya field2 baru
+    if (!RPE_DATA.kelasMapel) RPE_DATA.kelasMapel = RPE_DATA.kelasMapel || '';
+    if (!RPE_DATA.kepalaSekolah) RPE_DATA.kepalaSekolah = RPE_DATA.kepalaSekolah || '';
+    if (!RPE_DATA.guru) RPE_DATA.guru = RPE_DATA.guru || '';
+    if (!RPE_DATA.kota) RPE_DATA.kota = RPE_DATA.kota || '';
+    if (!Array.isArray(RPE_DATA.uraianSem1)) RPE_DATA.uraianSem1 = [];
+    if (!Array.isArray(RPE_DATA.uraianSem2)) RPE_DATA.uraianSem2 = [];
     // Co-Kurikuler & Prota/Promes
     const ck = localStorage.getItem(LS_KEYS.cokurikuler);
     if (ck) COKURIKULER_DATA = JSON.parse(ck);
     const pr = localStorage.getItem(LS_KEYS.prota);
     if (pr) PROTA_DATA = JSON.parse(pr);
+    const atp = localStorage.getItem(LS_KEYS.atp);
+    if (atp) ATP_DATA = JSON.parse(atp);
     // Keterlambatan
     const l = localStorage.getItem(LS_KEYS.late);
     if (l) lateRecords = JSON.parse(l);

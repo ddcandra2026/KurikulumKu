@@ -2395,9 +2395,6 @@
         <button class="btn-primary" style="background:linear-gradient(135deg,var(--green),var(--cyan));margin-top:8px;" onclick="prosesTabelRPE()">⚙️ Proses Jadi Tabel RPE</button>
       </div>
 
-      <button onclick="toggleKaldikPanel()" style="width:100%;padding:10px;margin-bottom:10px;border:1px dashed var(--muted);border-radius:10px;background:transparent;color:var(--muted);font-size:9px;font-weight:700;cursor:pointer;">⚡ Cara Cepat Tanpa AI (perkiraan Kalender MKKS Sampang 2026/2027)</button>
-      <div id="kaldik-panel" style="display:none;"></div>
-
       <div class="card" style="margin-bottom:12px;">
         <div style="font-size:9px;color:var(--muted);margin-bottom:8px;">✍️ Data tanda tangan (untuk dokumen cetak)</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -2854,6 +2851,7 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script>
 // ===== DATA =====
 const GURU_DATA = [
@@ -6662,7 +6660,7 @@ let RPE_DATA = {
     { kegiatan: 'Libur Semester Genap', jumlah: 2, keterangan: 'Juni' },
   ],
   sem1: [
-    { bulan: 'Juli',      pekan: 4, tidakEfektif: 2, keterangan: '' },
+    { bulan: 'Juli',      pekan: 4, tidakEfektif: 2, keterangan: 'Libur Akhir Tahun Ajaran & MPLS (Masa Pengenalan Lingkungan Sekolah)' },
     { bulan: 'Agustus',   pekan: 4, tidakEfektif: 0, keterangan: '' },
     { bulan: 'September', pekan: 4, tidakEfektif: 0, keterangan: '' },
     { bulan: 'Oktober',   pekan: 5, tidakEfektif: 1, keterangan: 'KTS (Kegiatan Tengah Semester)' },
@@ -6721,79 +6719,6 @@ function buildRpeTableHtml(sem) {
     <td colspan="2">JUMLAH</td><td>${totalPekan}</td><td class="rpe-efektif">${totalEfektif}</td><td>${totalTdk}</td><td></td>
   </tr></tfoot>`;
   return html;
-}
-// ===== KALENDER PENDIDIKAN ACUAN (dari file KALDIK_MKKS_26-27.xlsx yang diunggah) =====
-// Sumber: Kalender Pendidikan MKKS SMP Negeri Kab. Sampang, Tahun Ajaran 2026/2027
-// Perkiraan pekan efektif dihitung otomatis dari grid tanggal (Minggu = libur, kode LU/LHB/LS1/LS2/CB/KTS/KPP/LHR = tidak efektif).
-// Semester Ganjil hasil hitung = 24 pekan efektif — PERSIS cocok dengan angka resmi di kalender (139 hari/24 pekan). Semester Genap: 23 pekan (resmi: 24 pekan/123 hari) — beda tipis karena minggu di batas bulan, silakan cek & sesuaikan.
-const KALDIK_SAMPANG_2627 = {
-  sumber: 'Kalender Pendidikan MKKS SMP Negeri Kab. Sampang — Tahun Ajaran 2026/2027',
-  sem1: [
-    { bulan: 'Juli',      pekan: 4, tidakEfektif: 1, ket: 'MPLS awal bulan + libur akhir tahun ajaran sebelumnya' },
-    { bulan: 'Agustus',   pekan: 4, tidakEfektif: 0, ket: 'Libur HUT RI (17 Agu) & Maulid Nabi (25 Agu) — hari tunggal, tidak mengurangi pekan' },
-    { bulan: 'September', pekan: 5, tidakEfektif: 0, ket: '' },
-    { bulan: 'Oktober',   pekan: 4, tidakEfektif: 0, ket: 'KTS (Kegiatan Tengah Semester) 1-3 Okt — dalam pekan yang sama masih ada hari efektif' },
-    { bulan: 'November',  pekan: 4, tidakEfektif: 0, ket: '' },
-    { bulan: 'Desember',  pekan: 5, tidakEfektif: 1, ket: 'Cuti Bersama & Libur Semester Ganjil (LS1) akhir bulan' },
-  ],
-  sem2: [
-    { bulan: 'Januari',  pekan: 4, tidakEfektif: 0, ket: 'Sisa Libur Semester Ganjil awal bulan, tapi masih ada hari efektif dalam pekan yang sama' },
-    { bulan: 'Februari', pekan: 4, tidakEfektif: 0, ket: 'KPP (Kegiatan Permulaan Puasa) pertengahan bulan' },
-    { bulan: 'Maret',    pekan: 5, tidakEfektif: 1, ket: 'Libur Sekitar Hari Raya (LHR) & Hari Raya Nyepi/Idul Fitri' },
-    { bulan: 'April',    pekan: 4, tidakEfektif: 0, ket: '' },
-    { bulan: 'Mei',      pekan: 4, tidakEfektif: 0, ket: '' },
-    { bulan: 'Juni',     pekan: 5, tidakEfektif: 2, ket: 'Libur Semester Genap (LS2) & Hari Raya Idul Adha' },
-  ],
-};
-
-function toggleKaldikPanel() {
-  const panel = document.getElementById('kaldik-panel');
-  if (!panel) return;
-  if (panel.style.display === 'none' || !panel.innerHTML) {
-    panel.innerHTML = buildKaldikPanelHtml();
-    panel.style.display = 'block';
-  } else {
-    panel.style.display = 'none';
-  }
-}
-
-function buildKaldikPanelHtml() {
-  const buildTable = (sem, label) => `
-    <div style="font-size:9px;color:var(--cyan);font-weight:700;margin:8px 0 4px;">${label}</div>
-    <table class="rpe-table" style="font-size:9px;">
-      <thead><tr><th>Bulan</th><th style="width:36px;">Pekan</th><th style="width:36px;">Tdk Efektif</th><th>Keterangan</th></tr></thead>
-      <tbody>
-        ${KALDIK_SAMPANG_2627[sem].map(r => `<tr>
-          <td>${r.bulan}</td>
-          <td style="text-align:center;">${r.pekan}</td>
-          <td style="text-align:center;${r.tidakEfektif ? 'color:var(--red);font-weight:bold;' : ''}">${r.tidakEfektif}</td>
-          <td style="font-size:8px;color:var(--muted);">${r.ket || '—'}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>`;
-  return `
-    <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.3);">
-      <div style="font-size:9px;color:var(--muted);margin-bottom:8px;line-height:1.5;">
-        📌 Sumber: <b style="color:var(--white);">${KALDIK_SAMPANG_2627.sumber}</b><br>
-        Angka di bawah ini adalah <b style="color:var(--orange);">perkiraan otomatis</b> hasil olah kalender yang Anda unggah — cocok persis dengan total resmi semester ganjil (24 pekan). Silakan cek kembali sebelum dipakai di dokumen resmi.
-      </div>
-      ${buildTable('sem1', 'SEMESTER 1 (GANJIL)')}
-      ${buildTable('sem2', 'SEMESTER 2 (GENAP)')}
-      <button class="btn-primary" style="margin-top:10px;" onclick="isiOtomatisKaldik()">🪄 Isi Otomatis ke Tabel RPE di Atas</button>
-    </div>`;
-}
-
-function isiOtomatisKaldik() {
-  if (!confirm('Ini akan MENIMPA angka Pekan & Pekan Tidak Efektif yang sudah Anda isi di tabel RPE dengan perkiraan dari kalender acuan. Lanjutkan?')) return;
-  ['sem1', 'sem2'].forEach(sem => {
-    RPE_DATA[sem].forEach((row, i) => {
-      const ref = KALDIK_SAMPANG_2627[sem][i];
-      if (ref) { row.pekan = ref.pekan; row.tidakEfektif = ref.tidakEfektif; }
-    });
-  });
-  renderRPE();
-  saveAll();
-  showToast('🪄 RPE terisi otomatis dari kalender acuan — silakan periksa & sesuaikan!');
 }
 
 function renderRPE() {
@@ -6860,9 +6785,18 @@ function hapusRpeUraian(sem, idx) {
   renderRpeUraian(sem);
   saveAll();
 }
-function exportRPEExcel() {
-  const wb = XLSX.utils.book_new();
+async function exportRPEExcel() {
+  if (typeof ExcelJS === 'undefined') {
+    showToast('❌ Komponen Excel gagal dimuat (cek koneksi internet Anda), coba muat ulang halaman lalu ekspor lagi.', true);
+    return;
+  }
+  try {
+  const wb = new ExcelJS.Workbook();
   const schoolName = RPE_DATA.namaSekolah || (typeof currentSetting !== 'undefined' && currentSetting.schoolName) || '';
+  const NAVY = 'FF003366', LIGHTBLUE = 'FFEEF3FA', RED = 'FFDC2640', REDBG = 'FFFDE2E2', GREEN = 'FF00A86B';
+  const thinBorder = { style: 'thin', color: { argb: 'FFCCCCCC' } };
+  const allBorders = { top: thinBorder, left: thinBorder, bottom: thinBorder, right: thinBorder };
+
   ['sem1', 'sem2'].forEach((sem, si) => {
     const rows = RPE_DATA[sem];
     const uraian = RPE_DATA['uraian' + (sem === 'sem1' ? 'Sem1' : 'Sem2')];
@@ -6870,38 +6804,100 @@ function exportRPEExcel() {
     const totalTdk = rows.reduce((s, r) => s + r.tidakEfektif, 0);
     const totalEfektif = totalPekan - totalTdk;
     const totalUraian = uraian.reduce((s, r) => s + (r.jumlah || 0), 0);
-    const aoa = [
-      ['RINCIAN PEKAN EFEKTIF'],
-      [`TAHUN PELAJARAN ${RPE_DATA.tahunAjaran}`],
-      [`Nama Sekolah : ${schoolName}`],
-      [`Kelas        : ${RPE_DATA.kelas}`],
-      [`Mata Pelajaran: ${RPE_DATA.mapel}`],
-      [`JP per Minggu: ${RPE_DATA.jpPerMinggu}`],
-      [`Semester     : ${si === 0 ? 'Ganjil' : 'Genap'}`],
-      [],
-      ['A. JUMLAH PEKAN DALAM SATU SEMESTER'],
-      ['No', 'Bulan', 'Jumlah Pekan', 'Pekan Efektif', 'Pekan Tidak Efektif', 'Keterangan'],
-      ...rows.map((r, i) => [i + 1, r.bulan, r.pekan, r.pekan - r.tidakEfektif, r.tidakEfektif, r.keterangan || '']),
-      ['', 'Jumlah', totalPekan, totalEfektif, totalTdk, ''],
-      [],
-      ['B. PEKAN TIDAK EFEKTIF'],
-      ['No', 'Uraian Kegiatan', 'Jumlah (Pekan)', 'Keterangan'],
-      ...uraian.map((r, i) => [i + 1, r.kegiatan, r.jumlah, r.keterangan]),
-      ['', 'Jumlah', totalUraian, ''],
-      [],
-      ['C. JUMLAH PEKAN EFEKTIF'],
-      [`Jumlah Pekan Efektif = ${totalPekan} Pekan - ${totalTdk} Pekan = ${totalEfektif} Pekan`],
-      [],
-      [`Mengetahui, Kepala Sekolah`, '', `${RPE_DATA.kota || '...........'}, ${new Date().toLocaleDateString('id-ID',{day:'numeric',month:'long',year:'numeric'})}`],
-      [RPE_DATA.kepalaSekolah || '...........................', '', 'Guru Kelas/Mapel'],
-      ['', '', RPE_DATA.guru || '.................................'],
+    const ws = wb.addWorksheet(`Semester ${si + 1}`, { views: [{ showGridLines: false }] });
+    ws.columns = [{ width: 5 }, { width: 26 }, { width: 13 }, { width: 13 }, { width: 15 }, { width: 32 }];
+
+    // Judul
+    ws.mergeCells('A1:F1'); ws.getCell('A1').value = 'RINCIAN PEKAN EFEKTIF';
+    ws.getCell('A1').font = { bold: true, size: 14, color: { argb: NAVY } };
+    ws.getCell('A1').alignment = { horizontal: 'center' };
+    ws.mergeCells('A2:F2'); ws.getCell('A2').value = `TAHUN PELAJARAN ${RPE_DATA.tahunAjaran}`;
+    ws.getCell('A2').font = { italic: true, size: 10, color: { argb: 'FF555555' } };
+    ws.getCell('A2').alignment = { horizontal: 'center' };
+    ws.addRow([]);
+
+    // Identitas
+    const idRows = [
+      ['Nama Sekolah', ':', schoolName], ['Kelas', ':', RPE_DATA.kelas],
+      ['Mata Pelajaran', ':', RPE_DATA.mapel], ['JP per Minggu', ':', RPE_DATA.jpPerMinggu],
+      ['Semester', ':', si === 0 ? 'Ganjil' : 'Genap'],
     ];
-    const ws = XLSX.utils.aoa_to_sheet(aoa);
-    ws['!cols'] = [{wch:6},{wch:28},{wch:14},{wch:14},{wch:16},{wch:22}];
-    XLSX.utils.book_append_sheet(wb, ws, `Semester ${si + 1}`);
+    idRows.forEach(r => { const row = ws.addRow(r); row.getCell(1).font = { bold: true, size: 10 }; row.getCell(3).font = { size: 10 }; });
+    ws.addRow([]);
+
+    // Bagian A
+    const headerA = ws.addRow(['A. JUMLAH PEKAN DALAM SATU SEMESTER']);
+    headerA.getCell(1).font = { bold: true, size: 11, color: { argb: NAVY } };
+    const thA = ws.addRow(['No', 'Bulan', 'Jumlah Pekan', 'Pekan Efektif', 'Pekan Tdk Efektif', 'Keterangan']);
+    thA.eachCell(c => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } }; c.font = { bold: true, color: { argb: 'FFFFFFFF' } }; c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; c.border = allBorders; });
+
+    rows.forEach((r, i) => {
+      const efektif = r.pekan - r.tidakEfektif;
+      const row = ws.addRow([i + 1, r.bulan, r.pekan, efektif, r.tidakEfektif, r.keterangan || '']);
+      row.eachCell((c, colNum) => {
+        c.border = allBorders;
+        c.alignment = { horizontal: colNum === 2 || colNum === 6 ? 'left' : 'center', vertical: 'middle', wrapText: true };
+        if (i % 2 === 1) c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHTBLUE } };
+      });
+      row.getCell(4).font = { bold: true, color: { argb: 'FF0090C7' } };
+      if (r.tidakEfektif > 0) { row.getCell(5).font = { bold: true, color: { argb: RED } }; row.getCell(5).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: REDBG } }; }
+    });
+    const totalRowA = ws.addRow(['', 'JUMLAH', totalPekan, totalEfektif, totalTdk, '']);
+    totalRowA.eachCell(c => { c.font = { bold: true }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHTBLUE } }; c.border = allBorders; c.alignment = { horizontal: 'center' }; });
+    ws.addRow([]);
+
+    // Bagian B
+    const headerB = ws.addRow(['B. PEKAN TIDAK EFEKTIF']);
+    headerB.getCell(1).font = { bold: true, size: 11, color: { argb: NAVY } };
+    const thB = ws.addRow(['No', 'Uraian Kegiatan', 'Jumlah (Pekan)', 'Keterangan', '', '']);
+    ws.mergeCells(`D${thB.number}:F${thB.number}`);
+    [1,2,3].forEach(ci => { const c = thB.getCell(ci); c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } }; c.font = { bold: true, color: { argb: 'FFFFFFFF' } }; c.alignment = { horizontal: 'center', vertical: 'middle' }; c.border = allBorders; });
+    thB.getCell(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: NAVY } }; thB.getCell(4).font = { bold: true, color: { argb: 'FFFFFFFF' } }; thB.getCell(4).alignment = { horizontal: 'center' };
+
+    uraian.forEach((r, i) => {
+      const row = ws.addRow([i + 1, r.kegiatan, r.jumlah, r.keterangan, '', '']);
+      ws.mergeCells(`D${row.number}:F${row.number}`);
+      row.eachCell(c => { c.border = allBorders; c.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true }; });
+      row.getCell(2).alignment = { horizontal: 'left', wrapText: true };
+      row.getCell(4).alignment = { horizontal: 'left', wrapText: true };
+      if (i % 2 === 1) row.eachCell(c => c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHTBLUE } });
+    });
+    const totalRowB = ws.addRow(['', 'Jumlah', totalUraian, '', '', '']);
+    ws.mergeCells(`D${totalRowB.number}:F${totalRowB.number}`);
+    totalRowB.eachCell(c => { c.font = { bold: true }; c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: LIGHTBLUE } }; c.border = allBorders; c.alignment = { horizontal: 'center' }; });
+    ws.addRow([]);
+
+    // Bagian C — rumus
+    const headerC = ws.addRow(['C. JUMLAH PEKAN EFEKTIF']);
+    headerC.getCell(1).font = { bold: true, size: 11, color: { argb: NAVY } };
+    ws.addRow([`Jumlah Pekan Efektif = Jumlah Pekan – Jumlah Pekan Tidak Efektif`]).getCell(1).font = { size: 10 };
+    const formulaRow = ws.addRow([`Jumlah Pekan Efektif = ${totalPekan} Pekan – ${totalTdk} Pekan = ${totalEfektif} Pekan`]);
+    formulaRow.getCell(1).font = { bold: true, size: 11, color: { argb: GREEN } };
+    ws.addRow([]); ws.addRow([]);
+
+    // Tanda tangan
+    const tglNow = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+    const ttdRow1 = ws.addRow(['Mengetahui,', '', '', `${RPE_DATA.kota || '...........'}, ${tglNow}`]);
+    const ttdRow2 = ws.addRow(['Kepala Sekolah', '', '', 'Guru Kelas/Mapel']);
+    ws.addRow([]); ws.addRow([]); ws.addRow([]);
+    const ttdRow3 = ws.addRow([RPE_DATA.kepalaSekolah || '...........................', '', '', RPE_DATA.guru || '.................................']);
+    [ttdRow1, ttdRow2, ttdRow3].forEach(r => { r.getCell(1).font = { size: 10 }; r.getCell(4).font = { size: 10 }; });
+    ttdRow3.getCell(1).font = { size: 10, bold: true, underline: true };
+    ttdRow3.getCell(4).font = { size: 10, bold: true, underline: true };
   });
-  XLSX.writeFile(wb, `RPE-${RPE_DATA.tahunAjaran.replace('/','-')}.xlsx`);
-  showToast('📊 Excel RPE berhasil diunduh!');
+
+  const buffer = await wb.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `RPE-${RPE_DATA.tahunAjaran.replace('/','-')}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('📊 Excel RPE (berwarna) berhasil diunduh!');
+  } catch (err) {
+    console.error('Export RPE Excel gagal:', err);
+    showToast('❌ Gagal membuat file Excel: ' + (err.message || err), true);
+  }
 }
 function exportRPEPDF() {
   const schoolName = RPE_DATA.namaSekolah || (typeof currentSetting !== 'undefined' && currentSetting.schoolName) || '';
@@ -6990,6 +6986,11 @@ function exportRPEPDF() {
       </table>`;
   };
   const win = window.open('', '_blank');
+  if (!win) {
+    showToast('❌ Browser memblokir jendela pop-up. Izinkan pop-up untuk situs ini di pengaturan browser, lalu coba lagi.', true);
+    return;
+  }
+  try {
   win.document.write(`
     <html><head><title>RPE ${RPE_DATA.tahunAjaran}</title></head>
     <body style="font-family:Arial,sans-serif;padding:24px;max-width:750px;margin:0 auto;">
@@ -6999,6 +7000,10 @@ function exportRPEPDF() {
     </body></html>`);
   win.document.close();
   setTimeout(() => win.print(), 400);
+  } catch (err) {
+    console.error('Export RPE PDF gagal:', err);
+    showToast('❌ Gagal membuat PDF: ' + (err.message || err), true);
+  }
 }
 
 // ===== PROMPT RPE BERBANTUAN AI (analisis kalender langsung oleh AI) =====
@@ -7025,6 +7030,7 @@ Mata Pelajaran\t\t: ${mapel}
 
 Output: Buat outputnya dalam bentuk tabel Markdown yang rapi siap pakai.`;
 
+  _rpeLastGeneratedPrompt = prompt;
   const preview = document.getElementById('rpe-prompt-preview');
   preview.textContent = prompt + '\n\n📎 PENTING: lampirkan juga 2 file ke chat AI Anda — (1) file Kalender Pendidikan sekolah, (2) file contoh Format RPE — sebelum mengirim prompt ini.';
   preview.style.display = 'block';
@@ -7068,9 +7074,16 @@ function extractMarkdownTables(text) {
   return tables.filter(t => t.length >= 2); // minimal header + 1 baris
 }
 
+let _rpeLastGeneratedPrompt = null;
+
 function prosesTabelRPE() {
   const text = document.getElementById('rpe-paste').value.trim();
   if (!text) { showToast('⚠️ Tempel dulu hasil dari AI!', true); return; }
+  // Deteksi kalau yang ditempel adalah PROMPT itu sendiri (bukan balasan AI) — kesalahan umum
+  if (_rpeLastGeneratedPrompt && text.includes('Informasi Identitas:') && text.includes('Analisis file pertama yang saya unggah')) {
+    showToast('⚠️ Ini teks PROMPT yang tadi Anda salin, bukan balasan dari AI. Tempel prompt itu ke Claude/ChatGPT/Gemini dulu (sambil lampirkan 2 file), lalu tempel BALASAN AI-nya di sini.', true);
+    return;
+  }
   const tables = extractMarkdownTables(text);
   if (!tables.length) { showToast('⚠️ Tabel tidak terbaca. Pastikan format Markdown (pakai tanda |) tetap utuh saat ditempel.', true); return; }
 
@@ -7510,6 +7523,10 @@ function prosesTabelATP() {
   const text = document.getElementById('atp-paste').value.trim();
   if (!text) { showToast('⚠️ Tempel dulu hasil dari AI!', true); return; }
   if (!_atpLastGenerated) { showToast('⚠️ Buat prompt dulu sebelum memproses hasilnya (supaya konteks mapel/kelas tersimpan)!', true); return; }
+  if (text.includes('Saya adalah seorang guru mata pelajaran') && text.includes('Capaian Pembelajaran berikut')) {
+    showToast('⚠️ Ini teks PROMPT yang tadi Anda salin, bukan balasan dari AI. Tempel prompt itu ke Claude/ChatGPT/Gemini dulu, lalu tempel BALASAN AI-nya di sini.', true);
+    return;
+  }
   const rows = parseMarkdownTable(text, _atpLastGenerated.jenis);
   if (!rows.length) { showToast('⚠️ Tabel tidak terbaca. Pastikan format Markdown (pakai tanda |) tetap utuh saat ditempel.', true); return; }
 
@@ -7724,6 +7741,10 @@ function prosesTabelKKTP() {
   const text = document.getElementById('kktp-paste').value.trim();
   if (!text) { showToast('⚠️ Tempel dulu hasil dari AI!', true); return; }
   if (!_kktpLastGenerated) { showToast('⚠️ Buat prompt dulu sebelum memproses hasilnya!', true); return; }
+  if (text.includes('Buatkan tabel KKTP') && text.includes('Kriteria Ketercapaian Tujuan Pembelajaran')) {
+    showToast('⚠️ Ini teks PROMPT yang tadi Anda salin, bukan balasan dari AI. Tempel prompt itu ke Claude/ChatGPT/Gemini dulu, lalu tempel BALASAN AI-nya di sini.', true);
+    return;
+  }
   const rows = parseKktpMarkdownTable(text);
   if (!rows.length) { showToast('⚠️ Tabel tidak terbaca. Pastikan format Markdown (pakai tanda |) tetap utuh saat ditempel.', true); return; }
 

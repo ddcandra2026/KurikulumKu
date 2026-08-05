@@ -7103,25 +7103,25 @@ function prosesTabelRPE() {
 
     bestTable.forEach(line => {
       if (/^\|?[\s:|-]+\|?$/.test(line)) return; // baris pemisah markdown
-      const bulan = cariBulan(line);
-      if (!bulan) return;
-      const target = semRows.find(r => r.bulan === bulan);
-      if (!target) return;
       let cells = line.split('|').map(c => c.trim());
       if (cells[0] === '') cells.shift();
       if (cells[cells.length - 1] === '') cells.pop();
-      // cari angka-angka di baris (kandidat: Jumlah Pekan, Pekan Efektif, Pekan Tidak Efektif)
-      const nums = cells.map(c => { const m = c.match(/^\d+$/); return m ? parseInt(c, 10) : null; });
-      const numCells = nums.filter(n => n !== null);
-      if (numCells.length >= 2) {
-        // asumsi urutan: Jumlah Pekan, (Pekan Efektif), Pekan Tidak Efektif — ambil terbesar sbg total, cocokkan sisanya
-        target.pekan = Math.max(...numCells);
-        target.tidakEfektif = numCells.length >= 3 ? numCells[numCells.length - 1] : Math.max(0, numCells[0] - (numCells[1] || 0));
-      } else if (numCells.length === 1) {
-        target.pekan = numCells[0];
-      }
-      // kolom terakhir yang bukan angka/bulan dianggap Keterangan
-      const ketCell = [...cells].reverse().find(c => c && !/^\d+$/.test(c) && cariBulan(c) === null);
+      // cari index sel yang PERSIS berisi nama bulan (bukan scan seluruh baris) — supaya kolom "No" tidak ikut tertangkap sebagai angka pekan
+      const bulanIdx = cells.findIndex(c => c.length <= 12 && cariBulan(c) !== null);
+      if (bulanIdx === -1) return;
+      const bulan = cariBulan(cells[bulanIdx]);
+      if (!bulan) return;
+      const target = semRows.find(r => r.bulan === bulan);
+      if (!target) return;
+      const numAt = (idx) => { const c = cells[idx]; if (!c) return null; const m = c.match(/(\d+)/); return m ? parseInt(m[1], 10) : null; };
+      const jumlahPekan = numAt(bulanIdx + 1);
+      const pekanEfektif = numAt(bulanIdx + 2);
+      const pekanTidakEfektif = numAt(bulanIdx + 3);
+      if (jumlahPekan !== null) target.pekan = jumlahPekan;
+      if (pekanTidakEfektif !== null) target.tidakEfektif = pekanTidakEfektif;
+      else if (pekanEfektif !== null && jumlahPekan !== null) target.tidakEfektif = Math.max(0, jumlahPekan - pekanEfektif);
+      // kolom Keterangan = sel pertama setelah kolom-kolom angka yang bukan cuma tanda "-"
+      const ketCell = cells.slice(bulanIdx + 4).find(c => c && c !== '-');
       if (ketCell) target.keterangan = ketCell;
       totalTerisi++;
     });

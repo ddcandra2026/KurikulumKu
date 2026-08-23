@@ -9185,6 +9185,18 @@ const LS_KEYS = {
 };
 
 function saveAll() {
+  saveLocalCache();
+  // ===== FIREBASE SYNC =====
+  if (window._fbReady && window._fbSave) {
+    const fbPayload = buildFbPayload();
+    window._fbSave(fbPayload);
+  }
+}
+
+// Hanya menyimpan ke localStorage (cache offline), TANPA mengirim ulang ke Firebase.
+// Dipakai saat menerima data dari cloud, agar tidak terjadi feedback loop
+// (data lama dari cloud tertulis balik ke cloud dan menimpa perubahan terbaru).
+function saveLocalCache() {
   try {
     localStorage.setItem(LS_KEYS.screen,  currentScreen);
     localStorage.setItem(LS_KEYS.guru,    JSON.stringify(GURU_DATA));
@@ -9204,6 +9216,7 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.siswa,   JSON.stringify(SISWA_DATA));
     localStorage.setItem(LS_KEYS.kelasTujuan, JSON.stringify(KELAS_TUJUAN));
     localStorage.setItem(LS_KEYS.catatanSiswa, JSON.stringify(catatanSiswaData));
+    localStorage.setItem(LS_SETTING, JSON.stringify(currentSetting));
     // Simpan snapshot DOM planning (sudah termasuk item yang ditambah/diedit)
     const planSnap = {};
     ['pendek','menengah','panjang'].forEach(j => {
@@ -9224,12 +9237,6 @@ function saveAll() {
     } else {
       showToast('❌ Gagal menyimpan data: ' + (e.message || e), true);
     }
-  }
-
-  // ===== FIREBASE SYNC =====
-  if (window._fbReady && window._fbSave) {
-    const fbPayload = buildFbPayload();
-    window._fbSave(fbPayload);
   }
 }
 
@@ -9292,8 +9299,8 @@ function applyFbData(data) {
         if (card) card.innerHTML = snap[j];
       });
     }
-    // Simpan juga ke localStorage sebagai cache offline
-    saveAll();
+    // Simpan juga ke localStorage sebagai cache offline (TIDAK dikirim balik ke cloud)
+    saveLocalCache();
   } catch(e) { console.warn('applyFbData error:', e); }
 }
 

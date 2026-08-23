@@ -1278,6 +1278,7 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
     import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDloKSxmrxOLQSBvQE7otXAPVr84pzla54",
@@ -1290,6 +1291,93 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+    const auth = getAuth(app);
+
+    // ===== AUTH STATE =====
+    window._fbAuth = auth;
+    window._fbUser = null;
+
+    function showLoginGate() {
+      const gate = document.getElementById('login-gate');
+      const appEl = document.getElementById('app');
+      if (gate) gate.style.display = 'flex';
+      if (appEl) appEl.style.display = 'none';
+    }
+
+    function hideLoginGate() {
+      const gate = document.getElementById('login-gate');
+      const appEl = document.getElementById('app');
+      if (gate) gate.style.display = 'none';
+      if (appEl) appEl.style.display = 'block';
+    }
+
+    window._fbLogin = async function(email, password) {
+      const errEl = document.getElementById('login-error');
+      if (errEl) errEl.textContent = '';
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+        return true;
+      } catch (e) {
+        if (errEl) errEl.textContent = translateAuthError(e.code);
+        return false;
+      }
+    };
+
+    window._fbRegister = async function(email, password) {
+      const errEl = document.getElementById('login-error');
+      if (errEl) errEl.textContent = '';
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        return true;
+      } catch (e) {
+        if (errEl) errEl.textContent = translateAuthError(e.code);
+        return false;
+      }
+    };
+
+    window._fbResetPassword = async function(email) {
+      const errEl = document.getElementById('login-error');
+      if (errEl) errEl.textContent = '';
+      if (!email) { if (errEl) errEl.textContent = 'Isi email dulu untuk reset password.'; return; }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        if (errEl) { errEl.style.color = 'var(--green)'; errEl.textContent = 'Link reset password sudah dikirim ke email kamu.'; }
+      } catch (e) {
+        if (errEl) { errEl.style.color = ''; errEl.textContent = translateAuthError(e.code); }
+      }
+    };
+
+    window._fbLogout = async function() {
+      try { await signOut(auth); } catch (e) { console.warn('Logout error:', e); }
+    };
+
+    function translateAuthError(code) {
+      const map = {
+        'auth/invalid-email': 'Format email tidak valid.',
+        'auth/user-disabled': 'Akun ini dinonaktifkan.',
+        'auth/user-not-found': 'Email belum terdaftar.',
+        'auth/wrong-password': 'Password salah.',
+        'auth/invalid-credential': 'Email atau password salah.',
+        'auth/email-already-in-use': 'Email sudah terdaftar. Silakan login.',
+        'auth/weak-password': 'Password minimal 6 karakter.',
+        'auth/too-many-requests': 'Terlalu banyak percobaan. Coba lagi nanti.',
+        'auth/network-request-failed': 'Koneksi internet bermasalah.',
+      };
+      return map[code] || ('Terjadi kesalahan: ' + code);
+    }
+
+    // Pantau status login — ini gerbang utama aplikasi
+    onAuthStateChanged(auth, (user) => {
+      window._fbUser = user;
+      if (user) {
+        hideLoginGate();
+        const emailLabel = document.getElementById('account-email');
+        if (emailLabel) emailLabel.textContent = user.email || '';
+        if (window._onLoginReady) window._onLoginReady();
+      } else {
+        showLoginGate();
+      }
+    });
 
     // ===== DEVICE ID (supaya multi-perangkat tidak saling override terus-menerus) =====
     let deviceId = localStorage.getItem('kuriku_device_id');
@@ -1388,7 +1476,37 @@
 
 <canvas id="particles-canvas"></canvas>
 
-<div id="app">
+<!-- ===== LOGIN GATE ===== -->
+<div id="login-gate" style="display:flex;min-height:100vh;align-items:center;justify-content:center;position:relative;z-index:200;padding:24px 16px;">
+  <div style="width:100%;max-width:360px;background:var(--card-bg);border:1px solid var(--border);border-radius:20px;padding:26px 22px;box-shadow:0 8px 32px rgba(26,32,53,0.12);backdrop-filter:blur(10px);">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div class="app-logo" style="font-size:26px;">KURIKU</div>
+      <div style="font-size:11px;color:var(--muted);letter-spacing:1px;margin-top:2px;">WAKA KURIKULUM DASHBOARD</div>
+    </div>
+
+    <div id="login-title" style="font-size:13px;font-weight:700;color:var(--white);margin-bottom:14px;font-family:'Plus Jakarta Sans',sans-serif;">MASUK KE AKUN</div>
+
+    <div class="form-group">
+      <label class="form-label">EMAIL</label>
+      <input type="email" id="login-email" class="form-input" placeholder="nama@email.com" autocomplete="username">
+    </div>
+    <div class="form-group">
+      <label class="form-label">PASSWORD</label>
+      <input type="password" id="login-password" class="form-input" placeholder="Minimal 6 karakter" autocomplete="current-password">
+    </div>
+
+    <div id="login-error" style="font-size:11px;color:var(--red);min-height:16px;margin-bottom:8px;"></div>
+
+    <button class="btn-primary" id="login-submit-btn" onclick="handleLoginSubmit()">MASUK</button>
+
+    <div style="display:flex;justify-content:space-between;margin-top:14px;">
+      <span onclick="toggleLoginMode()" id="login-toggle-mode" style="font-size:11px;color:var(--cyan);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">Belum punya akun? Daftar</span>
+      <span onclick="handleResetPassword()" style="font-size:11px;color:var(--muted);cursor:pointer;">Lupa password?</span>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
   <!-- HEADER -->
   <div class="app-header">
     <div class="header-top">
@@ -2812,6 +2930,19 @@
         <button onclick="setThemeColor('purple')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--purple);background:rgba(180,0,255,0.15);color:var(--purple);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● PURPLE</button>
         <button onclick="setThemeColor('orange')" style="flex:1;padding:8px;border-radius:8px;border:1px solid var(--orange);background:rgba(255,140,0,0.15);color:var(--orange);font-size:10px;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">● ORANGE</button>
       </div>
+    </div>
+
+    <!-- Akun -->
+    <div class="setting-section" style="border-color:rgba(107,70,193,0.3);background:rgba(107,70,193,0.04);">
+      <div class="setting-section-label">👤 AKUN</div>
+      <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--slate2);border-radius:10px;margin-bottom:10px;">
+        <span style="font-size:16px;">📧</span>
+        <div style="flex:1;overflow:hidden;">
+          <div style="font-size:9px;color:var(--muted);">Login sebagai</div>
+          <div id="account-email" style="font-size:11px;font-weight:700;color:var(--white);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">-</div>
+        </div>
+      </div>
+      <button class="btn-danger" style="width:100%;padding:10px;" onclick="doLogout()">🚪 KELUAR (LOGOUT)</button>
     </div>
 
     <!-- Firebase Cloud Sync -->
@@ -9300,7 +9431,15 @@ saveModalForm = function() { _origSaveModal(); setTimeout(saveAll, 100); };
 const _origSimpanNotulen = simpanNotulen;
 simpanNotulen = function() { _origSimpanNotulen(); saveAll(); };
 
-// ===== INIT =====
+// ===== INIT (dijalankan setelah user berhasil login) =====
+let _appStarted = false;
+window._onLoginReady = function() {
+  if (_appStarted) return; // jangan jalankan dua kali (misal login ulang)
+  _appStarted = true;
+  startApp();
+};
+
+function startApp() {
 loadAll();          // 1. Load dari localStorage dulu (cepat, offline-first)
 loadSetting();      // 2. Terapkan pengaturan
 renderGuruList();
@@ -9422,6 +9561,82 @@ const _origSwitch2 = switchScreen;
 switchScreen = function(name) {
   _origSwitch2(name);
   try { localStorage.setItem(LS_KEYS.screen, name); } catch(e) {}
+};
+} // ==== akhir startApp() ====
+
+// ===== LOGIN FORM HANDLERS =====
+let _loginMode = 'login'; // 'login' atau 'register'
+
+function toggleLoginMode() {
+  _loginMode = (_loginMode === 'login') ? 'register' : 'login';
+  const titleEl = document.getElementById('login-title');
+  const btnEl = document.getElementById('login-submit-btn');
+  const toggleEl = document.getElementById('login-toggle-mode');
+  const errEl = document.getElementById('login-error');
+  if (errEl) { errEl.textContent = ''; errEl.style.color = ''; }
+  if (_loginMode === 'register') {
+    if (titleEl) titleEl.textContent = 'BUAT AKUN BARU';
+    if (btnEl) btnEl.textContent = 'DAFTAR';
+    if (toggleEl) toggleEl.textContent = 'Sudah punya akun? Masuk';
+  } else {
+    if (titleEl) titleEl.textContent = 'MASUK KE AKUN';
+    if (btnEl) btnEl.textContent = 'MASUK';
+    if (toggleEl) toggleEl.textContent = 'Belum punya akun? Daftar';
+  }
+}
+window.toggleLoginMode = toggleLoginMode;
+
+async function handleLoginSubmit() {
+  const emailEl = document.getElementById('login-email');
+  const passEl = document.getElementById('login-password');
+  const btnEl = document.getElementById('login-submit-btn');
+  const errEl = document.getElementById('login-error');
+  const email = (emailEl?.value || '').trim();
+  const password = passEl?.value || '';
+
+  if (!email || !password) {
+    if (errEl) { errEl.style.color = ''; errEl.textContent = 'Isi email dan password terlebih dahulu.'; }
+    return;
+  }
+  if (password.length < 6) {
+    if (errEl) { errEl.style.color = ''; errEl.textContent = 'Password minimal 6 karakter.'; }
+    return;
+  }
+
+  if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'MEMPROSES...'; }
+  let ok = false;
+  if (_loginMode === 'login') {
+    ok = await window._fbLogin(email, password);
+  } else {
+    ok = await window._fbRegister(email, password);
+  }
+  if (btnEl) { btnEl.disabled = false; btnEl.textContent = (_loginMode === 'login') ? 'MASUK' : 'DAFTAR'; }
+  // Jika sukses, onAuthStateChanged otomatis akan menyembunyikan login gate
+}
+window.handleLoginSubmit = handleLoginSubmit;
+
+// Submit dengan tombol Enter
+document.addEventListener('keydown', (e) => {
+  const gate = document.getElementById('login-gate');
+  if (gate && gate.style.display !== 'none' && e.key === 'Enter') {
+    const active = document.activeElement;
+    if (active && (active.id === 'login-email' || active.id === 'login-password')) {
+      handleLoginSubmit();
+    }
+  }
+});
+
+function handleResetPassword() {
+  const emailEl = document.getElementById('login-email');
+  window._fbResetPassword((emailEl?.value || '').trim());
+}
+window.handleResetPassword = handleResetPassword;
+
+// Logout
+window.doLogout = async function() {
+  if (!confirm('Keluar dari akun ini?')) return;
+  await window._fbLogout();
+  _appStarted = false; // supaya bisa start ulang saat login lagi
 };
 </script>
 </body>

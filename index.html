@@ -1274,6 +1274,115 @@
     display: none; margin-right: 4px; vertical-align: middle;
   }
 </style>
+  <!-- ===== FIREBASE SDK ===== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDloKSxmrxOLQSBvQE7otXAPVr84pzla54",
+      authDomain: "my-kurikulum.firebaseapp.com",
+      projectId: "my-kurikulum",
+      storageBucket: "my-kurikulum.firebasestorage.app",
+      messagingSenderId: "149196098671",
+      appId: "1:149196098671:web:1c890ed1e2181f4f76519a"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // ===== DEVICE ID (supaya multi-perangkat tidak saling override terus-menerus) =====
+    let deviceId = localStorage.getItem('kuriku_device_id');
+    if (!deviceId) {
+      deviceId = 'device_' + Date.now() + '_' + Math.random().toString(36).substr(2,6);
+      localStorage.setItem('kuriku_device_id', deviceId);
+    }
+
+    // Expose ke window agar bisa diakses dari script lain
+    window._fbDb = db;
+    window._fbDoc = doc;
+    window._fbSetDoc = setDoc;
+    window._fbGetDoc = getDoc;
+    window._fbOnSnapshot = onSnapshot;
+    window._fbReady = false;
+    window._fbLastSaveTime = 0;
+    window._fbDeviceId = deviceId;
+
+    // ===== STATUS INDIKATOR =====
+    function setFbStatus(status) {
+      const dot = document.getElementById('fb-status-dot');
+      const lbl = document.getElementById('fb-status-label');
+      if (!dot || !lbl) return;
+      const states = {
+        online:  { color: '#00A86B', text: '● Cloud Sync' },
+        syncing: { color: '#F59E0B', text: '⟳ Menyimpan...' },
+        offline: { color: '#DC2640', text: '○ Offline' },
+        error:   { color: '#DC2640', text: '✕ Sync Error' },
+      };
+      const s = states[status] || states.offline;
+      dot.style.color = s.color;
+      lbl.textContent = s.text;
+      lbl.style.color = s.color;
+    }
+    window._setFbStatus = setFbStatus;
+
+    // ===== SAVE TO FIREBASE =====
+    const DOC_ID = 'kuriku_data';
+    let _saveTimer = null;
+
+    window._fbSave = async function(data) {
+      if (!window._fbDb) return;
+      clearTimeout(_saveTimer);
+      _saveTimer = setTimeout(async () => {
+        try {
+          setFbStatus('syncing');
+          const payload = { ...data, _updatedAt: Date.now(), _deviceId: deviceId };
+          await setDoc(doc(db, 'kuriku', DOC_ID), payload, { merge: true });
+          setFbStatus('online');
+          window._fbLastSaveTime = Date.now();
+        } catch(e) {
+          console.warn('Firebase save error:', e);
+          setFbStatus('error');
+        }
+      }, 1500); // debounce 1.5 detik agar tidak spam
+    };
+
+    // ===== LOAD FROM FIREBASE =====
+    window._fbLoad = async function() {
+      if (!window._fbDb) return null;
+      try {
+        const snap = await getDoc(doc(db, 'kuriku', DOC_ID));
+        if (snap.exists()) return snap.data();
+        return null;
+      } catch(e) {
+        console.warn('Firebase load error:', e);
+        return null;
+      }
+    };
+
+    // ===== REALTIME LISTENER — sinkron antar perangkat =====
+    // Setelah app siap, mulai dengarkan perubahan dari Firestore
+    window._fbStartListener = function(onData) {
+      if (!window._fbDb) return;
+      return onSnapshot(doc(db, 'kuriku', DOC_ID), (snap) => {
+        if (!snap.exists()) return;
+        const data = snap.data();
+        // Skip jika update ini dari device kita sendiri (sudah di-handle local)
+        if (data._deviceId === deviceId && Date.now() - window._fbLastSaveTime < 3000) return;
+        onData(data);
+      }, (err) => {
+        console.warn('Firebase listener error:', err);
+        setFbStatus('offline');
+      });
+    };
+
+    window._fbReady = true;
+    console.log('[KURIKU] Firebase initialized ✅');
+
+    // Online/offline detection
+    window.addEventListener('online',  () => setFbStatus('online'));
+    window.addEventListener('offline', () => setFbStatus('offline'));
+  </script>
 </head>
 <body>
 
@@ -1290,6 +1399,11 @@
         </div>
       </div>
       <div class="header-right">
+        <!-- Firebase sync status -->
+        <div id="fb-status-wrap" style="display:flex;align-items:center;gap:3px;padding:4px 8px;border-radius:8px;background:rgba(0,168,107,0.08);border:1px solid rgba(0,168,107,0.2);cursor:pointer;" onclick="fbSyncNow()" title="Tap untuk sync manual">
+          <span id="fb-status-dot" style="font-size:10px;color:#94A3B8;">●</span>
+          <span id="fb-status-label" style="font-size:9px;font-weight:700;color:#94A3B8;font-family:'Plus Jakarta Sans',sans-serif;white-space:nowrap;">Menghubungkan...</span>
+        </div>
         <div class="hdr-notulen" onclick="switchScreen('notulen')" title="Notulen Rapat">🎙️</div>
         <div class="hdr-notulen" onclick="openSetting()" title="Pengaturan" style="background:rgba(255,200,0,0.1);border-color:rgba(255,200,0,0.3);">⚙️</div>
         <div class="hdr-notif" onclick="showNotifModal()">🔔<div class="notif-dot" id="notif-dot"></div></div>
@@ -2700,11 +2814,40 @@
       </div>
     </div>
 
+    <!-- Firebase Cloud Sync -->
+    <div class="setting-section" style="border-color:rgba(0,168,107,0.3);background:rgba(0,168,107,0.04);">
+      <div class="setting-section-label">☁️ CLOUD SYNC — FIREBASE</div>
+
+      <!-- Status -->
+      <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--slate2);border-radius:10px;margin-bottom:10px;">
+        <span id="fb-status-dot-setting" style="font-size:16px;">●</span>
+        <div style="flex:1;">
+          <div id="fb-status-label-setting" style="font-size:11px;font-weight:700;color:var(--white);">Menghubungkan...</div>
+          <div style="font-size:9px;color:var(--muted);margin-top:1px;">Project: my-kurikulum (Firebase)</div>
+        </div>
+      </div>
+
+      <!-- Sync Now -->
+      <button onclick="fbSyncNow()" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--green);background:rgba(0,168,107,0.1);color:var(--green);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        ☁️ SYNC KE CLOUD SEKARANG
+      </button>
+
+      <!-- Load from cloud -->
+      <button onclick="fbLoadNow()" style="width:100%;padding:11px;border-radius:11px;border:1px solid var(--cyan);background:rgba(0,144,199,0.1);color:var(--cyan);font-size:11px;font-weight:700;cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;display:flex;align-items:center;justify-content:center;gap:8px;">
+        🔄 AMBIL DATA TERBARU DARI CLOUD
+      </button>
+
+      <div style="font-size:9px;color:var(--muted);margin-top:8px;line-height:1.5;text-align:center;">
+        Data otomatis sync ke cloud setiap ada perubahan.<br>
+        Buka aplikasi di HP, iPad, atau PC — data selalu sama.
+      </div>
+    </div>
+
     <!-- Backup & Restore -->
     <div class="setting-section">
-      <div class="setting-section-label">💾 BACKUP & RESTORE DATA</div>
+      <div class="setting-section-label">💾 BACKUP & RESTORE DATA LOKAL</div>
       <div style="font-size:10px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-        Backup semua data (jadwal, guru, notulen, planning) ke file <b style="color:var(--cyan);">.json</b> dan restore di perangkat lain tanpa mulai dari awal.
+        Backup semua data ke file <b style="color:var(--cyan);">.json</b> atau sync via Firebase.
       </div>
 
       <!-- Backup -->
@@ -8912,21 +9055,153 @@ function saveAll() {
     localStorage.setItem(LS_KEYS.planning, JSON.stringify(planSnap));
   } catch(e) {
     console.warn('Save gagal:', e);
-    // Storage penuh (biasanya karena foto). Coba simpan ulang TANPA foto
-    // supaya data teks (nama guru, waktu, keterangan, dll) tetap tersimpan.
     if (e && (e.name === 'QuotaExceededError' || e.code === 22)) {
       try {
         const lateNoPhotos = lateRecords.map(r => ({ ...r, photos: [] }));
         localStorage.setItem(LS_KEYS.late, JSON.stringify(lateNoPhotos));
-        showToast('⚠️ Penyimpanan penuh! Data tersimpan TANPA foto. Hapus riwayat lama / foto untuk membebaskan ruang.', true);
+        showToast('⚠️ Penyimpanan penuh! Data tersimpan TANPA foto.', true);
       } catch (e2) {
-        showToast('❌ Penyimpanan gagal total (storage penuh). Data terbaru berisiko HILANG saat halaman dimuat ulang!', true);
+        showToast('❌ Penyimpanan gagal total (storage penuh).', true);
       }
     } else {
       showToast('❌ Gagal menyimpan data: ' + (e.message || e), true);
     }
   }
+
+  // ===== FIREBASE SYNC =====
+  if (window._fbReady && window._fbSave) {
+    const fbPayload = buildFbPayload();
+    window._fbSave(fbPayload);
+  }
 }
+
+// Kumpulkan semua data ke satu objek untuk Firebase
+function buildFbPayload() {
+  const planSnap = {};
+  ['pendek','menengah','panjang'].forEach(j => {
+    const card = document.getElementById('plan-' + j)?.querySelector('.card');
+    if (card) planSnap[j] = card.innerHTML;
+  });
+  return {
+    guru:          JSON.stringify(GURU_DATA),
+    jadwal:        JSON.stringify(JADWAL_DATA),
+    jadwal2:       JSON.stringify(JADWAL_DATA2),
+    mgmp:          JSON.stringify(mgmpData),
+    customBlock:   JSON.stringify(customBlockData),
+    bebanMengajar: JSON.stringify(bebanMengajarData),
+    lockedDays:    JSON.stringify(lockedDaysData),
+    rpe:           JSON.stringify(RPE_DATA),
+    cokurikuler:   JSON.stringify(COKURIKULER_DATA),
+    prota:         JSON.stringify(PROTA_DATA),
+    atp:           JSON.stringify(ATP_DATA),
+    kktp:          JSON.stringify(KKTP_DATA),
+    late:          JSON.stringify(lateRecords.map(r => ({ ...r, photos: [] }))),
+    notulen:       JSON.stringify(notulenRecords),
+    siswa:         JSON.stringify(SISWA_DATA),
+    kelasTujuan:   JSON.stringify(KELAS_TUJUAN),
+    catatanSiswa:  JSON.stringify(catatanSiswaData),
+    planning:      JSON.stringify(planSnap),
+    setting:       JSON.stringify(currentSetting),
+  };
+}
+
+// Terapkan data dari Firebase ke variabel app
+function applyFbData(data) {
+  try {
+    if (data.guru) { const p=JSON.parse(data.guru); GURU_DATA.length=0; p.forEach(x=>GURU_DATA.push(x)); }
+    if (data.jadwal) { const p=JSON.parse(data.jadwal); Object.keys(p).forEach(k=>JADWAL_DATA[k]=p[k]); }
+    if (data.jadwal2) JADWAL_DATA2 = JSON.parse(data.jadwal2);
+    if (data.mgmp) mgmpData = JSON.parse(data.mgmp);
+    if (data.customBlock) customBlockData = JSON.parse(data.customBlock);
+    if (data.bebanMengajar) bebanMengajarData = JSON.parse(data.bebanMengajar);
+    if (data.lockedDays) lockedDaysData = JSON.parse(data.lockedDays);
+    if (data.rpe) RPE_DATA = JSON.parse(data.rpe);
+    if (data.cokurikuler) COKURIKULER_DATA = JSON.parse(data.cokurikuler);
+    if (data.prota) PROTA_DATA = JSON.parse(data.prota);
+    if (data.atp) ATP_DATA = JSON.parse(data.atp);
+    if (data.kktp) KKTP_DATA = JSON.parse(data.kktp);
+    if (data.late) lateRecords = JSON.parse(data.late);
+    if (data.notulen) notulenRecords = JSON.parse(data.notulen);
+    if (data.siswa) SISWA_DATA = JSON.parse(data.siswa);
+    if (data.kelasTujuan) KELAS_TUJUAN = JSON.parse(data.kelasTujuan);
+    if (data.catatanSiswa) catatanSiswaData = JSON.parse(data.catatanSiswa);
+    if (data.setting) { Object.assign(currentSetting, JSON.parse(data.setting)); applySetting(); }
+    if (data.planning) {
+      const snap = JSON.parse(data.planning);
+      ['pendek','menengah','panjang'].forEach(j => {
+        if (!snap[j]) return;
+        const card = document.getElementById('plan-' + j)?.querySelector('.card');
+        if (card) card.innerHTML = snap[j];
+      });
+    }
+    // Simpan juga ke localStorage sebagai cache offline
+    saveAll();
+  } catch(e) { console.warn('applyFbData error:', e); }
+}
+
+// Sync manual — bisa dipanggil dari tombol di header
+async function fbSyncNow() {
+  if (!window._fbReady) {
+    showToast('⚠️ Firebase belum siap, cek koneksi internet', true);
+    return;
+  }
+  if (window._setFbStatus) window._setFbStatus('syncing');
+  showToast('⏳ Sinkronisasi ke cloud...');
+  if (window._fbSave) {
+    const payload = buildFbPayload();
+    payload._updatedAt = Date.now();
+    await window._fbSave(payload);
+    localStorage.setItem('kuriku_last_save', payload._updatedAt);
+    renderGuruList(); renderJadwal(); updateNotifDot();
+    showToast('✅ Sinkronisasi berhasil!');
+  }
+}
+
+// Load terbaru dari Firebase (paksa ambil dari cloud)
+async function fbLoadNow() {
+  if (!window._fbReady) { showToast('⚠️ Firebase belum siap!', true); return; }
+  if (window._setFbStatus) window._setFbStatus('syncing');
+  showToast('⏳ Mengambil data terbaru dari cloud...');
+  try {
+    const fbData = await window._fbLoad();
+    if (fbData && fbData._updatedAt) {
+      applyFbData(fbData);
+      localStorage.setItem('kuriku_last_save', fbData._updatedAt);
+      renderGuruList(); renderJadwal(); updateNotifDot();
+      if (window._setFbStatus) window._setFbStatus('online');
+      showToast('✅ Data terbaru dari cloud berhasil dimuat!');
+      closeSetting();
+    } else {
+      showToast('⚠️ Belum ada data di cloud. Lakukan Sync dulu.', true);
+      if (window._setFbStatus) window._setFbStatus('online');
+    }
+  } catch(e) {
+    showToast('❌ Gagal ambil data: ' + e.message, true);
+    if (window._setFbStatus) window._setFbStatus('error');
+  }
+}
+
+// Mirror status ke indicator di settings modal
+const _origSetFbStatus = window._setFbStatus;
+function syncStatusToSettings(status) {
+  if (_origSetFbStatus) _origSetFbStatus(status);
+  const dot = document.getElementById('fb-status-dot-setting');
+  const lbl = document.getElementById('fb-status-label-setting');
+  if (!dot || !lbl) return;
+  const states = {
+    online:  { color:'#00A86B', text:'✅ Terhubung ke Cloud' },
+    syncing: { color:'#F59E0B', text:'⟳ Sedang menyimpan...' },
+    offline: { color:'#DC2640', text:'○ Offline — data hanya tersimpan lokal' },
+    error:   { color:'#DC2640', text:'✕ Gagal sync — cek koneksi' },
+  };
+  const s = states[status] || states.offline;
+  dot.style.color = s.color;
+  dot.textContent = '●';
+  lbl.textContent = s.text;
+  lbl.style.color = s.color;
+}
+// Override global setter
+window._setFbStatus = syncStatusToSettings;
 
 function loadAll() {
   try {
@@ -9026,16 +9301,66 @@ const _origSimpanNotulen = simpanNotulen;
 simpanNotulen = function() { _origSimpanNotulen(); saveAll(); };
 
 // ===== INIT =====
-loadAll();          // pulihkan semua data tersimpan
-loadSetting();      // terapkan pengaturan (nama, logo, tema)
+loadAll();          // 1. Load dari localStorage dulu (cepat, offline-first)
+loadSetting();      // 2. Terapkan pengaturan
 renderGuruList();
 renderJadwal();
 updateNotifDot();
-setTimeout(checkStorageUsage, 800); // cek kuota storage setelah app siap
+setTimeout(checkStorageUsage, 800);
 
 // Patch saveAll agar dot notif selalu update
 const _origSaveAll = saveAll;
 saveAll = function() { _origSaveAll(); updateNotifDot(); };
+
+// 3. FIREBASE — Load data terbaru dari cloud, lalu start realtime listener
+async function initFirebase() {
+  // Tunggu Firebase module siap (max 5 detik)
+  let waited = 0;
+  while (!window._fbReady && waited < 5000) {
+    await new Promise(r => setTimeout(r, 200));
+    waited += 200;
+  }
+  if (!window._fbReady) {
+    if (window._setFbStatus) window._setFbStatus('offline');
+    return;
+  }
+
+  if (window._setFbStatus) window._setFbStatus('syncing');
+
+  // Load data dari Firebase
+  try {
+    const fbData = await window._fbLoad();
+    if (fbData && fbData._updatedAt) {
+      // Cek apakah data Firebase lebih baru dari localStorage
+      const localTs = parseInt(localStorage.getItem('kuriku_last_save') || '0');
+      if (fbData._updatedAt > localTs) {
+        console.log('[KURIKU] Firebase data lebih baru, menerapkan...');
+        applyFbData(fbData);
+        localStorage.setItem('kuriku_last_save', fbData._updatedAt);
+        renderGuruList(); renderJadwal(); updateNotifDot();
+        showToast('☁️ Data terbaru dimuat dari cloud');
+      }
+    }
+    if (window._setFbStatus) window._setFbStatus('online');
+  } catch(e) {
+    console.warn('Firebase load error:', e);
+    if (window._setFbStatus) window._setFbStatus('offline');
+  }
+
+  // Start realtime listener — sinkron otomatis antar perangkat
+  if (window._fbStartListener) {
+    window._fbStartListener((data) => {
+      console.log('[KURIKU] Data berubah dari perangkat lain, memperbarui...');
+      applyFbData(data);
+      renderGuruList(); renderJadwal(); updateNotifDot();
+      showToast('🔄 Data diperbarui dari perangkat lain');
+      localStorage.setItem('kuriku_last_save', data._updatedAt || Date.now());
+    });
+  }
+}
+
+// Jalankan Firebase init setelah UI siap
+setTimeout(initFirebase, 800);
 
 // Pulihkan halaman terakhir
 const _lastScreen = (() => { try { return localStorage.getItem(LS_KEYS.screen) || 'home'; } catch(e) { return 'home'; } })();

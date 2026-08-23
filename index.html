@@ -9098,8 +9098,13 @@ function previewLogo(input) {
       prevImg.style.display = 'block';
       prevPh.style.display = 'none';
 
+      // Simpan langsung begitu kompresi selesai (tidak menunggu tombol Simpan/event lain)
+      try { localStorage.setItem(LS_SETTING, JSON.stringify(currentSetting)); } catch(e) {}
+      applySetting();
+      if (typeof saveAll === 'function') saveAll();
+
       const kb = Math.round((compressed.length * 0.75) / 1024);
-      showToast(`🖼️ Logo dikompres (~${kb}KB), siap disimpan`);
+      showToast(`🖼️ Logo dikompres (~${kb}KB) & tersimpan`);
     };
     img.onerror = () => showToast('❌ Gagal membaca gambar logo', true);
     img.src = e.target.result;
@@ -9114,6 +9119,8 @@ function hapusLogo() {
   document.getElementById('logo-upload-input').value = '';
   const logoImg = document.getElementById('header-logo-img');
   if (logoImg) logoImg.style.display = 'none';
+  try { localStorage.setItem(LS_SETTING, JSON.stringify(currentSetting)); } catch(e) {}
+  if (typeof saveAll === 'function') saveAll();
   showToast('🗑️ Logo dihapus');
 }
 
@@ -9584,7 +9591,13 @@ window.addEventListener('pagehide', saveAll);
 document.addEventListener('click', () => { try { saveAll(); } catch(e){} }, { passive: true });
 
 // Simpan setiap kali user selesai ketik di input manapun
-document.addEventListener('change', () => { try { saveAll(); } catch(e){} }, { passive: true });
+document.addEventListener('change', (e) => {
+  // Lewati auto-save untuk input upload logo — logo disimpan sendiri
+  // setelah proses kompres gambar selesai (lihat fungsi previewLogo),
+  // supaya tidak menyimpan data logo yang masih kosong duluan.
+  if (e.target && e.target.id === 'logo-upload-input') return;
+  try { saveAll(); } catch(e){}
+}, { passive: true });
 document.addEventListener('input', () => {
   clearTimeout(window._inputSaveTimer);
   window._inputSaveTimer = setTimeout(() => { try { saveAll(); } catch(e){} }, 800);

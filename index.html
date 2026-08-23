@@ -1396,21 +1396,25 @@
     window._fbLastSaveTime = 0;
     window._fbDeviceId = deviceId;
 
-    // ===== STATUS INDIKATOR =====
+    // ===== STATUS INDIKATOR (header + panel Pengaturan, digabung agar konsisten) =====
     function setFbStatus(status) {
-      const dot = document.getElementById('fb-status-dot');
-      const lbl = document.getElementById('fb-status-label');
-      if (!dot || !lbl) return;
       const states = {
-        online:  { color: '#00A86B', text: '● Cloud Sync' },
-        syncing: { color: '#F59E0B', text: '⟳ Menyimpan...' },
-        offline: { color: '#DC2640', text: '○ Offline' },
-        error:   { color: '#DC2640', text: '✕ Sync Error' },
+        online:  { color: '#00A86B', headerText: '● Cloud Sync',        settingText: '✅ Terhubung ke Cloud' },
+        syncing: { color: '#F59E0B', headerText: '⟳ Menyimpan...',       settingText: '⟳ Sedang menyimpan...' },
+        offline: { color: '#DC2640', headerText: '○ Offline',            settingText: '○ Offline — data hanya tersimpan lokal' },
+        error:   { color: '#DC2640', headerText: '✕ Sync Error',         settingText: '✕ Gagal sync — cek koneksi' },
       };
       const s = states[status] || states.offline;
-      dot.style.color = s.color;
-      lbl.textContent = s.text;
-      lbl.style.color = s.color;
+
+      const dot = document.getElementById('fb-status-dot');
+      const lbl = document.getElementById('fb-status-label');
+      if (dot) dot.style.color = s.color;
+      if (lbl) { lbl.textContent = s.headerText; lbl.style.color = s.color; }
+
+      const dotSetting = document.getElementById('fb-status-dot-setting');
+      const lblSetting = document.getElementById('fb-status-label-setting');
+      if (dotSetting) { dotSetting.style.color = s.color; dotSetting.textContent = '●'; }
+      if (lblSetting) { lblSetting.textContent = s.settingText; lblSetting.style.color = s.color; }
     }
     window._setFbStatus = setFbStatus;
 
@@ -9352,28 +9356,6 @@ async function fbLoadNow() {
     if (window._setFbStatus) window._setFbStatus('error');
   }
 }
-
-// Mirror status ke indicator di settings modal
-const _origSetFbStatus = window._setFbStatus;
-function syncStatusToSettings(status) {
-  if (_origSetFbStatus) _origSetFbStatus(status);
-  const dot = document.getElementById('fb-status-dot-setting');
-  const lbl = document.getElementById('fb-status-label-setting');
-  if (!dot || !lbl) return;
-  const states = {
-    online:  { color:'#00A86B', text:'✅ Terhubung ke Cloud' },
-    syncing: { color:'#F59E0B', text:'⟳ Sedang menyimpan...' },
-    offline: { color:'#DC2640', text:'○ Offline — data hanya tersimpan lokal' },
-    error:   { color:'#DC2640', text:'✕ Gagal sync — cek koneksi' },
-  };
-  const s = states[status] || states.offline;
-  dot.style.color = s.color;
-  dot.textContent = '●';
-  lbl.textContent = s.text;
-  lbl.style.color = s.color;
-}
-// Override global setter
-window._setFbStatus = syncStatusToSettings;
 
 function loadAll() {
   try {

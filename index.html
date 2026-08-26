@@ -8217,25 +8217,44 @@ function uploadSiswaFile(input) {
         return;
       }
 
-      let added = 0;
-      rows.forEach(row => {
+      let added = 0, updated = 0, skipped = 0;
+      rows.forEach((row, idx) => {
         const nama = String(row[namaKey] || '').trim();
         const kelas = String(row[kelasKey] || '').trim().toUpperCase();
         const nisn = String(row[nisnKey] || '').trim();
         const nis = nisKey ? String(row[nisKey] || '').trim() : '';
-        if (!nama || !kelas) return;
-        SISWA_DATA.push({
-          id: 'siswa_' + Date.now() + '_' + added,
-          nama, kelas, nisn, nis,
-          status: null, kelasBaru: null
-        });
-        added++;
+        if (!nama || !kelas) { skipped++; return; }
+
+        // Cocokkan dengan siswa yang SUDAH ADA berdasarkan NISN (atau NIS kalau NISN kosong)
+        // supaya ID, status kenaikan kelas, dan catatan siswa yang sudah ada TIDAK hilang/dobel.
+        let existing = null;
+        if (nisn) existing = SISWA_DATA.find(s => s.nisn && s.nisn === nisn);
+        if (!existing && !nisn && nis) existing = SISWA_DATA.find(s => !s.nisn && s.nis && s.nis === nis);
+
+        if (existing) {
+          // Update data yang berubah, TIDAK menyentuh id/status/kelasBaru
+          existing.nama = nama;
+          existing.kelas = kelas;
+          existing.nisn = nisn;
+          existing.nis = nis;
+          updated++;
+        } else {
+          SISWA_DATA.push({
+            id: 'siswa_' + Date.now() + '_' + idx,
+            nama, kelas, nisn, nis,
+            status: null, kelasBaru: null
+          });
+          added++;
+        }
       });
 
       renderSiswaList();
       saveAll();
       statusEl.style.color = 'var(--green)';
-      statusEl.textContent = `✅ Berhasil! ${added} siswa ditambahkan dari file.`;
+      let ringkasan = `✅ Selesai! ${added} siswa baru ditambahkan`;
+      if (updated) ringkasan += `, ${updated} siswa diperbarui (dicocokkan lewat NISN)`;
+      if (skipped) ringkasan += `, ${skipped} baris dilewati (data tidak lengkap)`;
+      statusEl.textContent = ringkasan + '.';
       input.value = '';
     } catch(err) {
       statusEl.style.color = 'var(--red)';
@@ -8307,7 +8326,7 @@ function hapusSiswa(id) {
 }
 
 function hapusSemuaSiswa() {
-  if (!confirm('Hapus SEMUA data siswa? Tindakan ini tidak bisa dibatalkan!')) return;
+  if (!confirm('⚠️ Hapus SEMUA data siswa?\n\nIni juga akan memutus keterkaitan dengan Catatan Siswa/BK yang sudah ada, dan menghapus status kenaikan kelas + hasil acak kelas.\n\nKalau tujuannya cuma update data (misal ada siswa pindah/baru), lebih aman pakai "Upload dari Excel/CSV" — data yang NISN-nya sama otomatis diperbarui, bukan dihapus.\n\nTindakan ini tidak bisa dibatalkan. Lanjutkan?')) return;
   SISWA_DATA = [];
   KELAS_TUJUAN = [];
   renderSiswaList(); saveAll();

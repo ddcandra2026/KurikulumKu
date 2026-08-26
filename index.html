@@ -2509,7 +2509,7 @@
 
           <div class="form-group">
             <label class="form-label">TERPANTAU / KEJADIAN PADA JAM KE-</label>
-            <select class="form-select" id="cs-jam">
+            <select class="form-select" id="cs-jam" onchange="autoIsiGuruMapelCs()">
               <option value="1">Jam ke-1</option>
               <option value="2">Jam ke-2</option>
               <option value="3">Jam ke-3</option>
@@ -2520,6 +2520,14 @@
               <option value="8">Jam ke-8</option>
               <option value="9">Jam ke-9</option>
             </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">GURU MAPEL SAAT KEJADIAN</label>
+            <select class="form-select" id="cs-guru-mapel" onchange="toggleGuruMapelManual(this)">
+              <option value="">— Pilih Guru Mapel —</option>
+            </select>
+            <div style="font-size:9px;color:var(--muted);margin-top:4px;">Otomatis tersaran sesuai jadwal, bisa diganti kalau ada guru piket/pengganti.</div>
           </div>
 
           <div class="form-group">
@@ -3102,6 +3110,10 @@
         <option value="4">Jam ke-4</option><option value="5">Jam ke-5</option><option value="6">Jam ke-6</option>
         <option value="7">Jam ke-7</option><option value="8">Jam ke-8</option><option value="9">Jam ke-9</option>
       </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">GURU MAPEL SAAT KEJADIAN</label>
+      <input type="text" class="form-input" id="edit-cs-guru-mapel" placeholder="mis. Budi Santoso - IPA">
     </div>
     <div class="form-group">
       <label class="form-label">STATUS KEHADIRAN</label>
@@ -8362,6 +8374,8 @@ function onCatatanKelasChange() {
   const bulkBtns = document.getElementById('cs-siswa-bulkbtns');
   csSelectedSiswaIds = [];
   updateCsSiswaCount();
+  isiDropdownGuruMapelCs();
+  autoIsiGuruMapelCs();
   if (!kelas) {
     list.innerHTML = '<div style="text-align:center;color:var(--muted);font-size:10px;padding:12px;">— Pilih Kelas Dahulu —</div>';
     bulkBtns.style.display = 'none';
@@ -8379,6 +8393,74 @@ function onCatatanKelasChange() {
       <input type="checkbox" data-siswa-id="${s.id}" onchange="toggleCsSiswa('${s.id}',this.checked)" style="width:16px;height:16px;accent-color:var(--orange);cursor:pointer;">
       <span>${s.nama}</span>
     </label>`).join('');
+}
+
+// Isi dropdown Guru Mapel dengan semua guru (nama - mapel), urut alfabet
+function isiDropdownGuruMapelCs() {
+  const sel = document.getElementById('cs-guru-mapel');
+  if (!sel) return;
+  const opsi = GURU_DATA
+    .slice()
+    .sort((a, b) => a.nama.localeCompare(b.nama))
+    .map(g => `<option value="${g.nama} - ${g.mapel}">${g.nama} — ${g.mapel}</option>`)
+    .join('');
+  sel.innerHTML = '<option value="">— Pilih Guru Mapel —</option>' + opsi
+    + '<option value="__lainnya__">✏️ Lainnya (ketik manual)</option>';
+}
+
+// Menyarankan otomatis guru mapel sesuai jadwal hari ini, kelas & jam yang dipilih
+function autoIsiGuruMapelCs() {
+  const sel = document.getElementById('cs-guru-mapel');
+  const kelas = document.getElementById('cs-kelas')?.value;
+  const jam = document.getElementById('cs-jam')?.value;
+  if (!sel || !kelas || !jam) return;
+
+  const jsDay = new Date().getDay(); // 0=Minggu, 1=Senin ... 6=Sabtu — cocok langsung dgn key JADWAL_DATA2
+  if (jsDay === 0) return; // hari Minggu, tidak ada jadwal KBM
+  const cell = JADWAL_DATA2[jsDay]?.[kelas]?.[jam];
+  if (!cell || !cell.guru) return;
+
+  const nilaiSaran = `${cell.guru} - ${cell.mapel || ''}`.trim();
+  const adaDiOpsi = Array.from(sel.options).some(o => o.value === nilaiSaran);
+  if (adaDiOpsi) {
+    sel.value = nilaiSaran;
+  } else {
+    // Guru/mapel dari jadwal tidak persis cocok dengan data guru — tampilkan sbg saran manual
+    sel.value = '__lainnya__';
+    toggleGuruMapelManual(sel);
+    const manualInput = document.getElementById('cs-guru-mapel-manual');
+    if (manualInput) manualInput.value = nilaiSaran;
+  }
+}
+
+// Tampilkan input teks manual kalau pilih "Lainnya"
+function toggleGuruMapelManual(sel) {
+  let manualInput = document.getElementById('cs-guru-mapel-manual');
+  if (sel.value === '__lainnya__') {
+    if (!manualInput) {
+      manualInput = document.createElement('input');
+      manualInput.type = 'text';
+      manualInput.id = 'cs-guru-mapel-manual';
+      manualInput.className = 'form-input';
+      manualInput.placeholder = 'Ketik nama guru & mapel, mis. Budi Santoso - IPA';
+      manualInput.style.marginTop = '6px';
+      sel.parentNode.insertBefore(manualInput, sel.nextElementSibling);
+    }
+    manualInput.style.display = 'block';
+  } else if (manualInput) {
+    manualInput.style.display = 'none';
+  }
+}
+
+// Ambil nilai guru mapel final (dari dropdown, atau input manual kalau pilih "Lainnya")
+function getGuruMapelCsValue() {
+  const sel = document.getElementById('cs-guru-mapel');
+  if (!sel) return '';
+  if (sel.value === '__lainnya__') {
+    const manualInput = document.getElementById('cs-guru-mapel-manual');
+    return (manualInput?.value || '').trim();
+  }
+  return sel.value;
 }
 
 function toggleCsSiswa(id, checked) {
@@ -8436,6 +8518,7 @@ function simpanCatatanSiswa() {
   const kelas = document.getElementById('cs-kelas').value;
   const jam = document.getElementById('cs-jam').value;
   const ket = document.getElementById('cs-ket').value.trim();
+  const guruMapel = getGuruMapelCsValue();
   if (!kelas) { showToast('⚠️ Pilih kelas dahulu!', true); return; }
   if (!csSelectedSiswaIds.length) { showToast('⚠️ Pilih minimal satu siswa!', true); return; }
   if (!csSelectedStatus) { showToast('⚠️ Pilih status kehadiran!', true); return; }
@@ -8451,7 +8534,7 @@ function simpanCatatanSiswa() {
     catatanSiswaData.unshift({
       id: 'cs_' + Date.now() + '_' + jumlahTersimpan,
       kelas, siswaId, nama: siswa.nama,
-      jam, status: csSelectedStatus, followUp: csSelectedFollowUp,
+      jam, guruMapel, status: csSelectedStatus, followUp: csSelectedFollowUp,
       ket, waktu, waktuISO
     });
     jumlahTersimpan++;
@@ -8462,6 +8545,10 @@ function simpanCatatanSiswa() {
   csSelectedSiswaIds = [];
   updateCsSiswaCount();
   document.getElementById('cs-ket').value = '';
+  const guruMapelSel = document.getElementById('cs-guru-mapel');
+  if (guruMapelSel) guruMapelSel.value = '';
+  const guruMapelManual = document.getElementById('cs-guru-mapel-manual');
+  if (guruMapelManual) guruMapelManual.style.display = 'none';
   document.querySelectorAll('#cs-status-row .status-pill').forEach(p => p.classList.remove('on-hadir','on-izin','on-sakit','on-alpa','on-kabur'));
   document.querySelectorAll('#cs-fu-row .status-pill').forEach(p => p.classList.remove('on-fu'));
   document.getElementById('cs-followup-group').style.display = 'none';
@@ -8516,7 +8603,7 @@ function renderRiwayatCatatan() {
       <div class="lli-top">
         <div>
           <div class="lli-name">🎓 ${r.nama} <span style="color:var(--muted);font-weight:400;">(${r.kelas})</span></div>
-          <div class="lli-date">${r.waktu} · Jam ke-${r.jam}</div>
+          <div class="lli-date">${r.waktu} · Jam ke-${r.jam}${r.guruMapel ? ' · 👨‍🏫 ' + r.guruMapel : ''}</div>
         </div>
         <button class="btn-danger" onclick="hapusCatatanSiswa('${r.id}')">🗑️ Hapus</button>
       </div>
@@ -8548,6 +8635,7 @@ function bukaEditCatatanSiswa(id) {
   document.getElementById('edit-cs-id').value = id;
   document.getElementById('edit-cs-nama-label').textContent = `🎓 ${r.nama} (${r.kelas})`;
   document.getElementById('edit-cs-jam').value = r.jam;
+  document.getElementById('edit-cs-guru-mapel').value = r.guruMapel || '';
   document.getElementById('edit-cs-ket').value = r.ket || '';
 
   editCsStatus = r.status;
@@ -8592,6 +8680,7 @@ function simpanEditCatatanSiswa() {
   if (!r) { closeModal('edit-cs-modal'); return; }
   if (!editCsStatus) { showToast('⚠️ Pilih status kehadiran!', true); return; }
   r.jam = document.getElementById('edit-cs-jam').value;
+  r.guruMapel = document.getElementById('edit-cs-guru-mapel').value.trim();
   r.status = editCsStatus;
   r.followUp = editCsStatus === 'kabur' ? editCsFollowUp : null;
   r.ket = document.getElementById('edit-cs-ket').value.trim();
@@ -8624,6 +8713,7 @@ function buildCatatanReportHTML() {
         <td>${r.nama}</td>
         <td style="text-align:center;">${r.kelas}</td>
         <td style="text-align:center;">${r.jam}</td>
+        <td>${r.guruMapel || '—'}</td>
         <td style="text-align:center;"><span style="display:inline-block;padding:3px 10px;border-radius:10px;background:${color};color:#fff;font-weight:bold;font-size:11px;">${(csStatusLabel[r.status] || r.status).replace(/^\S+\s/, '')}</span></td>
         <td style="text-align:center;color:${r.followUp ? '#E0660A' : '#999'};font-weight:${r.followUp ? 'bold' : 'normal'};">${r.followUp ? (csFollowUpLabel[r.followUp] || r.followUp).replace(/^\S+\s/, '') : '—'}</td>
         <td>${r.ket || '—'}</td>
@@ -8651,6 +8741,7 @@ function buildCatatanReportHTML() {
         <th>Nama Siswa</th>
         <th>Kelas</th>
         <th>Jam Ke-</th>
+        <th>Guru Mapel</th>
         <th>Status</th>
         <th>Follow Up</th>
         <th>Keterangan</th>
@@ -8658,7 +8749,7 @@ function buildCatatanReportHTML() {
       </tr>
     </thead>
     <tbody>
-      ${rows || '<tr><td colspan="8" style="text-align:center;color:#999;padding:20px;">Belum ada data</td></tr>'}
+      ${rows || '<tr><td colspan="9" style="text-align:center;color:#999;padding:20px;">Belum ada data</td></tr>'}
     </tbody>
   </table>`;
 }

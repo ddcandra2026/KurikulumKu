@@ -2105,7 +2105,7 @@
       <div class="card" style="margin-bottom:12px;">
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;" id="block-form-heading">🔒 BUAT BLOKIR JAM/HARI CUSTOM</div>
         <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-          Buat kegiatan apa saja dengan nama bebas (UMMI, Upacara, Rapat, dll). Bisa pilih rentang jam tertentu saja, tidak harus satu hari penuh.
+          Buat kegiatan apa saja dengan nama bebas (MBG, Pembiasaan, Upacara, Rapat, dll). Bisa pilih rentang jam tertentu saja, tidak harus satu hari penuh.
         </div>
         <div class="form-group">
           <label class="form-label">JENIS TARGET BLOKIR</label>
@@ -2126,7 +2126,7 @@
         </div>
         <div class="form-group">
           <label class="form-label">LABEL / NAMA KEGIATAN (bebas, ketik sendiri)</label>
-          <input type="text" class="form-input" id="block-label" placeholder="Contoh: UMMI, Upacara, Rapat Guru, Ekskul Pramuka">
+          <input type="text" class="form-input" id="block-label" placeholder="Contoh: MBG, Pembiasaan, Upacara, Rapat Guru, Ekskul Pramuka">
         </div>
         <div class="form-group">
           <label class="form-label">JENIS BLOKIR</label>
@@ -2179,7 +2179,7 @@
       <div class="card" style="margin-bottom:12px;">
         <div style="font-size:10px;color:var(--cyan);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🎲 BEBAN MENGAJAR</div>
         <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-          Input guru, mapel, kelas yang diajar, dan jam per minggu. Sistem akan otomatis membuat jadwal sambil menghindari bentrok guru, jam MGMP/UMMI, dan blokir lain yang sudah Anda buat.
+          Input guru, mapel, kelas yang diajar, dan jam per minggu. Sistem akan otomatis membuat jadwal sambil menghindari bentrok guru, jam MGMP, dan blokir lain (termasuk MBG) yang sudah Anda buat.
         </div>
         <div class="form-group">
           <label class="form-label">GURU</label>
@@ -2243,16 +2243,24 @@
         </div>
         <label style="display:flex;align-items:flex-start;gap:8px;font-size:10px;color:var(--white);cursor:pointer;">
           <input type="checkbox" id="auto-fair-last-period" checked style="margin-top:2px;">
-          <span><b>Ratakan jatah mengajar jam terakhir</b> — semua guru bergiliran adil kebagian jam terakhir (JP9/JP7/JP5 sesuai hari), kecuali guru <b>PJOK</b> yang dikecualikan dari rotasi ini.</span>
+          <span><b>Ratakan jatah mengajar jam terakhir</b> — semua guru bergiliran adil kebagian jam terakhir (JP8/JP5 sesuai hari), kecuali guru <b>PJOK</b> yang dikecualikan dari rotasi ini.</span>
         </label>
       </div>
 
       <div class="card" style="margin-bottom:12px;border-color:rgba(230,126,34,0.4);">
-        <div style="font-size:10px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🧹 MULAI BERSIH (KECUALI UMMI)</div>
+        <div style="font-size:10px;color:var(--orange);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🧹 MULAI BERSIH</div>
         <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
-          Hapus semua jadwal mapel reguler (MTK, IPA, dst) di SELURUH minggu untuk mulai dari nol — tapi <b>sel UMMI/ASATIDZ tidak akan ikut terhapus</b>. MGMP, Blokir (Upacara, Kegiatan Informal, dll), dan daftar Beban Mengajar juga tidak berubah sama sekali.
+          Hapus semua jadwal mapel reguler (MTK, IPA, dst) di SELURUH minggu untuk mulai dari nol. MGMP, Blokir (Upacara, Kegiatan Informal, dll), dan daftar Beban Mengajar tidak berubah sama sekali.
         </div>
-        <button class="btn-cancel" onclick="kosongkanJadwalKecualiUMMI()" style="font-size:11px;padding:10px;width:100%;color:#e67e22;border-color:#e67e22;">🧹 KOSONGKAN JADWAL (KECUALI UMMI)</button>
+        <button class="btn-cancel" onclick="kosongkanJadwalSeminggu()" style="font-size:11px;padding:10px;width:100%;color:#e67e22;border-color:#e67e22;">🧹 KOSONGKAN JADWAL SEMINGGU</button>
+      </div>
+
+      <div class="card" style="margin-bottom:12px;border-color:rgba(220,38,64,0.35);">
+        <div style="font-size:10px;color:var(--red);font-family:'Plus Jakarta Sans',sans-serif;letter-spacing:1px;margin-bottom:10px;">🗑️ BERSIHKAN SISA JADWAL UMMI</div>
+        <div style="font-size:9px;color:var(--muted);margin-bottom:10px;line-height:1.6;">
+          Kalau kegiatan UMMI sudah tidak ada di sekolah, pakai tombol ini untuk menghapus sisa sel jadwal yang mapelnya masih "UMMI". Sistem akan tunjukkan dulu daftar lokasinya sebelum dihapus — tidak ada yang hilang tanpa konfirmasi.
+        </div>
+        <button class="btn-cancel" onclick="hapusSemuaSelUMMI()" style="font-size:11px;padding:10px;width:100%;color:var(--red);border-color:var(--red);">🗑️ CEK &amp; HAPUS SEL UMMI</button>
       </div>
 
       <div class="card" style="margin-bottom:12px;border-color:rgba(0,144,199,0.35);">
@@ -3290,10 +3298,21 @@ function switchPlan(id, el) {
 // ===== JADWAL SYSTEM =====
 const DAYS = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 const HARI = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-const JAM_LABELS = {
-  1:'07:00', 2:'07:40', 3:'08:20', 4:'09:00', 5:'10:00',
-  6:'10:40', 7:'11:20', 8:'12:40', 9:'13:00'
-};
+// ===== JAM PELAJARAN — beda per hari (update sesuai jadwal terbaru sekolah) =====
+// Senin-Kamis: JP1-3 pagi, MBG 08:45-09:25, istirahat 1, JP4-6, istirahat 2, JP7-8, pulang 13:00
+const JAM_LABELS_SENKAM = { 1:'07:00', 2:'07:35', 3:'08:10', 4:'09:45', 5:'10:20', 6:'10:55', 7:'11:50', 8:'12:25' };
+// Jumat: JP1&2 digabung jadi satu blok Pembiasaan & MBG (07:00-08:30, 90 menit), lalu istirahat, JP3-5, pulang 10:35
+const JAM_LABELS_JUMAT  = { 1:'07:00', 2:'07:45', 3:'08:50', 4:'09:25', 5:'10:00' };
+// Sabtu: JP1-3 pagi, istirahat 1 (tanpa MBG), JP4-6, istirahat 2, JP7-8, pulang 12:10
+const JAM_LABELS_SABTU  = { 1:'07:00', 2:'07:35', 3:'08:10', 4:'09:00', 5:'09:35', 6:'10:10', 7:'11:00', 8:'11:35' };
+
+function jamLabelForHari(hari, jam) {
+  const h = parseInt(hari);
+  const map = (h === 5) ? JAM_LABELS_JUMAT : (h === 6) ? JAM_LABELS_SABTU : JAM_LABELS_SENKAM;
+  return map[jam] || '';
+}
+// Alias lama dipertahankan (dipakai di beberapa tempat tanpa konteks hari spesifik) — default ke jadwal Senin-Kamis
+const JAM_LABELS = JAM_LABELS_SENKAM;
 const KELAS_LIST = ['7A','7B','7C','8A','8B','8C','9A','9B','9C'];
 
 // Peta warna per kelas — dot colors for legend
@@ -3413,8 +3432,20 @@ let autoSelectedDays = [1,2,3,4,5,6];
 function maxJamForHari(hari) {
   const h = parseInt(hari);
   if (h === 5) return 5;  // Jumat
-  if (h === 6) return 7;  // Sabtu
-  return 9;
+  if (h === 6) return 8;  // Sabtu (update: dulu 7, sekarang 8 sesuai jadwal baru)
+  // Senin-Kamis: update dari 9 jam jadi 8 jam sesuai jadwal baru.
+  // Pengaman: kalau MASIH ADA data lama di JP9 (dari jadwal sebelum update ini),
+  // jangan sembunyikan — tetap tampilkan 9 supaya data lama tidak "hilang" dari layar.
+  if (h >= 1 && h <= 4 && _adaDataJP9Lama(h)) return 9;
+  return 8;
+}
+
+// Cek apakah hari Senin-Kamis tertentu masih punya sisa data di JP9 (peninggalan jadwal lama).
+// Kalau ada, JP9 tetap ditampilkan (tidak disembunyikan otomatis) sampai admin memindahkan/menghapusnya sendiri.
+function _adaDataJP9Lama(hari) {
+  const hariData = JADWAL_DATA2[hari];
+  if (!hariData) return false;
+  return KELAS_LIST.some(k => hariData[k] && hariData[k][9]);
 }
 
 let selectedDay = new Date().getDay() || 1;
@@ -3484,7 +3515,7 @@ function detectConflicts() {
           conflicts.push({
             type: 'guru',
             hari, jam: parseInt(jam), guru,
-            detail: `${guru} dijadwalkan di JP${jam} (${JAM_LABELS[jam]}) ${HARI[hari]} untuk ${kelasList.join(' & ')} sekaligus`
+            detail: `${guru} dijadwalkan di JP${jam} (${jamLabelForHari(hari, jam)}) ${HARI[hari]} untuk ${kelasList.join(' & ')} sekaligus`
           });
         }
       });
@@ -3499,7 +3530,7 @@ function detectConflicts() {
           conflicts.push({
             type: 'kelas',
             hari, jam: parseInt(jam), kelas,
-            detail: `Kelas ${kelas} di JP${jam} (${JAM_LABELS[jam]}) ${HARI[hari]} diisi oleh ${guruList.join(' & ')} sekaligus`
+            detail: `Kelas ${kelas} di JP${jam} (${jamLabelForHari(hari, jam)}) ${HARI[hari]} diisi oleh ${guruList.join(' & ')} sekaligus`
           });
         }
       });
@@ -3561,7 +3592,7 @@ function renderGrid() {
 
   const maxJam = maxJamForHari(hari);
   for (let jam = 1; jam <= maxJam; jam++) {
-    html += `<tr><td class="td-jam"><span class="jam-label">JP${jam}</span>${JAM_LABELS[jam]}</td>`;
+    html += `<tr><td class="td-jam"><span class="jam-label">JP${jam}</span>${jamLabelForHari(hari, jam)}</td>`;
     kelasList.forEach(kelas => {
       const cell = (hariData[kelas] || {})[jam];
       const kcClass = kelasClass(kelas);
@@ -3968,7 +3999,7 @@ function openJadwalFormCell(hari, kelas, jam) {
                 data-jam="${j}"
                 onclick="toggleFormJam(${j},this)"
                 style="text-align:center;min-width:42px;">
-            JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span>
+            JP${j}<br><span style="font-size:8px;opacity:.7;">${jamLabelForHari(hari, j)}</span>
           </span>`).join('')}
       </div>
       <div id="jam-range-label" style="font-size:10px;color:var(--cyan);margin-top:6px;font-family:'Plus Jakarta Sans',sans-serif;"></div>
@@ -4057,11 +4088,12 @@ function updateJamRangeLabel() {
   const jams = getSelectedJams();
   const lbl = document.getElementById('jam-range-label');
   if (!lbl) return;
+  const hariCtx = _jadwalFormCtx?.hari || 1;
   if (!jams.length) { lbl.textContent = ''; return; }
   if (jams.length === 1) {
-    lbl.textContent = `JP${jams[0]} (${JAM_LABELS[jams[0]]})`;
+    lbl.textContent = `JP${jams[0]} (${jamLabelForHari(hariCtx, jams[0])})`;
   } else {
-    lbl.textContent = `JP${jams[0]}–JP${jams[jams.length-1]} (${JAM_LABELS[jams[0]]} s/d ${JAM_LABELS[jams[jams.length-1]]}) · ${jams.length} jam`;
+    lbl.textContent = `JP${jams[0]}–JP${jams[jams.length-1]} (${jamLabelForHari(hariCtx, jams[0])} s/d ${jamLabelForHari(hariCtx, jams[jams.length-1])}) · ${jams.length} jam`;
   }
 }
 
@@ -4088,7 +4120,7 @@ function setFormHari(h, el) {
             data-jam="${j}"
             onclick="toggleFormJam(${j},this)"
             style="text-align:center;min-width:42px;">
-        JP${j}<br><span style="font-size:8px;opacity:.7;">${JAM_LABELS[j]}</span>
+        JP${j}<br><span style="font-size:8px;opacity:.7;">${jamLabelForHari(h, j)}</span>
       </span>`).join('');
     updateJamRangeLabel();
   }
@@ -4360,7 +4392,7 @@ function renderListGuru() {
           hasSesi = true;
           sesiHtml += `<div style="display:flex;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);">
             <span style="font-family:'Plus Jakarta Sans',sans-serif;font-size:10px;color:var(--cyan);min-width:36px;">JP${jam}</span>
-            <span style="font-size:9px;color:var(--muted);min-width:36px;">${JAM_LABELS[jam]}</span>
+            <span style="font-size:9px;color:var(--muted);min-width:36px;">${jamLabelForHari(hari, jam)}</span>
             <span style="font-weight:700;font-size:11px;color:var(--white);flex:1;">${kelas}</span>
             <span style="font-size:10px;color:var(--muted);">${cell.mapel||''}</span>
             <span style="font-size:9px;color:var(--muted);">${cell.ruang||''}</span>
@@ -4630,7 +4662,7 @@ function buildMgmpJamOptions() {
   if (!mulaiSel || !selesaiSel) return;
   const curMulai = mulaiSel.value, curSelesai = selesaiSel.value;
   let opts = '';
-  for (let j = 1; j <= max; j++) opts += `<option value="${j}">JP${j} (${JAM_LABELS[j]})</option>`;
+  for (let j = 1; j <= max; j++) opts += `<option value="${j}">JP${j} (${jamLabelForHari(hari, j)})</option>`;
   mulaiSel.innerHTML = opts;
   selesaiSel.innerHTML = opts;
   mulaiSel.value = (curMulai && curMulai <= max) ? curMulai : '1';
@@ -4817,7 +4849,7 @@ function buildBlockJamOptions() {
   if (!mulaiSel || !selesaiSel) return;
   const curMulai = mulaiSel.value, curSelesai = selesaiSel.value;
   let opts = '';
-  for (let j = 1; j <= max; j++) opts += `<option value="${j}">JP${j} (${JAM_LABELS[j]})</option>`;
+  for (let j = 1; j <= max; j++) opts += `<option value="${j}">JP${j} (${jamLabelForHari(hari, j)})</option>`;
   mulaiSel.innerHTML = opts;
   selesaiSel.innerHTML = opts;
   mulaiSel.value = (curMulai && curMulai <= max) ? curMulai : '1';
@@ -4832,11 +4864,20 @@ function onBlockJamChange() {
     const selesaiSel = document.getElementById('block-jam-selesai');
     if (selesaiSel) selesaiSel.value = String(mulai);
   }
+  const hariSel = document.getElementById('block-hari');
+  const jenisSel = document.getElementById('block-jenis');
+  const tanggalInp = document.getElementById('block-tanggal');
+  let hari = 1;
+  if (jenisSel && jenisSel.value === 'tanggal' && tanggalInp && tanggalInp.value) {
+    hari = new Date(tanggalInp.value).getDay() || 1;
+  } else if (hariSel) {
+    hari = parseInt(hariSel.value) || 1;
+  }
   const lbl = document.getElementById('block-jam-label');
   if (lbl) {
     lbl.textContent = mulai === selesai
-      ? `Blokir JP${mulai} (${JAM_LABELS[mulai]}) saja`
-      : `Blokir JP${mulai}–JP${selesai} (${JAM_LABELS[mulai]} s/d ${JAM_LABELS[selesai]}) · ${selesai-mulai+1} jam`;
+      ? `Blokir JP${mulai} (${jamLabelForHari(hari, mulai)}) saja`
+      : `Blokir JP${mulai}–JP${selesai} (${jamLabelForHari(hari, mulai)} s/d ${jamLabelForHari(hari, selesai)}) · ${selesai-mulai+1} jam`;
   }
   // Refresh status kunci kelas sesuai jam yang sedang dipilih (pertahankan kelas yang sudah tercentang)
   renderBlockKelasPicker(getSelectedBlockKelas());
@@ -5094,22 +5135,51 @@ function toggleLockDay(h) {
   renderAutoDayPicker();
 }
 
-// Hapus semua sel jadwal reguler di seluruh minggu, TAPI pertahankan sel UMMI.
+// Hapus semua sel jadwal reguler di seluruh minggu.
 // MGMP dan Blokir (customBlockData) tidak disentuh sama sekali karena disimpan terpisah.
-function kosongkanJadwalKecualiUMMI() {
-  if (!confirm('⚠️ Semua jadwal mapel reguler (MTK, IPA, dst) di SELURUH minggu akan DIHAPUS. Sel UMMI tidak akan ikut terhapus. MGMP & Blokir tidak berubah. Lanjutkan?')) return;
-  let removed = 0, kept = 0;
+function kosongkanJadwalSeminggu() {
+  if (!confirm('⚠️ Semua jadwal mapel reguler (MTK, IPA, dst) di SELURUH minggu akan DIHAPUS. MGMP & Blokir tidak berubah. Lanjutkan?')) return;
+  let removed = 0;
   [1,2,3,4,5,6].forEach(hari => {
     const hariData = JADWAL_DATA2[hari] || {};
     Object.entries(hariData).forEach(([kelas, jamObj]) => {
       Object.entries(jamObj).forEach(([jam, cell]) => {
-        if (cell && cell.mapel === 'UMMI') { kept++; }
-        else { delete jamObj[jam]; removed++; }
+        delete jamObj[jam]; removed++;
       });
     });
   });
   renderGrid(); renderRekapTable(); saveAll();
-  showToast(`🧹 ${removed} sel jadwal dihapus, ${kept} sel UMMI dipertahankan`);
+  showToast(`🧹 ${removed} sel jadwal dihapus`);
+}
+// Nama lama dipertahankan sebagai alias, kalau ada tombol lain yang masih memanggilnya
+const kosongkanJadwalKecualiUMMI = kosongkanJadwalSeminggu;
+
+// Bersihkan sisa sel jadwal dengan mapel "UMMI" satu per satu, dengan rincian lokasinya —
+// dipakai SEKALI SAJA setelah kegiatan UMMI dihentikan di sekolah, supaya tidak ada yang hilang tanpa sepengetahuan admin.
+function hapusSemuaSelUMMI() {
+  const lokasi = [];
+  [1,2,3,4,5,6].forEach(hari => {
+    const hariData = JADWAL_DATA2[hari] || {};
+    Object.entries(hariData).forEach(([kelas, jamObj]) => {
+      Object.entries(jamObj).forEach(([jam, cell]) => {
+        if (cell && cell.mapel === 'UMMI') lokasi.push(`${HARI[hari]} JP${jam} · Kelas ${kelas} · Guru ${cell.guru || '-'}`);
+      });
+    });
+  });
+  if (!lokasi.length) { showToast('✅ Tidak ada sel UMMI tersisa di jadwal.'); return; }
+  const konfirmasi = confirm(`Ditemukan ${lokasi.length} sel jadwal dengan mapel UMMI:\n\n${lokasi.slice(0,10).join('\n')}${lokasi.length > 10 ? `\n...dan ${lokasi.length - 10} lainnya` : ''}\n\nHapus semua sel ini? Guru yang tadinya mengajar UMMI di jam tersebut akan kosong dan bisa diisi mapel lain.`);
+  if (!konfirmasi) return;
+  let removed = 0;
+  [1,2,3,4,5,6].forEach(hari => {
+    const hariData = JADWAL_DATA2[hari] || {};
+    Object.entries(hariData).forEach(([kelas, jamObj]) => {
+      Object.entries(jamObj).forEach(([jam, cell]) => {
+        if (cell && cell.mapel === 'UMMI') { delete jamObj[jam]; removed++; }
+      });
+    });
+  });
+  renderGrid(); renderRekapTable(); saveAll();
+  showToast(`🧹 ${removed} sel UMMI dihapus dari jadwal.`);
 }
 
 // ===== AUTO-GENERATE JADWAL — algoritma penjadwalan otomatis =====
@@ -5523,7 +5593,7 @@ function exportJadwalPDF() {
   const win = window.open('', '_blank');
   let rows = '';
   for (let jam = 1; jam <= maxJamForHari(hari); jam++) {
-    rows += `<tr><td style="font-weight:700;text-align:center;background:#eef;">JP${jam}<br><span style="font-size:9px;">${JAM_LABELS[jam]}</span></td>`;
+    rows += `<tr><td style="font-weight:700;text-align:center;background:#eef;">JP${jam}<br><span style="font-size:9px;">${jamLabelForHari(hari, jam)}</span></td>`;
     kelasList.forEach(kelas => {
       const cell = (hariData[kelas] || {})[jam];
       rows += cell ? `<td><b>${cell.guru}</b><br><span style="font-size:10px;color:#555;">${cell.mapel||''}</span><br><span style="font-size:9px;color:#888;">${cell.ruang||''}</span></td>`
@@ -5578,7 +5648,7 @@ function renderMiniSchedule() {
     const isTelat = telatGuruHariIni.has(s.guru);
     const ico = isTelat ? '⚠️' : '🕐';
     return `<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:11px;">
-      <div><span style="color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;">JP${s.jam} · ${JAM_LABELS[s.jam]||''}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span> ${s.mapel ? '· '+s.mapel : ''}</div>
+      <div><span style="color:var(--muted);font-family:'Plus Jakarta Sans',sans-serif;font-size:9px;">JP${s.jam} · ${jamLabelForHari(day, s.jam)}</span> · <b>${s.guru}</b> · <span style="color:var(--cyan)">${s.kelas}</span> ${s.mapel ? '· '+s.mapel : ''}</div>
       <span>${ico}</span>
     </div>`;
   }).join('') + `<div style="text-align:right;margin-top:6px;"><span onclick="switchScreen('jadwal')" style="font-size:10px;color:var(--cyan);cursor:pointer;font-family:'Plus Jakarta Sans',sans-serif;">LIHAT SEMUA →</span></div>`;
@@ -9579,6 +9649,17 @@ renderGuruList();
 renderJadwal();
 updateNotifDot();
 setTimeout(checkStorageUsage, 800);
+setTimeout(cekDataJP9Lama, 1000);
+
+// Beri tahu admin kalau masih ada jadwal di JP9 (Senin-Kamis) peninggalan struktur jam lama,
+// supaya bisa dipindahkan manual — TIDAK dihapus otomatis, cuma diberi tahu.
+function cekDataJP9Lama() {
+  const hariBermasalah = [];
+  [1,2,3,4].forEach(h => { if (_adaDataJP9Lama(h)) hariBermasalah.push(HARI[h]); });
+  if (hariBermasalah.length) {
+    showToast(`⚠️ Ditemukan jadwal di JP9 (${hariBermasalah.join(', ')}) dari struktur jam lama. Data ini TIDAK dihapus, tapi mohon pindahkan manual ke JP1-8 karena jadwal baru cuma sampai JP8.`, true);
+  }
+}
 
 // Patch saveAll agar dot notif selalu update
 const _origSaveAll = saveAll;
